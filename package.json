@@ -1,0 +1,9 @@
+{
+  "name": "femazon-workspace",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix femazon-app run dev",
+    "build": "npm --prefix femazon-app run build",
+    "start": "npm --prefix femazon-app run start"
+  }
+}
