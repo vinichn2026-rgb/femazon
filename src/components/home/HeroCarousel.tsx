@@ -59,14 +59,14 @@ export function HeroCarousel() {
             
             {/* Elegant Offer Text overlay on the right side */}
             <div className="absolute right-0 top-0 h-full w-full md:w-1/2 flex flex-col items-center justify-center p-8 md:p-12 text-center">
-              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#a85b9b] mb-4 drop-shadow-sm">Limited Time</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary mb-4 drop-shadow-sm">Limited Time</span>
               <h1 className="font-serif text-3xl md:text-5xl font-normal text-text-main tracking-widest uppercase mb-2">
                 {slide.title}
               </h1>
               <h2 className="font-sans text-xl md:text-2xl font-light text-text-main mb-8 tracking-wide">
                 {slide.subtitle}
               </h2>
-              <span className="inline-block border-b border-text-main pb-1 text-[11px] uppercase tracking-[0.2em] font-bold text-text-main transition hover:text-[#a85b9b] hover:border-[#a85b9b]">
+              <span className="inline-block border-b border-text-main pb-1 text-[11px] uppercase tracking-[0.2em] font-bold text-text-main transition hover:text-primary hover:border-primary">
                 Shop Now
               </span>
             </div>
@@ -94,7 +94,7 @@ export function HeroCarousel() {
           <button 
             key={idx}
             onClick={() => setCurrent(idx)}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === current ? 'bg-[#a85b9b] w-6' : 'bg-text-main/20 hover:bg-text-main/50'}`}
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === current ? 'bg-primary w-6' : 'bg-text-main/20 hover:bg-text-main/50'}`}
             aria-label={`Go to slide ${idx + 1}`}
           />
         ))}

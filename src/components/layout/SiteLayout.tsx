@@ -58,18 +58,15 @@ export function SiteLayout({
   return (
     <div className="min-h-screen bg-background text-text-main font-sans overflow-x-hidden">
       
-      {/* 1. Header / Utility Bar (Minimal) */}
-      <div className="w-full bg-[#f4f1eb] py-2 px-6 border-b border-accent/20">
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between text-[10px] font-bold uppercase tracking-widest text-text-muted">
-          <div className="hidden md:block">
-            Complimentary Shipping & Returns on All Orders
-          </div>
-          <div className="flex w-full items-center justify-between gap-6 md:w-auto md:justify-end">
-            <Link href="/help" className="transition hover:text-primary">Help</Link>
-            <Link href="/track-order" className="transition hover:text-primary">Track Order</Link>
-          </div>
+      {/* 1. Top Banner (Evara Style) */}
+      <div className="w-full bg-[#4A1513] py-2 px-6">
+        <div className="mx-auto flex max-w-[1400px] items-center justify-center text-[11px] font-bold uppercase tracking-widest text-white/90">
+          Prepaid orders get priority shipping 🚚
         </div>
       </div>
+
+      {/* 2. Utility Bar */}
+ 
 
       {/* 2. Main Navigation (Single-Tier) */}
       <header className="sticky top-0 z-40 w-full bg-surface/95 backdrop-blur-md transition-all shadow-sm">
@@ -85,7 +82,7 @@ export function SiteLayout({
 
           {/* Left: Logo */}
           <Link href="/" className="group flex items-center shrink-0">
-            <span className="font-serif text-[32px] font-light tracking-widest text-[#a85b9b] transition group-hover:opacity-80">
+            <span className="font-serif text-[32px] font-light tracking-widest text-primary transition group-hover:opacity-80">
               FEMAZON<span className="text-secondary text-lg">.</span>
             </span>
           </Link>
@@ -96,7 +93,7 @@ export function SiteLayout({
               <div key={link.name} className="group flex h-full items-center relative">
                 <Link 
                   href={link.href} 
-                  className="flex h-full items-center text-[13px] font-bold tracking-widest uppercase transition border-b-2 border-transparent hover:text-[#a85b9b] text-text-main"
+                  className="flex h-full items-center text-[13px] font-bold tracking-widest uppercase transition border-b-2 border-transparent hover:text-primary text-text-main"
                 >
                   {link.name}
                 </Link>
@@ -113,7 +110,7 @@ export function SiteLayout({
                           <ul className="flex flex-col gap-3">
                             {col.links.map((sublink) => (
                               <li key={sublink}>
-                                <Link href={`/products?category=${sublink.toLowerCase()}`} className="text-[13px] font-medium text-text-muted hover:text-[#a85b9b] transition">
+                                <Link href={`/products?category=${sublink.toLowerCase()}`} className="text-[13px] font-medium text-text-muted hover:text-primary transition">
                                   {sublink}
                                 </Link>
                               </li>
@@ -130,32 +127,32 @@ export function SiteLayout({
 
           {/* Right: Actions (Search, User, Cart) */}
           <div className="flex shrink-0 items-center justify-end gap-5 lg:gap-6">
-            <button className="flex items-center text-text-main transition hover:text-[#a85b9b]">
+            <button className="flex items-center text-text-main transition hover:text-primary">
               <Search size={22} strokeWidth={1.5} />
               <span className="sr-only">Search</span>
             </button>
             
             {isLoggedIn ? (
               <div className="group relative hidden items-center md:flex h-full py-6">
-                <Link href="/profile" className="text-text-main transition hover:text-[#a85b9b]">
+                <Link href="/profile" className="text-text-main transition hover:text-primary">
                   <UserCircle2 size={22} strokeWidth={1.5} />
                 </Link>
                 <div className="absolute right-0 top-full -mt-2 invisible opacity-0 flex w-48 flex-col bg-surface border border-accent/20 p-2 shadow-xl transition-all group-hover:visible group-hover:opacity-100 z-50">
-                  <Link href="/profile" className="px-3 py-2 text-xs font-bold uppercase tracking-widest hover:bg-accent/10 hover:text-[#a85b9b]">My Account</Link>
-                  <Link href="/orders" className="px-3 py-2 text-xs font-bold uppercase tracking-widest hover:bg-accent/10 hover:text-[#a85b9b]">Orders</Link>
-                  {role === 'VENDOR' && <Link href="/vendor/dashboard" className="px-3 py-2 text-xs font-bold uppercase tracking-widest hover:bg-accent/10 hover:text-[#a85b9b]">Vendor Dashboard</Link>}
-                  {role === 'ADMIN' && <Link href="/admin/dashboard" className="px-3 py-2 text-xs font-bold uppercase tracking-widest hover:bg-accent/10 hover:text-[#a85b9b]">Admin Dashboard</Link>}
+                  <Link href="/profile" className="px-3 py-2 text-xs font-bold uppercase tracking-widest hover:bg-accent/10 hover:text-primary">My Account</Link>
+                  <Link href="/orders" className="px-3 py-2 text-xs font-bold uppercase tracking-widest hover:bg-accent/10 hover:text-primary">Orders</Link>
+                  {role === 'VENDOR' && <Link href="/vendor/dashboard" className="px-3 py-2 text-xs font-bold uppercase tracking-widest hover:bg-accent/10 hover:text-primary">Vendor Dashboard</Link>}
+                  {role === 'ADMIN' && <Link href="/admin/dashboard" className="px-3 py-2 text-xs font-bold uppercase tracking-widest hover:bg-accent/10 hover:text-primary">Admin Dashboard</Link>}
                   <div className="my-1 border-t border-accent/10"></div>
-                  <Link href="/api/auth/logout" className="px-3 py-2 text-xs font-bold uppercase tracking-widest text-[#a85b9b] hover:bg-[#a85b9b]/5">Logout</Link>
+                  <Link href="/api/auth/logout" className="px-3 py-2 text-xs font-bold uppercase tracking-widest text-primary hover:bg-primary/5">Logout</Link>
                 </div>
               </div>
             ) : (
-              <Link href="/login" className="hidden text-text-main transition hover:text-[#a85b9b] md:block">
+              <Link href="/login" className="hidden text-text-main transition hover:text-primary md:block">
                 <UserCircle2 size={22} strokeWidth={1.5} />
               </Link>
             )}
 
-            <Link href="/cart" className="relative text-text-main transition hover:text-[#a85b9b]">
+            <Link href="/cart" className="relative text-text-main transition hover:text-primary">
               <ShoppingBag size={22} strokeWidth={1.5} />
               <span className="absolute -right-2 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-secondary text-[9px] font-bold text-white shadow-sm">0</span>
             </Link>

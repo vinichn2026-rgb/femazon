@@ -33,12 +33,16 @@ export default async function Home() {
 
   // 4. Trending Products (Carousel Products)
   const trendingProducts = [
-    { name: 'Midnight Blue Gown', price: '₹8,999', img: 'https://images.unsplash.com/photo-1542042161784-26ab9e041e89?q=80&w=600&auto=format&fit=crop' },
-    { name: 'Handloom Cotton Kurti', price: '₹1,899', img: 'https://images.unsplash.com/photo-1617633150878-7df1d12a9a57?q=80&w=600&auto=format&fit=crop' },
-    { name: 'Designer Anarkali Suit', price: '₹7,499', img: 'https://images.unsplash.com/photo-1727430256509-0f897d6f4765?q=80&w=600&auto=format&fit=crop' },
-    { name: 'Silk Blend Dupatta', price: '₹1,299', img: 'https://images.unsplash.com/photo-1684868268327-7e5590bcfbd6?q=80&w=600&auto=format&fit=crop' },
-    { name: 'Rose Gold Jhumkas', price: '₹999', img: 'https://images.unsplash.com/photo-1773982762326-34e20b03d55c?q=80&w=600&auto=format&fit=crop' },
-    { name: 'Embellished Clutch', price: '₹2,499', img: 'https://images.unsplash.com/photo-1654764746225-e63f5e90facd?q=80&w=600&auto=format&fit=crop' },
+    { name: 'Floral Midi Dress', category: 'Western / Casual', price: '₹1,899', img: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=600&h=750&auto=format&fit=crop&crop=top' },
+    { name: 'Linen Co-ord Set', category: 'Casual / Summer', price: '₹2,499', img: '/categories/linen_coord.png' },
+    { name: 'Chikankari Kurta Set', category: 'Ethnic', price: '₹1,799', img: '/categories/chikankari_kurta.png' },
+    { name: 'Satin Blouse', category: 'Western / Party', price: '₹1,499', img: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&h=750&auto=format&fit=crop&crop=top' },
+    { name: 'Wide-Leg Trousers', category: 'Workwear', price: '₹1,699', img: 'https://images.unsplash.com/photo-1506629082955-511b1aa562c8?q=80&w=600&h=750&auto=format&fit=crop&crop=center' },
+    { name: 'Printed Saree', category: 'Ethnic / Festive', price: '₹2,299', img: 'https://images.unsplash.com/photo-1610047614301-13c63f00c032?q=80&w=600&h=750&auto=format&fit=crop&crop=top' },
+    { name: 'Ribbed Everyday Top', category: 'Casual', price: '₹899', img: 'https://images.unsplash.com/photo-1503342394128-c104d54dba01?q=80&w=600&h=750&auto=format&fit=crop&crop=top' },
+    { name: 'Structured Handbag', category: 'Accessories', price: '₹1,999', img: 'https://images.unsplash.com/photo-1584916201218-f4242ceb4809?q=80&w=600&h=750&auto=format&fit=crop&crop=center' },
+    { name: 'Pleated Maxi Skirt', category: 'Western', price: '₹1,599', img: 'https://images.unsplash.com/photo-1583391733958-d25e07fac044?q=80&w=600&h=750&auto=format&fit=crop&crop=top' },
+    { name: 'Pastel Anarkali Set', category: 'Ethnic', price: '₹2,199', img: 'https://images.unsplash.com/photo-1599746146388-a7ec2004b67a?q=80&w=600&h=750&auto=format&fit=crop&crop=top' },
   ];
 
   // 5. Women's Services Data
