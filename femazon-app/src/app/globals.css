@@ -1,26 +1,42 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-primary: #722F37;
+  --color-primary-hover: #5a252b;
+  --color-secondary: #DCAE96;
+  --color-background: #FDFBF7;
+  --color-surface: #FFFDF9;
+  --color-text-main: #2C3131;
+  --color-text-muted: #8B8580;
+  --color-accent: #E6D5B8;
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-playfair);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root {
+  --background: #FDFBF7;
+  --foreground: #2C3131;
 }
 
 @media (prefers-color-scheme: dark) {
+  /* For now, keep the dark mode muted or enforce light mode elegance depending on user preference */
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #1A1A1A;
+    --foreground: #FDFBF7;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Hide scrollbar completely for elegant arrow navigation */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }

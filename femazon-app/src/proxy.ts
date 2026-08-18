@@ -67,7 +67,7 @@ const customerPaths = ['/profile', '/cart', '/bookings', '/orders', '/wishlist']
 const vendorPaths = ['/vendor/dashboard', '/vendor/products', '/vendor/services', '/vendor/bookings'];
 const adminPaths = ['/admin/dashboard', '/admin/users', '/admin/vendors', '/admin/products', '/admin/services', '/admin/bookings'];
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
 
   const isVendorRoute = vendorPaths.some((p) => pathname === p || pathname.startsWith(p + '/'));
