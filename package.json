@@ -1,10 +1,41 @@
 {
-  "name": "femazon-workspace",
+  "name": "femazon-app",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
-    "postinstall": "npm --prefix femazon-app install",
-    "dev": "npm --prefix femazon-app run dev",
-    "build": "npm --prefix femazon-app run build",
-    "start": "npm --prefix femazon-app run start"
+    "dev": "node scripts/run-with-port.js dev",
+    "build": "npx prisma generate && next build",
+    "start": "node scripts/run-with-port.js start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.7.1",
+    "@next-auth/prisma-adapter": "^1.0.7",
+    "@prisma/adapter-better-sqlite3": "^7.9.1",
+    "@prisma/client": "^7.9.1",
+    "@types/bcryptjs": "^2.4.6",
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^13.0.3",
+    "clsx": "^2.1.1",
+    "framer-motion": "^13.0.0",
+    "lucide-react": "^1.31.0",
+    "next": "16.3.0",
+    "next-auth": "^4.24.15",
+    "prisma": "^7.9.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "tailwind-merge": "^3.6.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }
