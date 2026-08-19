@@ -239,7 +239,7 @@ export function FilterSidebar({ filters, onFilterChange, onClearAll, isOpen, onC
               <input type="checkbox" className="hidden" checked={filters.inStockOnly} onChange={() => onFilterChange('inStockOnly', !filters.inStockOnly)} />
             </label>
             <label className="flex items-center justify-between cursor-pointer group">
-              <span className="text-[13px] text-text-muted group-hover:text-text-main transition-colors">On Sale (> 30% off)</span>
+              <span className="text-[13px] font-medium text-text-main transition-colors">On Sale (&gt; 30% off)</span>
               <div className={`w-9 h-5 rounded-full transition-colors flex items-center px-0.5 ${filters.onSale ? 'bg-[#E53E3E]' : 'bg-accent/20'}`}>
                 <div className={`w-4 h-4 rounded-full bg-white transition-transform ${filters.onSale ? 'translate-x-4' : 'translate-x-0'}`} />
               </div>
