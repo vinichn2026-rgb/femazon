@@ -11,28 +11,52 @@ type AuthSession = {
   role: string;
 };
 
-const navigationData = {
+// Rich Navigation Data replacing the old structure
+const richNavigationData: Record<string, any[]> = {
   Women: [
-    { title: "New Arrivals", links: ["Dresses", "Tops", "Bottoms", "Ethnic Wear", "Western Wear", "Co-ords", "Activewear", "Party Wear"] },
-    { title: "Clothing", links: ["Dresses", "Tops", "Shirts", "Jeans", "Trousers", "Skirts", "Shorts", "Jackets", "Co-ords"] },
-    { title: "Shoes", links: ["Heels", "Flats", "Sneakers", "Boots", "Sandals"] },
-    { title: "Accessories", links: ["Jewellery", "Bags", "Sunglasses", "Watches", "Belts", "Hair Accessories"] },
-    { title: "Beauty", links: ["Makeup", "Skincare", "Haircare", "Fragrance"] }
+    {
+      title: "TRENDING CATEGORIES",
+      items: [
+        { name: "Dresses", desc: "Maxi, Midi & Mini styles", href: "/products?category=dresses", dotColor: "bg-rose-400", badge: "HOT" },
+        { name: "Tops & Shirts", desc: "Everyday & party wear", href: "/products?category=tops", dotColor: "bg-purple-400", badge: "" },
+        { name: "Ethnic Wear", desc: "Kurti, Sarees & Lehengas", href: "/products?category=ethnic", dotColor: "bg-orange-400", badge: "NEW" },
+        { name: "Co-ords", desc: "Matching sets for ease", href: "/products?category=coords", dotColor: "bg-emerald-400", badge: "" }
+      ]
+    },
+    {
+      title: "ESSENTIALS",
+      items: [
+        { name: "Bottom Wear", desc: "Jeans, Trousers & Skirts", href: "/products?category=bottoms", dotColor: "bg-blue-400", badge: "" },
+        { name: "Activewear", desc: "Gym & yoga fits", href: "/products?category=activewear", dotColor: "bg-rose-400", badge: "30% OFF" },
+        { name: "Accessories", desc: "Jewelry, Bags & Belts", href: "/products?category=accessories", dotColor: "bg-amber-400", badge: "" },
+        { name: "Shoes", desc: "Heels, Flats & Sneakers", href: "/products?category=shoes", dotColor: "bg-indigo-400", badge: "" }
+      ]
+    }
   ],
   Services: [
-    { title: "Expert Services", links: ["Makeup Artists", "Mehndi Artists", "Salon & Beauty", "Personal Stylists", "Photographers", "Event Planners", "Shopping Assistant", "View All Services"] }
+    {
+      title: "BOOK AN EXPERT",
+      items: [
+        { name: "Personal Styling", desc: "Find your perfect look", href: "/services/styling", dotColor: "bg-rose-400", badge: "HOT" },
+        { name: "Makeup Artist", desc: "For weddings & parties", href: "/services/makeup", dotColor: "bg-pink-400", badge: "" },
+        { name: "Shopping Assistant", desc: "Help while you shop", href: "/services/shopping", dotColor: "bg-purple-400", badge: "NEW" },
+      ]
+    }
   ],
   "AI Wardrobe": [
-    { title: "Digital Closet", links: ["My Wardrobe", "Outfit Suggestions", "Color & Style Suggestions", "Shop Missing Items"] }
+    {
+      title: "YOUR DIGITAL CLOSET",
+      items: [
+        { name: "Outfit Suggestions", desc: "AI-powered daily looks", href: "/ai-wardrobe", dotColor: "bg-indigo-400", badge: "BETA" },
+        { name: "My Wardrobe", desc: "Organize your pieces", href: "/ai-wardrobe/closet", dotColor: "bg-teal-400", badge: "" }
+      ]
+    }
   ]
 };
 
 const mainNavLinks = [
   { name: 'Women', hasMega: true, href: '/products?category=women' },
   { name: 'New In', hasMega: false, href: '/products?sort=newest' },
-  { name: 'Clothing', hasMega: false, href: '/products?category=clothing' },
-  { name: 'Shoes', hasMega: false, href: '/products?category=shoes' },
-  { name: 'Accessories', hasMega: false, href: '/products?category=accessories' },
   { name: 'Beauty', hasMega: false, href: '/products?category=beauty' },
   { name: 'Services', hasMega: true, href: '/services' },
   { name: 'AI Wardrobe', hasMega: true, href: '/ai-wardrobe' },
@@ -65,11 +89,8 @@ export function SiteLayout({
         </div>
       </div>
 
-      {/* 2. Utility Bar */}
- 
-
-      {/* 2. Main Navigation (Single-Tier) */}
-      <header className="sticky top-0 z-40 w-full bg-surface/95 backdrop-blur-md transition-all shadow-sm">
+      {/* 2. Main Navigation */}
+      <header className="sticky top-0 z-40 w-full bg-surface/95 backdrop-blur-md transition-all shadow-sm border-b border-accent/10">
         <div className="mx-auto flex h-[88px] max-w-[1400px] items-center justify-between px-6">
           
           {/* Mobile Menu Toggle */}
@@ -93,32 +114,57 @@ export function SiteLayout({
               <div key={link.name} className="group flex h-full items-center relative">
                 <Link 
                   href={link.href} 
-                  className="flex h-full items-center text-[13px] font-bold tracking-widest uppercase transition border-b-2 border-transparent hover:text-primary text-text-main"
+                  className="flex h-full items-center text-[13px] font-bold tracking-widest uppercase transition border-b-2 border-transparent hover:text-primary text-text-main group-hover:text-primary gap-1"
                 >
                   {link.name}
+                  {link.hasMega && <ChevronDown size={14} className="transition-transform duration-300 group-hover:-rotate-180" />}
                 </Link>
 
-                {/* Desktop Mega Menu */}
-                {link.hasMega && (
-                  <div className="absolute left-1/2 -translate-x-1/2 top-full z-50 w-[80vw] max-w-[1000px] invisible opacity-0 bg-surface shadow-[0_10px_40px_rgba(0,0,0,0.1)] transition-all duration-300 group-hover:visible group-hover:opacity-100 p-8 rounded-b-lg">
-                    <div className="flex gap-12 justify-center">
-                      {navigationData[link.name as keyof typeof navigationData]?.map((col, idx) => (
-                        <div key={idx} className="flex flex-col">
-                          <h4 className="mb-4 font-sans text-[11px] font-bold tracking-widest uppercase text-text-main border-b border-accent/20 pb-2">
-                            {col.title}
-                          </h4>
-                          <ul className="flex flex-col gap-3">
-                            {col.links.map((sublink) => (
-                              <li key={sublink}>
-                                <Link href={`/products?category=${sublink.toLowerCase()}`} className="text-[13px] font-medium text-text-muted hover:text-primary transition">
-                                  {sublink}
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
-                    </div>
+                {/* Desktop Rich Dropdown / Mega Menu */}
+                {link.hasMega && richNavigationData[link.name] && (
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full z-50 w-max min-w-[500px] invisible opacity-0 translate-y-2 bg-white shadow-xl shadow-slate-200/40 border border-slate-100 rounded-2xl transition-all duration-300 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 p-6 flex gap-8">
+                    {richNavigationData[link.name]?.map((col, idx) => (
+                      <div key={idx} className="flex flex-col flex-1">
+                        <h4 className="mb-3 px-3 text-[11px] font-semibold tracking-wider text-primary uppercase">
+                          {col.title}
+                        </h4>
+                        <ul className="flex flex-col gap-1">
+                          {col.items.map((item: any, i: number) => (
+                            <li key={i}>
+                              <Link 
+                                href={item.href} 
+                                className="group/item flex items-center px-3 py-2.5 rounded-xl hover:bg-slate-50/80 transition-all duration-150"
+                              >
+                                {/* Center: Text */}
+                                <div className="flex flex-col flex-1">
+                                  <span className="font-medium text-sm text-slate-800 group-hover/item:text-primary transition-colors">
+                                    {item.name}
+                                  </span>
+                                  <span className="text-xs text-slate-400 group-hover/item:text-slate-500 font-normal mt-0.5">
+                                    {item.desc}
+                                  </span>
+                                </div>
+
+                                {/* Right: Badge or Arrow */}
+                                <div className="flex items-center justify-end shrink-0 ml-4">
+                                  {item.badge ? (
+                                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                                      item.badge === 'HOT' ? 'bg-rose-50 text-rose-600 border border-rose-100' :
+                                      item.badge === 'NEW' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
+                                      'bg-amber-50 text-amber-600 border border-amber-100'
+                                    }`}>
+                                      {item.badge}
+                                    </span>
+                                  ) : (
+                                    <ChevronRight size={16} className="text-slate-300 opacity-0 -translate-x-1 transition-all duration-300 group-hover/item:opacity-100 group-hover/item:translate-x-1" />
+                                  )}
+                                </div>
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -201,18 +247,18 @@ export function SiteLayout({
                       
                       {/* Accordion Content */}
                       <div className={`overflow-hidden transition-all duration-300 ease-in-out ${activeAccordion === link.name ? 'max-h-[1000px] pb-4' : 'max-h-0'}`}>
-                        {navigationData[link.name as keyof typeof navigationData]?.map((col, idx) => (
-                          <div key={idx} className="mb-4 last:mb-0 pl-2 border-l border-accent/20 ml-2">
+                        {richNavigationData[link.name]?.map((col, idx) => (
+                          <div key={idx} className="mb-4 last:mb-0 pl-2 border-l border-accent/20 ml-2 mt-2">
                             <h4 className="mb-3 font-serif text-sm font-bold text-primary">{col.title}</h4>
                             <ul className="space-y-3">
-                              {col.links.map(sublink => (
-                                <li key={sublink}>
+                              {col.items.map((item: any) => (
+                                <li key={item.name}>
                                   <Link 
-                                    href={`/products?category=${sublink.toLowerCase()}`}
+                                    href={item.href}
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="block text-xs font-medium tracking-wide text-text-muted"
+                                    className="flex items-center text-xs font-medium tracking-wide text-text-muted transition-colors hover:text-primary gap-2"
                                   >
-                                    {sublink}
+                                    {item.name}
                                   </Link>
                                 </li>
                               ))}

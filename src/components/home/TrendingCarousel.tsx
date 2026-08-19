@@ -61,11 +61,6 @@ export function TrendingCarousel({ products }: { products: Product[] }) {
               <Heart size={16} strokeWidth={1.5} />
             </button>
             <Link href="/product/sample" className="px-1 mt-1">
-              {product.category && (
-                <p className="text-[10px] uppercase tracking-widest text-text-muted mb-1 font-bold">
-                  {product.category}
-                </p>
-              )}
               <h3 className="font-sans text-[14px] text-text-main group-hover/item:text-primary transition truncate">
                 {product.name}
               </h3>
