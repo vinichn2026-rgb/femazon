@@ -19,18 +19,16 @@ const COLOR_MAP: Record<string, string> = {
 
 interface ProductCardProps {
   product: ProductType;
+  isWishlisted?: boolean;
   onQuickAdd?: (product: ProductType) => void;
-  onToggleWishlist?: (productId: string) => void;
+  onToggleWishlist?: (productId: string, isCurrentlyWishlisted: boolean) => void;
 }
 
-export function ProductCard({ product, onQuickAdd, onToggleWishlist }: ProductCardProps) {
-  const [isWishlisted, setIsWishlisted] = useState(false);
-
+export function ProductCard({ product, isWishlisted = false, onQuickAdd, onToggleWishlist }: ProductCardProps) {
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsWishlisted(!isWishlisted);
-    onToggleWishlist?.(product.id);
+    onToggleWishlist?.(product.id, isWishlisted);
   };
 
   const handleQuickAdd = (e: React.MouseEvent) => {
@@ -39,7 +37,8 @@ export function ProductCard({ product, onQuickAdd, onToggleWishlist }: ProductCa
     onQuickAdd?.(product);
   };
 
-  const hasSecondaryImage = product.images.length > 1;
+  const images = product.images || (product.image ? [product.image] : ['https://via.placeholder.com/400x500?text=No+Image']);
+  const hasSecondaryImage = images.length > 1;
 
   return (
     <Link href={`/product/${product.id}`} className="group flex flex-col cursor-pointer h-full">
@@ -48,14 +47,14 @@ export function ProductCard({ product, onQuickAdd, onToggleWishlist }: ProductCa
         {/* Images with cross-fade hover */}
         <div className="w-full h-full relative">
           <img 
-            src={product.images[0]} 
+            src={images[0]} 
             alt={product.name} 
             loading="lazy"
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out ${hasSecondaryImage ? 'group-hover:opacity-0' : ''}`}
           />
           {hasSecondaryImage && (
             <img 
-              src={product.images[1]} 
+              src={images[1]} 
               alt={`${product.name} Alternate`} 
               loading="lazy"
               className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500 ease-in-out group-hover:opacity-100"

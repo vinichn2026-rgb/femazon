@@ -26,7 +26,7 @@ export function ServiceCarousel({ services }: { services: Service[] }) {
       {/* Left Arrow */}
       <button 
         onClick={() => scroll('left')}
-        className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 lg:-translate-x-6 z-10 p-2 md:p-3 bg-white shadow-md rounded-full text-text-main hover:bg-primary hover:text-white transition hidden md:flex items-center justify-center border border-accent/20"
+        className="absolute left-0 top-[175px] -translate-y-1/2 -translate-x-4 lg:-translate-x-6 z-10 p-2 md:p-3 bg-white shadow-md rounded-full text-text-main hover:bg-primary hover:text-white transition hidden md:flex items-center justify-center border border-accent/20"
       >
         <ChevronLeft size={20} />
       </button>
@@ -34,7 +34,7 @@ export function ServiceCarousel({ services }: { services: Service[] }) {
       {/* Right Arrow */}
       <button 
         onClick={() => scroll('right')}
-        className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 lg:translate-x-6 z-10 p-2 md:p-3 bg-white shadow-md rounded-full text-text-main hover:bg-primary hover:text-white transition hidden md:flex items-center justify-center border border-accent/20"
+        className="absolute right-0 top-[175px] -translate-y-1/2 translate-x-4 lg:translate-x-6 z-10 p-2 md:p-3 bg-white shadow-md rounded-full text-text-main hover:bg-primary hover:text-white transition hidden md:flex items-center justify-center border border-accent/20"
       >
         <ChevronRight size={20} />
       </button>
@@ -42,7 +42,7 @@ export function ServiceCarousel({ services }: { services: Service[] }) {
       <div ref={scrollRef} className="flex snap-x snap-mandatory gap-6 overflow-x-auto pb-4 hide-scrollbar">
         {services.map((service, idx) => (
           <div key={idx} className="w-[85vw] md:w-[calc(33.333%-16px)] shrink-0 snap-start flex flex-col group/item cursor-pointer">
-            <Link href={`/services/${service.title.toLowerCase().replace(' ', '-')}`}>
+            <Link href={`/services/${service.title.toLowerCase().replace(' ', '-')}`} className="flex flex-col items-center text-center">
               <div className="aspect-[4/3] w-full overflow-hidden bg-accent/5 mb-6 relative rounded-2xl shadow-sm transition hover:shadow-md">
                 <img 
                   src={service.img} 
@@ -53,7 +53,7 @@ export function ServiceCarousel({ services }: { services: Service[] }) {
               <h3 className="font-serif text-2xl font-normal text-text-main tracking-wide mb-2 group-hover/item:text-primary transition">
                 {service.title}
               </h3>
-              <p className="font-sans text-[15px] text-text-muted mb-4 leading-relaxed">
+              <p className="font-sans text-[15px] text-text-muted mb-4 leading-relaxed max-w-[90%]">
                 {service.desc}
               </p>
               <span className="text-[14px] font-sans text-text-main border-b border-text-main pb-1 transition group-hover/item:text-primary group-hover/item:border-primary">

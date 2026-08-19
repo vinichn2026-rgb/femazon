@@ -2,10 +2,16 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { AddToCartButton } from '@/components/cart/AddToCartButton';
+import ReviewSection from '@/components/reviews/ReviewSection';
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const product = await prisma.product.findUnique({ where: { slug } });
+  const product = await prisma.product.findFirst({ 
+    where: { 
+      slug,
+      approvalStatus: 'APPROVED'
+    } 
+  });
 
   if (!product) {
     notFound();
@@ -38,6 +44,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             </div>
           </div>
         </section>
+
+        {/* Reviews Section */}
+        <ReviewSection targetType="product" targetId={product.id} />
+
       </div>
     </main>
   );

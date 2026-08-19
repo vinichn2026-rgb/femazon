@@ -74,108 +74,108 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-zinc-50 p-6">
+    <main className="flex min-h-screen items-center justify-center bg-surface p-6">
       <div className="w-full max-w-md">
-        <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl bg-white p-8 shadow-sm">
-          <div>
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-pink-600">Create account</p>
-            <h1 className="mt-3 text-2xl font-semibold text-zinc-900">Join Femazon</h1>
-            <p className="mt-2 text-sm text-zinc-600">Create an account to shop premium styles and book services.</p>
+        <form onSubmit={handleSubmit} className="space-y-6 rounded-[2rem] bg-white p-8 shadow-sm border border-accent/20">
+          <div className="text-center mb-8">
+            <h1 className="text-xs font-bold uppercase tracking-widest text-primary">FEMAZON</h1>
+            <h2 className="mt-2 font-serif text-3xl text-text-main">Create Account</h2>
+            <p className="mt-2 text-sm text-text-muted">Join Femazon to shop premium styles and book services.</p>
           </div>
 
           {error ? (
-            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>
+            <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-600">{error}</div>
           ) : null}
 
           {success ? (
-            <div className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">{success}</div>
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-medium text-emerald-600">{success}</div>
           ) : null}
 
           <div className="grid gap-4">
             <label className="flex flex-col text-sm">
-              <span className="mb-2 font-medium text-zinc-700">Full Name</span>
+              <span className="mb-2 text-xs font-bold uppercase tracking-widest text-text-muted">Full Name</span>
               <input
                 id="name"
                 name="name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="rounded-xl border border-zinc-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200"
+                className="rounded-xl border border-zinc-200 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary bg-white"
                 placeholder="Your full name"
                 required
               />
             </label>
 
             <label className="flex flex-col text-sm">
-              <span className="mb-2 font-medium text-zinc-700">Email</span>
+              <span className="mb-2 text-xs font-bold uppercase tracking-widest text-text-muted">Email</span>
               <input
                 id="email"
                 name="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="rounded-xl border border-zinc-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200"
+                className="rounded-xl border border-zinc-200 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary bg-white"
                 placeholder="you@example.com"
                 required
               />
             </label>
 
             <label className="flex flex-col text-sm">
-              <span className="mb-2 font-medium text-zinc-700">Phone</span>
+              <span className="mb-2 text-xs font-bold uppercase tracking-widest text-text-muted">Phone</span>
               <input
                 id="phone"
                 name="phone"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="rounded-xl border border-zinc-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200"
+                className="rounded-xl border border-zinc-200 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary bg-white"
                 placeholder="10-digit mobile number"
                 required
               />
             </label>
 
             <label className="flex flex-col text-sm">
-              <span className="mb-2 font-medium text-zinc-700">Password</span>
+              <span className="mb-2 text-xs font-bold uppercase tracking-widest text-text-muted">Password</span>
               <input
                 id="password"
                 name="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="rounded-xl border border-zinc-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200"
+                className="rounded-xl border border-zinc-200 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary bg-white"
                 placeholder="Create a strong password"
                 required
               />
             </label>
 
             <label className="flex flex-col text-sm">
-              <span className="mb-2 font-medium text-zinc-700">Confirm Password</span>
+              <span className="mb-2 text-xs font-bold uppercase tracking-widest text-text-muted">Confirm Password</span>
               <input
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="rounded-xl border border-zinc-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-200"
+                className="rounded-xl border border-zinc-200 px-4 py-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary bg-white"
                 placeholder="Repeat your password"
                 required
               />
             </label>
           </div>
 
-          <div>
+          <div className="pt-2">
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-full bg-gradient-to-r from-pink-500 to-pink-400 px-5 py-3 text-sm font-medium text-white shadow-sm disabled:opacity-60"
+              className="w-full bg-text-main text-white font-bold text-sm uppercase tracking-widest py-4 rounded-full transition shadow-md hover:bg-primary disabled:opacity-60"
             >
               {loading ? 'Creating...' : 'Create Account'}
             </button>
           </div>
 
-          <p className="text-center text-sm text-zinc-600">
+          <p className="text-center text-sm text-zinc-500">
             Already have an account?{' '}
-            <a href="/login" className="font-medium text-pink-600 hover:underline">
+            <a href="/login" className="font-bold text-text-main hover:text-primary transition">
               Login
             </a>
           </p>

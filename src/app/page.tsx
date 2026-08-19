@@ -4,6 +4,7 @@ import { HeroCarousel } from "@/components/home/HeroCarousel";
 import { TrendingCarousel } from "@/components/home/TrendingCarousel";
 import { ServiceCarousel } from "@/components/home/ServiceCarousel";
 import { InstagramFeed } from "@/components/home/InstagramFeed";
+import { prisma } from "@/lib/prisma";
 
 export default async function Home() {
   // 1. Categories Data
@@ -32,18 +33,25 @@ export default async function Home() {
     { title: 'Weekend Edit', img: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800&h=1000&auto=format&fit=crop&crop=top' },
   ];
 
-  // 4. Trending Products (Carousel Products)
-  const trendingProducts = [
+  // 4. Trending Products (Carousel Products) - Fetched from Database
+  const dbProducts = await prisma.product.findMany({
+    where: { approvalStatus: 'APPROVED' },
+    take: 10,
+    orderBy: { createdAt: 'desc' },
+  });
+
+  const trendingProducts = dbProducts.length > 0 ? dbProducts.map(p => ({
+    name: p.name,
+    category: p.category || 'Casual',
+    price: `₹${p.price.toLocaleString('en-IN')}`,
+    img: p.image || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&h=750&auto=format&fit=crop&crop=top',
+    slug: p.slug
+  })) : [
+    // Fallback if DB is empty
     { name: 'Floral Midi Dress', category: 'Western / Casual', price: '₹1,899', img: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=600&h=750&auto=format&fit=crop&crop=top' },
     { name: 'Linen Co-ord Set', category: 'Casual / Summer', price: '₹2,499', img: '/categories/linen_coord.png' },
     { name: 'Chikankari Kurta Set', category: 'Ethnic', price: '₹1,799', img: '/categories/chikankari_kurta.png' },
-    { name: 'Satin Blouse', category: 'Western / Party', price: '₹1,499', img: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&h=750&auto=format&fit=crop&crop=top' },
-    { name: 'Wide-Leg Trousers', category: 'Workwear', price: '₹1,699', img: 'https://images.unsplash.com/photo-1506629082955-511b1aa562c8?q=80&w=600&h=750&auto=format&fit=crop&crop=center' },
-    { name: 'Printed Saree', category: 'Ethnic / Festive', price: '₹2,299', img: 'https://images.unsplash.com/photo-1610047614301-13c63f00c032?q=80&w=600&h=750&auto=format&fit=crop&crop=top' },
-    { name: 'Ribbed Everyday Top', category: 'Casual', price: '₹899', img: 'https://images.unsplash.com/photo-1503342394128-c104d54dba01?q=80&w=600&h=750&auto=format&fit=crop&crop=top' },
-    { name: 'Structured Handbag', category: 'Accessories', price: '₹1,999', img: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=600&h=750&auto=format&fit=crop&crop=center' },
-    { name: 'Pleated Maxi Skirt', category: 'Western', price: '₹1,599', img: 'https://images.unsplash.com/photo-1583391733958-d25e07fac044?q=80&w=600&h=750&auto=format&fit=crop&crop=top' },
-    { name: 'Pastel Anarkali Set', category: 'Ethnic', price: '₹2,199', img: 'https://images.unsplash.com/photo-1599746146388-a7ec2004b67a?q=80&w=600&h=750&auto=format&fit=crop&crop=top' },
+    { name: 'Satin Blouse', category: 'Western / Party', price: '₹1,499', img: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&h=750&auto=format&fit=crop&crop=top' }
   ];
 
   // 5. Women's Services Data
@@ -185,7 +193,7 @@ export default async function Home() {
         </div>
         
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6 relative z-10">
-          <div className="flex flex-col items-center md:items-start text-center md:text-left mb-6 md:mb-8">
+          <div className="flex flex-col items-center text-center mb-10 mx-auto">
             <h2 className="font-serif text-3xl md:text-4xl font-normal text-text-main tracking-wide mb-4">
               Services Made for Her
             </h2>

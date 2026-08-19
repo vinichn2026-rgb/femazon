@@ -2,7 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Search, Menu, Heart, ShoppingBag, UserCircle2, Camera, X, ChevronDown, ChevronRight } from 'lucide-react';
+import NotificationDropdown from './NotificationDropdown';
 
 type AuthSession = {
   id: string;
@@ -13,23 +15,23 @@ type AuthSession = {
 
 // Rich Navigation Data replacing the old structure
 const richNavigationData: Record<string, any[]> = {
-  Women: [
+  Shop: [
     {
       title: "TRENDING CATEGORIES",
       items: [
-        { name: "Dresses", desc: "Maxi, Midi & Mini styles", href: "/products?category=dresses", dotColor: "bg-rose-400", badge: "HOT" },
-        { name: "Tops & Shirts", desc: "Everyday & party wear", href: "/products?category=tops", dotColor: "bg-purple-400", badge: "" },
-        { name: "Ethnic Wear", desc: "Kurti, Sarees & Lehengas", href: "/products?category=ethnic", dotColor: "bg-orange-400", badge: "NEW" },
-        { name: "Co-ords", desc: "Matching sets for ease", href: "/products?category=coords", dotColor: "bg-emerald-400", badge: "" }
+        { name: "Dresses", desc: "Maxi, Midi & Mini styles", href: "/shop?category=dresses", dotColor: "bg-rose-400", badge: "HOT" },
+        { name: "Tops & Shirts", desc: "Everyday & party wear", href: "/shop?category=tops", dotColor: "bg-purple-400", badge: "" },
+        { name: "Ethnic Wear", desc: "Kurti, Sarees & Lehengas", href: "/shop?category=ethnic", dotColor: "bg-orange-400", badge: "NEW" },
+        { name: "Co-ords", desc: "Matching sets for ease", href: "/shop?category=coords", dotColor: "bg-emerald-400", badge: "" }
       ]
     },
     {
       title: "ESSENTIALS",
       items: [
-        { name: "Bottom Wear", desc: "Jeans, Trousers & Skirts", href: "/products?category=bottoms", dotColor: "bg-blue-400", badge: "" },
-        { name: "Activewear", desc: "Gym & yoga fits", href: "/products?category=activewear", dotColor: "bg-rose-400", badge: "30% OFF" },
-        { name: "Accessories", desc: "Jewelry, Bags & Belts", href: "/products?category=accessories", dotColor: "bg-amber-400", badge: "" },
-        { name: "Shoes", desc: "Heels, Flats & Sneakers", href: "/products?category=shoes", dotColor: "bg-indigo-400", badge: "" }
+        { name: "Bottom Wear", desc: "Jeans, Trousers & Skirts", href: "/shop?category=bottoms", dotColor: "bg-blue-400", badge: "" },
+        { name: "Activewear", desc: "Gym & yoga fits", href: "/shop?category=activewear", dotColor: "bg-rose-400", badge: "30% OFF" },
+        { name: "Accessories", desc: "Jewelry, Bags & Belts", href: "/shop?category=accessories", dotColor: "bg-amber-400", badge: "" },
+        { name: "Shoes", desc: "Heels, Flats & Sneakers", href: "/shop?category=shoes", dotColor: "bg-indigo-400", badge: "" }
       ]
     }
   ],
@@ -55,11 +57,11 @@ const richNavigationData: Record<string, any[]> = {
 };
 
 const mainNavLinks = [
-  { name: 'Women', hasMega: true, href: '/products?category=women' },
-  { name: 'New In', hasMega: false, href: '/products?sort=newest' },
-  { name: 'Beauty', hasMega: false, href: '/products?category=beauty' },
+  { name: 'New Arrivals', hasMega: false, href: '/shop?sort=new' },
+  { name: 'Categories', hasMega: true, href: '/categories' },
   { name: 'Services', hasMega: true, href: '/services' },
-  { name: 'AI Wardrobe', hasMega: true, href: '/ai-wardrobe' },
+  { name: 'Wardrobe', hasMega: false, href: '/wardrobe' },
+  { name: 'Blog', hasMega: false, href: '/blog' }
 ];
 
 export function SiteLayout({
@@ -74,9 +76,21 @@ export function SiteLayout({
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
 
   const toggleAccordion = (name: string) => {
     setActiveAccordion(prev => prev === name ? null : name);
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearchOpen(false);
+      setSearchQuery("");
+    }
   };
 
   return (
@@ -173,25 +187,46 @@ export function SiteLayout({
 
           {/* Right: Actions (Search, User, Cart) */}
           <div className="flex shrink-0 items-center justify-end gap-5 lg:gap-6">
-            <button className="flex items-center text-text-main transition hover:text-primary">
-              <Search size={22} strokeWidth={1.5} />
-              <span className="sr-only">Search</span>
-            </button>
+            
+            {isSearchOpen ? (
+              <form onSubmit={handleSearchSubmit} className="relative flex items-center">
+                <input 
+                  type="text" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search products..." 
+                  className="h-10 w-48 md:w-64 rounded-full border border-zinc-300 bg-zinc-50 pl-10 pr-8 text-sm outline-none focus:border-primary transition-all"
+                  autoFocus
+                />
+                <Search size={16} className="absolute left-4 text-zinc-400" />
+                <button type="button" onClick={() => setIsSearchOpen(false)} className="absolute right-3 text-zinc-400 hover:text-text-main">
+                  <X size={16} />
+                </button>
+              </form>
+            ) : (
+              <button onClick={() => setIsSearchOpen(true)} className="flex items-center text-text-main transition hover:text-primary">
+                <Search size={22} strokeWidth={1.5} />
+                <span className="sr-only">Search</span>
+              </button>
+            )}
             
             {isLoggedIn ? (
-              <div className="group relative hidden items-center md:flex h-full py-6">
-                <Link href="/profile" className="text-text-main transition hover:text-primary">
-                  <UserCircle2 size={22} strokeWidth={1.5} />
-                </Link>
-                <div className="absolute right-0 top-full -mt-2 invisible opacity-0 flex w-48 flex-col bg-surface border border-accent/20 p-2 shadow-xl transition-all group-hover:visible group-hover:opacity-100 z-50">
-                  <Link href="/profile" className="px-3 py-2 text-xs font-bold uppercase tracking-widest hover:bg-accent/10 hover:text-primary">My Account</Link>
-                  <Link href="/orders" className="px-3 py-2 text-xs font-bold uppercase tracking-widest hover:bg-accent/10 hover:text-primary">Orders</Link>
-                  {role === 'VENDOR' && <Link href="/vendor/dashboard" className="px-3 py-2 text-xs font-bold uppercase tracking-widest hover:bg-accent/10 hover:text-primary">Vendor Dashboard</Link>}
-                  {role === 'ADMIN' && <Link href="/admin/dashboard" className="px-3 py-2 text-xs font-bold uppercase tracking-widest hover:bg-accent/10 hover:text-primary">Admin Dashboard</Link>}
-                  <div className="my-1 border-t border-accent/10"></div>
-                  <Link href="/api/auth/logout" className="px-3 py-2 text-xs font-bold uppercase tracking-widest text-primary hover:bg-primary/5">Logout</Link>
+              <>
+                <NotificationDropdown />
+                <div className="group relative hidden items-center md:flex h-full py-6">
+                  <Link href="/profile" className="text-text-main transition hover:text-primary">
+                    <UserCircle2 size={22} strokeWidth={1.5} />
+                  </Link>
+                  <div className="absolute right-0 top-full -mt-2 invisible opacity-0 flex w-48 flex-col bg-surface border border-accent/20 p-2 shadow-xl transition-all group-hover:visible group-hover:opacity-100 z-50">
+                    <Link href="/profile" className="px-3 py-2 text-xs font-bold uppercase tracking-widest hover:bg-accent/10 hover:text-primary">My Account</Link>
+                    <Link href="/orders" className="px-3 py-2 text-xs font-bold uppercase tracking-widest hover:bg-accent/10 hover:text-primary">Orders</Link>
+                    {role === 'VENDOR' && <Link href="/seller/dashboard" className="px-3 py-2 text-xs font-bold uppercase tracking-widest hover:bg-accent/10 hover:text-primary">Vendor Dashboard</Link>}
+                    {role === 'ADMIN' && <Link href="/admin/dashboard" className="px-3 py-2 text-xs font-bold uppercase tracking-widest hover:bg-accent/10 hover:text-primary">Admin Dashboard</Link>}
+                    <div className="my-1 border-t border-accent/10"></div>
+                    <Link href="/api/auth/logout" className="px-3 py-2 text-xs font-bold uppercase tracking-widest text-primary hover:bg-primary/5">Logout</Link>
+                  </div>
                 </div>
-              </div>
+              </>
             ) : (
               <Link href="/login" className="hidden text-text-main transition hover:text-primary md:block">
                 <UserCircle2 size={22} strokeWidth={1.5} />
@@ -309,12 +344,12 @@ export function SiteLayout({
             
             <div className="flex flex-col gap-4">
               <h4 className="font-serif text-sm font-bold tracking-widest uppercase text-primary mb-2">Shop</h4>
-              <Link href="/products?sort=newest" className="text-xs font-medium text-text-muted hover:text-primary transition">New Arrivals</Link>
-              <Link href="/products?category=clothing" className="text-xs font-medium text-text-muted hover:text-primary transition">Clothing</Link>
-              <Link href="/products?category=shoes" className="text-xs font-medium text-text-muted hover:text-primary transition">Shoes</Link>
-              <Link href="/products?category=accessories" className="text-xs font-medium text-text-muted hover:text-primary transition">Accessories</Link>
-              <Link href="/products?category=beauty" className="text-xs font-medium text-text-muted hover:text-primary transition">Beauty</Link>
-              <Link href="/products?category=offers" className="text-xs font-medium text-primary hover:underline transition">Offers</Link>
+              <Link href="/shop?sort=newest" className="text-xs font-medium text-text-muted hover:text-primary transition">New Arrivals</Link>
+              <Link href="/shop?category=clothing" className="text-xs font-medium text-text-muted hover:text-primary transition">Clothing</Link>
+              <Link href="/shop?category=shoes" className="text-xs font-medium text-text-muted hover:text-primary transition">Shoes</Link>
+              <Link href="/shop?category=accessories" className="text-xs font-medium text-text-muted hover:text-primary transition">Accessories</Link>
+              <Link href="/shop?category=beauty" className="text-xs font-medium text-text-muted hover:text-primary transition">Beauty</Link>
+              <Link href="/shop?category=offers" className="text-xs font-medium text-primary hover:underline transition">Offers</Link>
             </div>
 
             <div className="flex flex-col gap-4">

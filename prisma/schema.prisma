@@ -19,6 +19,15 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   orders    Order[]
+  cart          Cart?
+  wishlist      Wishlist?
+  addresses     Address[]
+  bookings      ServiceBooking[]
+  vendorProfile VendorProfile?
+  products      Product[] // Relation added since Product has vendorId
+  wardrobeItems WardrobeItem[]
+  notifications Notification[]
+  reviews       Review[]
 }
 
 enum UserRole {
@@ -28,26 +37,50 @@ enum UserRole {
 }
 
 model Product {
-  id          Int         @id @default(autoincrement())
-  name        String
-  slug        String      @unique
-  description String?
-  price       Int
-  stock       Int         @default(0)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  orderItems  OrderItem[]
+  id            Int         @id @default(autoincrement())
+  name          String
+  slug          String      @unique
+  description   String?
+  price         Int
+  discountPrice Int?
+  sku           String?
+  image         String?
+  images        String?     // Stored as JSON string
+  category      String?
+  subcategory   String?
+  stock         Int         @default(0)
+  sizes         String?     // Store as JSON or comma-separated string for SQLite compatibility
+  colors        String?     // Store as JSON or comma-separated string for SQLite compatibility
+  approvalStatus String     @default("APPROVED") // Auto-approved for backward compatibility
+  vendorId      Int?
+  vendor        User?       @relation(fields: [vendorId], references: [id])
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  orderItems    OrderItem[]
+  cartItems     CartItem[]
+  wishlistItems WishlistItem[]
+  reviews       Review[]
 }
 
 model Order {
-  id        Int         @id @default(autoincrement())
-  userId    Int
-  status    String      @default("PENDING")
-  total     Int
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items     OrderItem[]
+  id            Int         @id @default(autoincrement())
+  userId        Int
+  status        String      @default("PLACED")
+  total         Int
+  paymentMethod String      @default("COD")
+  
+  // Snapshot of delivery details
+  shippingName  String?
+  shippingPhone String?
+  shippingAddr  String?
+  shippingCity  String?
+  shippingState String?
+  shippingPin   String?
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items         OrderItem[]
 }
 
 model OrderItem {
@@ -56,8 +89,199 @@ model OrderItem {
   productId Int
   quantity  Int     @default(1)
   price     Int
+  size      String?
+  color     String?
+  status    String  @default("PLACED")
+  
   order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product   Product @relation(fields: [productId], references: [id])
+}
 
-  @@unique([orderId, productId])
+model Cart {
+  id        Int        @id @default(autoincrement())
+  userId    Int        @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  cartId    Int
+  productId Int
+  quantity  Int      @default(1)
+  size      String?
+  color     String?
+  
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@unique([cartId, productId, size, color]) // Prevent duplicates of same variant
+}
+
+model Wishlist {
+  id        Int            @id @default(autoincrement())
+  userId    Int            @unique
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     WishlistItem[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model WishlistItem {
+  id         Int      @id @default(autoincrement())
+  wishlistId Int
+  productId  Int
+  
+  wishlist   Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [productId], references: [id])
+
+  createdAt  DateTime @default(now())
+
+  @@unique([wishlistId, productId]) // Product can only be in wishlist once
+}
+
+model Address {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  name      String
+  phone     String
+  street    String
+  city      String
+  state     String
+  pincode   String
+  isDefault Boolean  @default(false)
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Service {
+  id          Int        @id @default(autoincrement())
+  name        String
+  slug        String     @unique
+  description String?
+  basePrice   Int        @default(0)
+  image       String?
+  
+  providers   Provider[]
+  bookings    ServiceBooking[]
+  
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  reviews     Review[]
+}
+
+model Provider {
+  id          Int      @id @default(autoincrement())
+  name        String
+  bio         String?
+  rating      Float    @default(5.0)
+  reviewCount Int      @default(0)
+  image       String?
+  
+  serviceId   Int
+  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  
+  bookings    ServiceBooking[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  reviews     Review[]
+}
+
+model ServiceBooking {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  providerId  Int
+  serviceId   Int
+  
+  date        String   // Storing as YYYY-MM-DD for simplicity
+  time        String   // Storing as HH:MM AM/PM
+  location    String?  // Optional specific location (e.g., mall name)
+  duration    Int?     // Optional duration in hours
+  status      String   @default("CONFIRMED")
+  total       Int
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider    Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model VendorProfile {
+  id               Int      @id @default(autoincrement())
+  userId           Int      @unique
+  businessName     String
+  ownerName        String?
+  email            String?
+  phone            String?
+  address          String?
+  businessCategory String?
+  description      String?
+  gstNumber        String?
+  status           String   @default("PENDING") // Requires Admin approval
+  
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String
+  slug        String   @unique
+  image       String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model WardrobeItem {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  imageUrl  String
+  category  String   // e.g., Top, Bottom, Outerwear, Shoes, Accessory
+  color     String?
+  brand     String?
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  title     String
+  message   String
+  type      String   // e.g., ORDER, BOOKING, VENDOR, SYSTEM
+  isRead    Boolean  @default(false)
+  link      String?  // Optional URL to redirect to when clicked
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  rating      Int      // 1-5 stars
+  comment     String?
+  
+  // Target relations (nullable, only one is populated per review)
+  productId   Int?
+  serviceId   Int?
+  providerId  Int?
+
+  createdAt   DateTime @default(now())
+  
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product     Product?  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  service     Service?  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  provider    Provider? @relation(fields: [providerId], references: [id], onDelete: Cascade)
 }
