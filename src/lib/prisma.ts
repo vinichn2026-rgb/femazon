@@ -6,12 +6,11 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 const createPrismaClient = () => {
-  // Always use the driver adapter if DATABASE_URL is available
-  if (process.env.DATABASE_URL) {
-    const adapter = new PrismaPg(process.env.DATABASE_URL);
-    return new PrismaClient({ adapter });
-  }
-  return new PrismaClient();
+  // Use a fallback dummy URL during Vercel build step if DATABASE_URL is undefined
+  // This prevents PrismaClientInitializationError during static page generation
+  const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:dummy@localhost:5432/postgres';
+  const adapter = new PrismaPg(connectionString);
+  return new PrismaClient({ adapter });
 };
 
 export const prisma = globalForPrisma.prisma ?? createPrismaClient();
