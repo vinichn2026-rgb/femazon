@@ -9,6 +9,8 @@ type Booking = {
   date: string;
   time: string;
   status: string;
+  duration?: number;
+  location?: string;
   total: number;
   service: {
     name: string;
@@ -169,3 +171,4 @@ export default function MyBookingsPage() {
     </div>
   );
 }
+

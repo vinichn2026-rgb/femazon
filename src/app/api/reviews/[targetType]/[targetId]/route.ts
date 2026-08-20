@@ -3,10 +3,10 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: Request,
-  { params }: { params: { targetType: string; targetId: string } }
+  { params }: { params: Promise<{ targetType: string; targetId: string }> }
 ) {
   try {
-    const { targetType, targetId } = params;
+    const { targetType, targetId } = await params;
     const id = parseInt(targetId);
 
     if (isNaN(id)) {
@@ -32,7 +32,7 @@ export async function GET(
     const reviews = await prisma.review.findMany({
       where: whereClause,
       include: {
-        user: { select: { name: true, image: true } } // assuming user has image in real app, we just use name
+        user: { select: { name: true } } // User does not have image in schema
       },
       orderBy: { createdAt: 'desc' }
     });

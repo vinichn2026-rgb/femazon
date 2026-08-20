@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -13,7 +13,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
     // Verify this orderItem actually belongs to a product owned by this vendor
     const orderItem = await prisma.orderItem.findUnique({
-      where: { id: Number(params.id) },
+      where: { id: Number((await params).id) },
       include: { product: true }
     });
 
@@ -25,7 +25,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     if (!status) return NextResponse.json({ error: 'Status is required' }, { status: 400 });
 
     const updated = await prisma.orderItem.update({
-      where: { id: Number(params.id) },
+      where: { id: Number((await params).id) },
       data: { status }
     });
 

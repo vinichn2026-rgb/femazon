@@ -32,7 +32,7 @@ export function ProductCard({ product, isWishlisted = false, onQuickAdd, onToggl
     onToggleWishlist?.(product.id, isWishlisted);
   };
 
-  const images = product.images || (product.image ? [product.image] : ['https://via.placeholder.com/400x500?text=No+Image']);
+  const images = product.images || ((product as any).image ? [(product as any).image] : ['https://via.placeholder.com/400x500?text=No+Image']);
   const hasSecondaryImage = images.length > 1;
 
   return (

@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -12,19 +12,19 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     if (!user || user.role !== 'VENDOR') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     // Ensure the product belongs to this vendor
-    const product = await prisma.product.findUnique({ where: { id: Number(params.id) } });
+    const product = await prisma.product.findUnique({ where: { id: Number((await params).id) } });
     if (!product || product.vendorId !== user.id) {
       return NextResponse.json({ error: 'Not found or forbidden' }, { status: 404 });
     }
 
-    await prisma.product.delete({ where: { id: Number(params.id) } });
+    await prisma.product.delete({ where: { id: Number((await params).id) } });
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to delete product' }, { status: 500 });
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -33,7 +33,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     if (!user || user.role !== 'VENDOR') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     // Ensure the product belongs to this vendor
-    const product = await prisma.product.findUnique({ where: { id: Number(params.id) } });
+    const product = await prisma.product.findUnique({ where: { id: Number((await params).id) } });
     if (!product || product.vendorId !== user.id) {
       return NextResponse.json({ error: 'Not found or forbidden' }, { status: 404 });
     }
@@ -65,7 +65,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     if (approvalStatus !== undefined) dataToUpdate.approvalStatus = approvalStatus;
 
     const updatedProduct = await prisma.product.update({
-      where: { id: Number(params.id) },
+      where: { id: Number((await params).id) },
       data: dataToUpdate
     });
 

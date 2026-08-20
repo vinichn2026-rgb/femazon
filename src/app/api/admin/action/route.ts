@@ -81,9 +81,9 @@ export async function POST(request: Request) {
         const newService = await prisma.service.create({
           data: {
             name: payload.name,
+            slug: payload.name.toLowerCase().replace(/ /g, '-'),
             description: payload.description || "",
-            duration: Number(payload.duration) || 60,
-            price: Number(payload.price) || 0,
+            basePrice: Number(payload.price) || 0,
             image: payload.image || "",
           }
         });
@@ -96,7 +96,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: true });
 
       case 'UPDATE_BOOKING_STATUS':
-        await prisma.booking.update({
+        await prisma.serviceBooking.update({
           where: { id: payload.bookingId },
           data: { status: payload.status }
         });

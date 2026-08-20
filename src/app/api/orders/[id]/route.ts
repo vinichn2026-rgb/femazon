@@ -3,14 +3,15 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orderId = parseInt(params.id);
+    const { id } = await params;
+    const orderId = parseInt(id);
     if (isNaN(orderId)) {
       return NextResponse.json({ error: "Invalid order ID" }, { status: 400 });
     }
@@ -19,10 +20,9 @@ export async function GET(request: Request, { params }: { params: { id: string }
       where: { id: orderId },
       include: {
         user: { select: { email: true } },
-        address: true,
         items: {
           include: {
-            product: { select: { name: true, image: true, vendor: { select: { businessName: true } } } }
+            product: { select: { name: true, image: true, vendor: { select: { vendorProfile: { select: { businessName: true } } } } } }
           }
         }
       }

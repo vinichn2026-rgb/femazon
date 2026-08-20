@@ -21,7 +21,7 @@ export default async function ProfilePage() {
       _count: {
         select: {
           orders: true,
-          wishlist: true // Just a relation count
+          
         }
       }
     }
@@ -47,3 +47,4 @@ export default async function ProfilePage() {
 
   return <ProfileClient user={safeUser} />;
 }
+
