@@ -91,7 +91,6 @@ export default async function ServiceDetailsPage({ params }: { params: { slug: s
         {/* Reviews Section */}
         <ReviewSection targetType="service" targetId={service.id} />
         
-      </div>
     </main>
   );
 }
