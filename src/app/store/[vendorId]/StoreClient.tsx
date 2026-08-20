@@ -12,7 +12,7 @@ export default function StoreClient({ vendor }: { vendor: any }) {
     <main className="min-h-screen bg-surface pb-20">
       
       {/* Store Header/Cover */}
-      <div className="relative h-64 md:h-80 bg-zinc-900 overflow-hidden">
+      <div className="relative h-64 md:h-80 bg-primary overflow-hidden">
         <img 
           src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?q=80&w=2000&auto=format&fit=crop" 
           alt="Store Cover" 
@@ -24,7 +24,7 @@ export default function StoreClient({ vendor }: { vendor: any }) {
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="flex items-end gap-6">
               {/* Store Avatar */}
-              <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-zinc-900 bg-white overflow-hidden shrink-0 flex items-center justify-center text-3xl font-serif">
+              <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-primary bg-white overflow-hidden shrink-0 flex items-center justify-center text-3xl font-serif">
                 {vendor.businessName.charAt(0)}
               </div>
               
@@ -42,7 +42,7 @@ export default function StoreClient({ vendor }: { vendor: any }) {
               <button className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center backdrop-blur-md transition">
                 <Share2 size={18} />
               </button>
-              <button className="px-6 py-2.5 rounded-full bg-white text-zinc-900 font-bold text-xs uppercase tracking-widest hover:bg-zinc-200 transition flex items-center gap-2">
+              <button className="px-6 py-2.5 rounded-full bg-white text-primary font-bold text-xs uppercase tracking-widest hover:bg-zinc-200 transition flex items-center gap-2">
                 <Heart size={16} /> Follow
               </button>
             </div>

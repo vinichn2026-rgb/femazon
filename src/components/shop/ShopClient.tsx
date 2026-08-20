@@ -26,9 +26,10 @@ interface ShopClientProps {
   initialProducts: any[];
   initialCategory: string;
   initialWishlistIds?: number[];
+  bannerImage?: string;
 }
 
-export function ShopClient({ initialProducts, initialCategory, initialWishlistIds = [] }: ShopClientProps) {
+export function ShopClient({ initialProducts, initialCategory, initialWishlistIds = [], bannerImage }: ShopClientProps) {
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
   const [wishlist, setWishlist] = useState<number[]>(initialWishlistIds);
@@ -256,22 +257,38 @@ export function ShopClient({ initialProducts, initialCategory, initialWishlistId
 
   return (
     <div className="bg-surface min-h-screen text-text-main font-sans pb-24">
-      {/* 1. Breadcrumb & Page Header */}
-      <div className="bg-[#fbf9f6] border-b border-accent/10 pt-12 md:pt-16">
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
-          <nav className="flex items-center text-[11px] font-bold uppercase tracking-widest text-text-muted mb-6">
-            <Link href="/" className="hover:text-primary transition">Home</Link>
-            <ChevronRight size={14} className="mx-2" />
-            <span className="text-text-main">Shop</span>
-          </nav>
-          <h1 className="font-serif text-3xl md:text-5xl font-normal text-text-main tracking-wide mb-4">
-            Shop Collection
-          </h1>
-          <p className="font-sans text-[15px] md:text-[16px] text-text-muted mb-8">
-            Explore our curated styles
-          </p>
+      {/* 1. Page Header (Premium Editorial Banner) */}
+      <div className="relative w-full h-[40vh] min-h-[350px] flex items-center justify-center overflow-hidden bg-primary">
+        {/* Background Image */}
+        <div className="absolute inset-0 w-full h-full">
+          {bannerImage ? (
+            <img 
+              src={bannerImage} 
+              alt="Shop Collection" 
+              className="w-full h-full object-cover object-center opacity-60"
+            />
+          ) : (
+            <div className="w-full h-full bg-primary" />
+          )}
+          <div className="absolute inset-0 bg-primary/20" /> {/* Dark overlay for text readability */}
         </div>
-        
+
+        {/* Content */}
+        <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 max-w-3xl">
+          <h1 className="font-serif text-4xl md:text-6xl font-normal text-white tracking-widest mb-4 uppercase">
+            Shop The Collection
+          </h1>
+          <p className="font-sans text-[14px] md:text-[16px] text-zinc-200 mb-8 max-w-lg mx-auto tracking-wide">
+            Curated styles made for every woman.
+          </p>
+          
+          <button className="bg-white text-primary hover:bg-zinc-100 transition-colors px-8 py-3.5 text-[12px] font-bold uppercase tracking-widest border border-white">
+            Explore Collection
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-surface shadow-sm sticky top-[88px] z-30">
         {/* Horizontal Category Tabs */}
         <CategoryTabs 
           categories={CATEGORIES}
@@ -313,7 +330,7 @@ export function ShopClient({ initialProducts, initialCategory, initialWishlistId
           {/* Product Grid or Empty State */}
           {isMounted ? (
             totalItems > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-x-6 md:gap-y-10">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-x-8 md:gap-y-12">
                 {sortedProducts.map((product) => (
                   <ProductCard 
                     key={product.id} 
@@ -342,7 +359,7 @@ export function ShopClient({ initialProducts, initialCategory, initialWishlistId
               </div>
             )
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-x-6 md:gap-y-10">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-x-8 md:gap-y-12">
               {Array.from({ length: 8 }).map((_, idx) => <ProductCardSkeleton key={idx} />)}
             </div>
           )}

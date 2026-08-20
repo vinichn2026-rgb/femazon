@@ -62,7 +62,7 @@ export default function WardrobeClient() {
     <main className="min-h-screen bg-surface pb-20">
       
       {/* Header Banner */}
-      <div className="bg-zinc-900 text-white pt-24 pb-16 px-6">
+      <div className="bg-primary text-white pt-24 pb-16 px-6">
         <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-end gap-6">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-xs font-bold uppercase tracking-widest text-primary mb-4 border border-white/10">
@@ -73,7 +73,7 @@ export default function WardrobeClient() {
           </div>
           <button 
             onClick={() => setShowUploadModal(true)}
-            className="bg-white text-zinc-900 px-8 py-4 rounded-full font-bold text-sm uppercase tracking-widest hover:bg-primary hover:text-white transition shadow-xl flex items-center gap-2"
+            className="bg-white text-primary px-8 py-4 rounded-full font-bold text-sm uppercase tracking-widest hover:bg-primary hover:text-white transition shadow-xl flex items-center gap-2"
           >
             <Plus size={18} /> Upload Clothes
           </button>
@@ -126,10 +126,10 @@ export default function WardrobeClient() {
                 {aiResult.missingItem && (
                   <div className="bg-gradient-to-br from-rose-50 to-orange-50 rounded-2xl p-5 border border-rose-100">
                     <p className="text-xs font-bold text-rose-500 uppercase tracking-widest mb-2 flex items-center gap-1"><Sparkles size={12}/> Missing Item Suggestion</p>
-                    <p className="text-sm text-zinc-800 mb-4">{aiResult.missingItem.reason}</p>
+                    <p className="text-sm text-primary mb-4">{aiResult.missingItem.reason}</p>
                     <Link 
                       href={`/shop?q=${aiResult.missingItem.searchQuery}`}
-                      className="inline-flex items-center gap-2 text-xs font-bold text-white bg-zinc-900 px-4 py-2 rounded-lg hover:bg-rose-500 transition"
+                      className="inline-flex items-center gap-2 text-xs font-bold text-white bg-primary px-4 py-2 rounded-lg hover:bg-rose-500 transition"
                     >
                       Shop for {aiResult.missingItem.searchQuery} <ArrowRight size={14} />
                     </Link>
@@ -174,20 +174,33 @@ export default function WardrobeClient() {
 
       {/* Upload Modal */}
       {showUploadModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-primary/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-[2rem] p-8 max-w-md w-full shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
             <h3 className="font-serif text-2xl mb-6">Add to Wardrobe</h3>
             <form onSubmit={handleUpload} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-zinc-500 mb-1">Image URL</label>
+                <label className="block text-xs font-bold text-zinc-500 mb-1">Upload Image</label>
                 <input 
                   required 
-                  type="url" 
-                  placeholder="https://..."
-                  value={uploadData.imageUrl} 
-                  onChange={e => setUploadData({...uploadData, imageUrl: e.target.value})} 
-                  className="w-full rounded-xl border border-zinc-200 px-4 py-3 text-sm focus:border-primary focus:outline-none" 
+                  type="file" 
+                  accept="image/*"
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setUploadData({...uploadData, imageUrl: reader.result as string});
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }} 
+                  className="w-full rounded-xl border border-zinc-200 px-4 py-2 text-sm focus:border-primary focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer" 
                 />
+                {uploadData.imageUrl && uploadData.imageUrl.startsWith('data:') && (
+                  <div className="mt-3 w-full h-32 rounded-lg border border-zinc-200 overflow-hidden bg-zinc-50 flex items-center justify-center">
+                    <img src={uploadData.imageUrl} alt="Preview" className="h-full object-contain" />
+                  </div>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>

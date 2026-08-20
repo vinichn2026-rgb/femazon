@@ -534,7 +534,7 @@ export default function DashboardClient({ vendorProfile }: { vendorProfile: any 
                           <td className="px-6 py-4 text-right">
                             <div className="flex items-center justify-end gap-2">
                               {(!o.status || o.status === 'PLACED') && (
-                                <button onClick={() => handleOrderStatus(o.id, 'CONFIRMED')} className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded bg-zinc-900 text-white hover:bg-zinc-700 transition">Confirm</button>
+                                <button onClick={() => handleOrderStatus(o.id, 'CONFIRMED')} className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded bg-primary text-white hover:bg-zinc-700 transition">Confirm</button>
                               )}
                               {o.status === 'CONFIRMED' && (
                                 <button onClick={() => handleOrderStatus(o.id, 'PACKED')} className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 transition">Pack</button>

@@ -10,7 +10,7 @@ export default function AboutClient() {
       
       {/* 1. HERO SECTION */}
       <section className="relative h-[80vh] min-h-[600px] w-full flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-zinc-900">
+        <div className="absolute inset-0 bg-primary">
           <img 
             src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop" 
             alt="Femazon Editorial" 
@@ -73,7 +73,7 @@ export default function AboutClient() {
               </Link>
             </div>
             <div className="w-full md:w-1/2 order-1 md:order-2 h-[400px] md:h-[600px] bg-zinc-100 rounded-[2rem] overflow-hidden">
-              <img src="https://images.unsplash.com/photo-1539008835657-9e8e9680c956?q=80&w=1000&auto=format&fit=crop" alt="Fashion" className="w-full h-full object-cover" />
+              <img src="https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?q=80&w=1000&auto=format&fit=crop" alt="Fashion" className="w-full h-full object-cover" />
             </div>
           </div>
 
@@ -191,13 +191,13 @@ export default function AboutClient() {
       </section>
 
       {/* 4. CTA */}
-      <section className="bg-zinc-900 py-32 px-4 text-center">
+      <section className="bg-primary py-32 px-4 text-center">
         <h2 className="font-serif text-4xl md:text-6xl text-white mb-6">Join the Movement</h2>
         <p className="text-zinc-400 max-w-xl mx-auto mb-10 text-lg font-light">
           Whether you're here to discover the latest trends, book a pampering session, or revolutionize your closet, Femazon is ready for you.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <Link href="/register" className="bg-white text-zinc-900 font-bold text-xs uppercase tracking-widest px-10 py-4 rounded-full hover:bg-zinc-100 transition shadow-xl">
+          <Link href="/register" className="bg-white text-primary font-bold text-xs uppercase tracking-widest px-10 py-4 rounded-full hover:bg-zinc-100 transition shadow-xl">
             Create an Account
           </Link>
           <Link href="/vendor/register" className="bg-transparent border border-white/20 text-white font-bold text-xs uppercase tracking-widest px-10 py-4 rounded-full hover:bg-white/10 transition">

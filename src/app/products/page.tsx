@@ -22,7 +22,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   });
 
   return (
-    <main className="min-h-screen bg-zinc-50 px-6 py-16 text-zinc-900">
+    <main className="min-h-screen bg-zinc-50 px-6 py-16 text-primary">
       <div className="mx-auto flex max-w-6xl flex-col gap-8">
         <section className="rounded-[2rem] border border-zinc-200 bg-white p-8 shadow-sm">
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-amber-600">Marketplace</p>
@@ -42,7 +42,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
               <option value="home">Home</option>
               <option value="fashion">Fashion</option>
             </select>
-            <button className="rounded-full bg-zinc-900 px-5 py-3 font-medium text-white">Filter</button>
+            <button className="rounded-full bg-primary px-5 py-3 font-medium text-white">Filter</button>
           </form>
         </section>
 
@@ -58,7 +58,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                 <span className="text-sm text-zinc-500">{product.stock > 0 ? `${product.stock} in stock` : 'Sold out'}</span>
                 <span className="text-lg font-semibold">${(product.price / 100).toFixed(2)}</span>
               </div>
-              <Link href={`/products/${product.slug}`} className="mt-6 inline-flex rounded-full bg-zinc-900 px-4 py-2 text-sm font-medium text-white">
+              <Link href={`/products/${product.slug}`} className="mt-6 inline-flex rounded-full bg-primary px-4 py-2 text-sm font-medium text-white">
                 View details
               </Link>
             </article>

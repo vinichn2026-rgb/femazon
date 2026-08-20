@@ -125,8 +125,8 @@ export default function OrderDetailsClient({ orderId }: { orderId: string }) {
                     </div>
                     
                     <div className="text-xs text-zinc-500 mt-4 flex gap-4">
-                      <span className="bg-zinc-50 px-3 py-1.5 rounded-lg border border-zinc-100">Qty: <strong className="text-zinc-800">{item.quantity}</strong></span>
-                      {item.size && <span className="bg-zinc-50 px-3 py-1.5 rounded-lg border border-zinc-100">Size: <strong className="text-zinc-800">{item.size}</strong></span>}
+                      <span className="bg-zinc-50 px-3 py-1.5 rounded-lg border border-zinc-100">Qty: <strong className="text-primary">{item.quantity}</strong></span>
+                      {item.size && <span className="bg-zinc-50 px-3 py-1.5 rounded-lg border border-zinc-100">Size: <strong className="text-primary">{item.size}</strong></span>}
                     </div>
                   </div>
                 </div>
@@ -141,7 +141,7 @@ export default function OrderDetailsClient({ orderId }: { orderId: string }) {
               <div className="bg-zinc-50 p-5 rounded-2xl border border-zinc-100">
                 <p className="font-bold text-text-main mb-1">{order.address.name}</p>
                 <p className="text-sm text-zinc-600 mb-2">{order.address.street}, {order.address.city}, {order.address.state} - {order.address.pincode}</p>
-                <p className="text-sm font-medium text-zinc-800">Phone: {order.address.phone}</p>
+                <p className="text-sm font-medium text-primary">Phone: {order.address.phone}</p>
               </div>
             </div>
           )}

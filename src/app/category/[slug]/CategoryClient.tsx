@@ -174,7 +174,7 @@ export default function CategoryClient({ category, initialProducts, initialWishl
     <div className="bg-surface min-h-screen text-text-main font-sans pb-24">
       
       {/* 1. Category Hero Banner */}
-      <div className="relative h-[40vh] md:h-[50vh] bg-zinc-900 w-full overflow-hidden">
+      <div className="relative h-[40vh] md:h-[50vh] bg-primary w-full overflow-hidden">
         <img 
           src={category.image} 
           alt={category.name} 

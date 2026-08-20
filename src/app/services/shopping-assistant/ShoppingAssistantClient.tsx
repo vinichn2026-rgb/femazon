@@ -70,7 +70,7 @@ export default function ShoppingAssistantClient({ service }: { service: any }) {
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white/60 px-4 py-1.5 text-xs font-bold text-rose-600 shadow-sm backdrop-blur">
               <Sparkles size={14} /> New Premium Service
             </div>
-            <h1 className="text-4xl font-extrabold tracking-tight text-zinc-900 sm:text-5xl lg:text-6xl">
+            <h1 className="text-4xl font-extrabold tracking-tight text-primary sm:text-5xl lg:text-6xl">
               Your Personal <br/><span className="text-rose-500">Shopping Partner</span>
             </h1>
             <p className="mt-4 max-w-lg text-lg text-zinc-600">
@@ -79,13 +79,13 @@ export default function ShoppingAssistantClient({ service }: { service: any }) {
             <div className="mt-8 flex items-center gap-4">
               <button 
                 onClick={() => document.getElementById('booking-section')?.scrollIntoView({ behavior: 'smooth' })}
-                className="rounded-full bg-zinc-900 px-8 py-3.5 text-sm font-bold text-white shadow-lg transition hover:bg-rose-500 hover:shadow-rose-500/25"
+                className="rounded-full bg-primary px-8 py-3.5 text-sm font-bold text-white shadow-lg transition hover:bg-rose-500 hover:shadow-rose-500/25"
               >
                 Book Now
               </button>
               <div className="flex flex-col">
                 <span className="text-xs text-zinc-500">Fixed rate</span>
-                <span className="font-bold text-zinc-900 text-lg">₹{service.basePrice}/hour</span>
+                <span className="font-bold text-primary text-lg">₹{service.basePrice}/hour</span>
               </div>
             </div>
           </div>
@@ -98,7 +98,7 @@ export default function ShoppingAssistantClient({ service }: { service: any }) {
           
           {/* Booking UI */}
           <div className="lg:col-span-2 rounded-3xl bg-white p-6 shadow-md border border-zinc-200 sm:p-10">
-            <h2 className="text-3xl font-bold tracking-tight text-zinc-900">Book an Assistant</h2>
+            <h2 className="text-3xl font-bold tracking-tight text-primary">Book an Assistant</h2>
             <p className="mt-2 text-zinc-600">Fill in the details below to schedule your shopping partner.</p>
 
             {error && (
@@ -110,19 +110,19 @@ export default function ShoppingAssistantClient({ service }: { service: any }) {
             <form onSubmit={handleBooking} className="mt-8 space-y-6">
               <div className="grid gap-6 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-zinc-900 flex items-center gap-2"><MapPin size={16}/> Shopping Location</label>
+                  <label className="text-sm font-semibold text-primary flex items-center gap-2"><MapPin size={16}/> Shopping Location</label>
                   <input required type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder="e.g. Phoenix Mall, Mumbai" className="w-full rounded-xl border border-zinc-200 px-4 py-3 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-zinc-900 flex items-center gap-2"><Calendar size={16}/> Date</label>
+                  <label className="text-sm font-semibold text-primary flex items-center gap-2"><Calendar size={16}/> Date</label>
                   <input required type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full rounded-xl border border-zinc-200 px-4 py-3 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-zinc-900 flex items-center gap-2"><Clock size={16}/> Start Time</label>
+                  <label className="text-sm font-semibold text-primary flex items-center gap-2"><Clock size={16}/> Start Time</label>
                   <input required type="time" value={time} onChange={e => setTime(e.target.value)} className="w-full rounded-xl border border-zinc-200 px-4 py-3 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-zinc-900">Select Assistant</label>
+                  <label className="text-sm font-semibold text-primary">Select Assistant</label>
                   <select 
                     required
                     value={selectedAssistant}
@@ -145,7 +145,7 @@ export default function ShoppingAssistantClient({ service }: { service: any }) {
                           <img src={assistant.image || "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200"} alt={assistant.name} className="w-full h-full object-cover" />
                         </div>
                         <div>
-                          <h4 className="font-bold text-zinc-900 text-sm">{assistant.name}</h4>
+                          <h4 className="font-bold text-primary text-sm">{assistant.name}</h4>
                           <div className="flex items-center gap-1 text-xs text-amber-500 font-medium">
                             <Star size={12} fill="currentColor" /> {assistant.rating} ({assistant.reviewCount} reviews)
                           </div>
@@ -158,7 +158,7 @@ export default function ShoppingAssistantClient({ service }: { service: any }) {
 
               <div className="space-y-4 rounded-2xl bg-zinc-50 p-6 border border-zinc-100">
                 <div className="flex justify-between items-center">
-                  <label className="text-sm font-semibold text-zinc-900">Duration (Hours)</label>
+                  <label className="text-sm font-semibold text-primary">Duration (Hours)</label>
                   <span className="font-bold text-rose-600">{hours} {hours > 1 ? 'hours' : 'hour'}</span>
                 </div>
                 <input 
@@ -179,7 +179,7 @@ export default function ShoppingAssistantClient({ service }: { service: any }) {
               <div className="pt-4 border-t border-zinc-100 flex items-center justify-between">
                 <div>
                   <p className="text-sm text-zinc-500">Estimated Total</p>
-                  <p className="text-3xl font-extrabold text-zinc-900">₹{(hours * service.basePrice).toLocaleString('en-IN')}</p>
+                  <p className="text-3xl font-extrabold text-primary">₹{(hours * service.basePrice).toLocaleString('en-IN')}</p>
                 </div>
                 <button 
                   type="submit" 
@@ -195,28 +195,28 @@ export default function ShoppingAssistantClient({ service }: { service: any }) {
           {/* Safety & Trust UI */}
           <div className="space-y-6">
             <div className="rounded-3xl bg-white p-6 shadow-sm border border-zinc-200">
-              <h3 className="flex items-center gap-2 text-lg font-bold text-zinc-900 mb-4">
+              <h3 className="flex items-center gap-2 text-lg font-bold text-primary mb-4">
                 <ShieldCheck className="text-blue-500" /> Trust & Safety
               </h3>
               <ul className="space-y-4">
                 <li className="flex gap-3 text-sm">
                   <CheckCircle2 size={18} className="text-emerald-500 shrink-0 mt-0.5" />
                   <div>
-                    <strong className="block text-zinc-900">Identity Verified</strong>
+                    <strong className="block text-primary">Identity Verified</strong>
                     <span className="text-zinc-500">Govt ID verified for all assistants.</span>
                   </div>
                 </li>
                 <li className="flex gap-3 text-sm">
                   <CheckCircle2 size={18} className="text-emerald-500 shrink-0 mt-0.5" />
                   <div>
-                    <strong className="block text-zinc-900">Profile Verified</strong>
+                    <strong className="block text-primary">Profile Verified</strong>
                     <span className="text-zinc-500">In-person interviews completed.</span>
                   </div>
                 </li>
                 <li className="flex gap-3 text-sm">
                   <CheckCircle2 size={18} className="text-emerald-500 shrink-0 mt-0.5" />
                   <div>
-                    <strong className="block text-zinc-900">Ratings & Reviews</strong>
+                    <strong className="block text-primary">Ratings & Reviews</strong>
                     <span className="text-zinc-500">Only highly rated partners stay on board.</span>
                   </div>
                 </li>

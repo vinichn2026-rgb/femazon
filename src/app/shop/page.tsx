@@ -26,6 +26,13 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
 
   const dbProducts = await prisma.product.findMany({
     where: { approvalStatus: 'APPROVED' },
+    include: {
+      vendor: {
+        include: {
+          vendorProfile: true
+        }
+      }
+    },
     orderBy: { createdAt: 'desc' }
   });
 
@@ -44,21 +51,34 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
       // Ignore parse errors and use fallback
     }
 
+    // Extract Vendor Name
+    const vendorName = p.vendor?.vendorProfile?.businessName || "Femazon Exclusive";
+
+    // Handle Image Array safely
+    let images: string[] = [];
+    try {
+      if (p.images) {
+        images = JSON.parse(p.images as string);
+      }
+    } catch (e) {}
+
     return {
       id: p.id.toString(),
       name: p.name,
-      brand: "Femazon", // Mock for now until Brand is added to schema
+      brand: vendorName, 
+      vendorName: vendorName,
       price: p.discountPrice ? p.discountPrice : p.price,
       originalPrice: p.price,
       discount: discountPercent,
       category: p.category || "Dresses",
-      subCategory: p.category || "Dresses", // Mock subcategory
-      image: p.image || "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop",
-      hoverImage: p.image || "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop",
-      rating: 4.5, // Mock rating
+      subCategory: p.category || "Dresses",
+      image: p.image || (images.length > 0 ? images[0] : "https://via.placeholder.com/600x800"),
+      hoverImage: images.length > 1 ? images[1] : p.image,
+      images: images.length > 0 ? images : (p.image ? [p.image] : []),
+      rating: 4.5, 
       reviewCount: Math.floor(Math.random() * 200) + 10,
-      isTrending: true,
-      isNew: true,
+      isTrending: p.category === 'Co-ords' || p.category === 'Kurtis',
+      isNew: p.category === 'Tops' || p.category === 'Ethnic',
       inStock: p.stock > 0,
       sizes,
       colors
@@ -67,5 +87,8 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
 
   const initialCategory = resolvedSearchParams.category || "All";
 
-  return <ShopClient initialProducts={formattedProducts} initialCategory={initialCategory} initialWishlistIds={wishlistIds} />;
+  // Simulate a Backend API fetching a dynamic banner
+  const bannerImage = "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2000&auto=format&fit=crop";
+
+  return <ShopClient initialProducts={formattedProducts} initialCategory={initialCategory} initialWishlistIds={wishlistIds} bannerImage={bannerImage} />;
 }

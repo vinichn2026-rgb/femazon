@@ -18,9 +18,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   }
 
   return (
-    <main className="min-h-screen bg-zinc-50 px-6 py-16 text-zinc-900">
+    <main className="min-h-screen bg-zinc-50 px-6 py-16 text-primary">
       <div className="mx-auto flex max-w-6xl flex-col gap-8">
-        <Link href="/products" className="text-sm font-medium text-zinc-600 hover:text-zinc-900">
+        <Link href="/products" className="text-sm font-medium text-zinc-600 hover:text-primary">
           ← Back to marketplace
         </Link>
 
@@ -40,7 +40,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <AddToCartButton product={{ id: product.id, slug: product.slug, name: product.name, price: product.price }} />
-              <button className="rounded-full border border-zinc-300 px-5 py-3 text-sm font-medium text-zinc-800">Save</button>
+              <button className="rounded-full border border-zinc-300 px-5 py-3 text-sm font-medium text-primary">Save</button>
             </div>
           </div>
         </section>

@@ -8,7 +8,7 @@ if (!fs.existsSync(dir)){
 }
 
 const images = [
-  { name: 'dresses.jpg', url: 'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?q=80&w=800&h=1000&auto=format&fit=crop' },
+  { name: 'dresses.jpg', url: 'https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?q=80&w=800&h=1000&auto=format&fit=crop' },
   { name: 'ethnic.jpg', url: 'https://images.unsplash.com/photo-1610047614301-13c63f00c032?q=80&w=800&h=1000&auto=format&fit=crop' },
   { name: 'tops.jpg', url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=800&h=1000&auto=format&fit=crop' },
   { name: 'bottoms.jpg', url: 'https://images.unsplash.com/photo-1509631179647-0c9228ebca52?q=80&w=800&h=1000&auto=format&fit=crop' },

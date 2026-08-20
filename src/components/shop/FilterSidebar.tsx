@@ -39,7 +39,7 @@ const PRICE_RANGES = [
 const SIZES = ["XS", "S", "M", "L", "XL", "XXL", "Free Size"];
 
 const COLORS = [
-  { name: "Black", hex: "#000000" },
+  { name: "Black", hex: "#4A1513" },
   { name: "White", hex: "#FFFFFF" },
   { name: "Red", hex: "#E53E3E" },
   { name: "Navy", hex: "#2C5282" },
@@ -55,13 +55,13 @@ const BRANDS = ["Aura Studio", "Ethnic Vibes", "Urban Chic", "Festive Glow"];
 function Accordion({ title, children, defaultOpen = false }: { title: string, children: React.ReactNode, defaultOpen?: boolean }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   return (
-    <div className="border-b border-accent/10 py-5">
+    <div className="border-b border-zinc-100 py-5">
       <button 
         onClick={() => setIsOpen(!isOpen)} 
-        className="flex w-full items-center justify-between font-serif text-[15px] font-bold text-text-main hover:text-primary transition-colors"
+        className="flex w-full items-center justify-between font-bold text-[13px] tracking-wide text-primary hover:text-zinc-600 transition-colors"
       >
         <span>{title}</span>
-        <ChevronDown size={16} className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown size={14} className={`transition-transform duration-300 text-zinc-400 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       <div className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
         {children}
@@ -144,21 +144,27 @@ export function FilterSidebar({ filters, onFilterChange, onClearAll, isOpen, onC
         </Accordion>
 
         <Accordion title="Price Range" defaultOpen={true}>
-          <div className="space-y-2">
-            {PRICE_RANGES.map((range) => (
-              <label key={range} className="flex items-center gap-3 group cursor-pointer py-1">
-                <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${filters.priceRange === range ? 'border-text-main' : 'border-accent/40 group-hover:border-text-main'}`}>
-                  {filters.priceRange === range && <div className="w-2 h-2 rounded-full bg-text-main" />}
-                </div>
-                <span className="text-[13px] text-text-muted group-hover:text-text-main transition-colors">{range}</span>
-                <input 
-                  type="radio" 
-                  className="hidden" 
-                  checked={filters.priceRange === range}
-                  onChange={() => onFilterChange('priceRange', filters.priceRange === range ? null : range)}
-                />
-              </label>
-            ))}
+          <div className="space-y-4 pt-2">
+            {/* Mocked Dual Slider */}
+            <div className="relative h-1 w-full bg-zinc-200 rounded-full">
+              <div className="absolute top-0 left-1/4 right-1/4 h-full bg-[#E78A7A] rounded-full"></div>
+              {/* Thumbs */}
+              <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-[#E78A7A] rounded-full shadow-sm cursor-pointer"></div>
+              <div className="absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-[#E78A7A] rounded-full shadow-sm cursor-pointer"></div>
+            </div>
+            
+            {/* Input boxes */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="relative w-full border border-zinc-200 rounded-md">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-[12px]">₹</span>
+                <input type="text" value="399" readOnly className="w-full bg-transparent py-1.5 pl-6 pr-2 text-[12px] font-medium text-zinc-700 outline-none" />
+              </div>
+              <span className="text-zinc-400">-</span>
+              <div className="relative w-full border border-zinc-200 rounded-md">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-[12px]">₹</span>
+                <input type="text" value="4999" readOnly className="w-full bg-transparent py-1.5 pl-6 pr-2 text-[12px] font-medium text-zinc-700 outline-none" />
+              </div>
+            </div>
           </div>
         </Accordion>
 
@@ -170,10 +176,10 @@ export function FilterSidebar({ filters, onFilterChange, onClearAll, isOpen, onC
                 <button
                   key={size}
                   onClick={() => handleCheckboxToggle('sizes', size, filters.sizes)}
-                  className={`min-w-[40px] px-3 py-1.5 rounded-md text-[12px] font-bold transition-all ${
+                  className={`min-w-[40px] px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border ${
                     isActive 
-                      ? 'bg-text-main text-white border-text-main' 
-                      : 'bg-white text-text-muted border-accent/20 hover:border-text-main border'
+                      ? 'bg-primary text-white border-primary' 
+                      : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-400'
                   }`}
                 >
                   {size}
@@ -198,7 +204,7 @@ export function FilterSidebar({ filters, onFilterChange, onClearAll, isOpen, onC
                   title={color.name}
                   aria-label={`Color ${color.name}`}
                 >
-                  {isActive && <Check size={14} className={color.name === 'White' ? 'text-black' : 'text-white'} strokeWidth={3} />}
+                  {isActive && <Check size={14} className={color.name === 'White' ? 'text-primary' : 'text-white'} strokeWidth={3} />}
                 </button>
               );
             })}
@@ -278,7 +284,7 @@ export function FilterSidebar({ filters, onFilterChange, onClearAll, isOpen, onC
 
       {/* Mobile Drawer */}
       <div 
-        className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 z-50 bg-primary/40 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={onClose}
       />
       <div 

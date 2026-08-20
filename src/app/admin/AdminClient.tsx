@@ -40,8 +40,8 @@ export default function AdminClient({ users, vendors, products, categories, orde
   return (
     <div className="min-h-screen bg-surface flex">
       {/* Sidebar */}
-      <aside className="w-64 bg-zinc-900 text-white min-h-screen fixed left-0 top-0 hidden md:flex flex-col z-50">
-        <div className="p-6 border-b border-zinc-800">
+      <aside className="w-64 bg-primary text-white min-h-screen fixed left-0 top-0 hidden md:flex flex-col z-50">
+        <div className="p-6 border-b border-primary">
           <h2 className="font-serif text-2xl font-bold">Admin Portal</h2>
         </div>
         <nav className="flex-1 p-4 space-y-1">
@@ -58,7 +58,7 @@ export default function AdminClient({ users, vendors, products, categories, orde
             <button 
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition ${activeTab === tab.id ? 'bg-primary text-white' : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'}`}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition ${activeTab === tab.id ? 'bg-primary text-white' : 'text-zinc-400 hover:bg-primary hover:text-white'}`}
             >
               {tab.icon} {tab.label}
             </button>
@@ -69,7 +69,7 @@ export default function AdminClient({ users, vendors, products, categories, orde
       {/* Main Content */}
       <main className="flex-1 md:ml-64 p-6 md:p-10">
         <div className="mb-10">
-          <h1 className="font-serif text-3xl font-bold text-zinc-900 mb-2 capitalize">{activeTab}</h1>
+          <h1 className="font-serif text-3xl font-bold text-primary mb-2 capitalize">{activeTab}</h1>
           <p className="text-sm text-zinc-500">Manage {activeTab} across the platform.</p>
         </div>
 
@@ -78,19 +78,19 @@ export default function AdminClient({ users, vendors, products, categories, orde
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-white p-6 rounded-3xl shadow-sm border border-zinc-100">
               <p className="text-sm text-zinc-500 font-bold uppercase tracking-widest mb-2">Total Users</p>
-              <p className="text-4xl font-serif text-zinc-900">{users.length}</p>
+              <p className="text-4xl font-serif text-primary">{users.length}</p>
             </div>
             <div className="bg-white p-6 rounded-3xl shadow-sm border border-zinc-100">
               <p className="text-sm text-zinc-500 font-bold uppercase tracking-widest mb-2">Total Vendors</p>
-              <p className="text-4xl font-serif text-zinc-900">{vendors.length}</p>
+              <p className="text-4xl font-serif text-primary">{vendors.length}</p>
             </div>
             <div className="bg-white p-6 rounded-3xl shadow-sm border border-zinc-100">
               <p className="text-sm text-zinc-500 font-bold uppercase tracking-widest mb-2">Products</p>
-              <p className="text-4xl font-serif text-zinc-900">{products.length}</p>
+              <p className="text-4xl font-serif text-primary">{products.length}</p>
             </div>
             <div className="bg-white p-6 rounded-3xl shadow-sm border border-zinc-100">
               <p className="text-sm text-zinc-500 font-bold uppercase tracking-widest mb-2">Total Orders</p>
-              <p className="text-4xl font-serif text-zinc-900">{orders.length}</p>
+              <p className="text-4xl font-serif text-primary">{orders.length}</p>
             </div>
           </div>
         )}
@@ -111,7 +111,7 @@ export default function AdminClient({ users, vendors, products, categories, orde
                 {users.map((u: any) => (
                   <tr key={u.id} className="hover:bg-zinc-50/50">
                     <td className="px-6 py-4">
-                      <p className="font-bold text-zinc-900 text-sm">{u.name || "N/A"}</p>
+                      <p className="font-bold text-primary text-sm">{u.name || "N/A"}</p>
                       <p className="text-zinc-500 text-xs">{u.email}</p>
                     </td>
                     <td className="px-6 py-4 text-xs font-bold">
@@ -147,7 +147,7 @@ export default function AdminClient({ users, vendors, products, categories, orde
               <tbody className="divide-y divide-zinc-100">
                 {vendors.map((v: any) => (
                   <tr key={v.id} className="hover:bg-zinc-50/50">
-                    <td className="px-6 py-4 font-bold text-zinc-900 text-sm">{v.businessName || "N/A"}</td>
+                    <td className="px-6 py-4 font-bold text-primary text-sm">{v.businessName || "N/A"}</td>
                     <td className="px-6 py-4 text-sm text-zinc-500">{v.user.email}</td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-1 rounded text-xs font-bold ${v.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>{v.status}</span>
@@ -170,7 +170,7 @@ export default function AdminClient({ users, vendors, products, categories, orde
         {activeTab === 'products' && (
           <div>
             <div className="flex justify-end mb-4">
-              <button onClick={() => setShowProductForm(!showProductForm)} className="bg-zinc-900 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-primary transition">
+              <button onClick={() => setShowProductForm(!showProductForm)} className="bg-primary text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-primary transition">
                 <Plus size={16}/> {showProductForm ? "Cancel" : "Add Product"}
               </button>
             </div>
@@ -189,7 +189,7 @@ export default function AdminClient({ users, vendors, products, categories, orde
                 target.reset();
                 setShowProductForm(false);
               }} className="mb-6 bg-white p-6 rounded-3xl shadow-sm border border-zinc-100 flex flex-col gap-4">
-                <h3 className="font-bold text-zinc-900">Add Native Product</h3>
+                <h3 className="font-bold text-primary">Add Native Product</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <input required name="name" type="text" placeholder="Product Name" className="rounded-xl border px-4 py-3 text-sm focus:border-primary col-span-2" />
                   <input required name="price" type="number" placeholder="Price (₹)" className="rounded-xl border px-4 py-3 text-sm focus:border-primary" />
@@ -237,7 +237,7 @@ export default function AdminClient({ users, vendors, products, categories, orde
                   <tr key={p.id} className="hover:bg-zinc-50/50">
                     <td className="px-6 py-4 flex items-center gap-3">
                       <img src={p.image} className="w-10 h-10 rounded object-cover" />
-                      <span className="font-bold text-zinc-900 text-sm truncate max-w-[200px]">{p.name}</span>
+                      <span className="font-bold text-primary text-sm truncate max-w-[200px]">{p.name}</span>
                     </td>
                     <td className="px-6 py-4 text-sm text-zinc-500">₹{p.price}</td>
                     <td className="px-6 py-4 text-sm text-zinc-500">{p.vendor?.name || `Vendor #${p.vendorId}`}</td>
@@ -273,12 +273,12 @@ export default function AdminClient({ users, vendors, products, categories, orde
                 onChange={e => setNewCatName(e.target.value)}
                 className="rounded-xl border border-zinc-200 px-4 py-3 text-sm focus:border-primary flex-1"
               />
-              <button type="submit" className="bg-zinc-900 text-white px-6 rounded-xl font-bold text-sm hover:bg-primary transition">Add</button>
+              <button type="submit" className="bg-primary text-white px-6 rounded-xl font-bold text-sm hover:bg-primary transition">Add</button>
             </form>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {categories.map((c: any) => (
                 <div key={c.id} className="bg-white p-4 rounded-2xl border border-zinc-100 flex justify-between items-center shadow-sm">
-                  <span className="font-bold text-zinc-900">{c.name}</span>
+                  <span className="font-bold text-primary">{c.name}</span>
                   <button onClick={() => handleAction("DELETE_CATEGORY", { categoryId: c.id })} className="text-red-400 hover:text-red-600"><Trash2 size={16}/></button>
                 </div>
               ))}
@@ -302,7 +302,7 @@ export default function AdminClient({ users, vendors, products, categories, orde
                 {orders.map((o: any) => (
                   <tr key={o.id}>
                     <td className="px-6 py-4 font-mono text-sm text-zinc-600">#{o.id}</td>
-                    <td className="px-6 py-4 font-bold text-zinc-900 text-sm">{o.user.email}</td>
+                    <td className="px-6 py-4 font-bold text-primary text-sm">{o.user.email}</td>
                     <td className="px-6 py-4 text-sm text-zinc-500">₹{o.total}</td>
                     <td className="px-6 py-4 text-xs font-bold"><span className="px-2 py-1 rounded bg-blue-50 text-blue-600">{o.status}</span></td>
                   </tr>
@@ -327,7 +327,7 @@ export default function AdminClient({ users, vendors, products, categories, orde
               await handleAction("CREATE_SERVICE", { name, description, price, duration, image });
               target.reset();
             }} className="mb-6 bg-white p-6 rounded-3xl shadow-sm border border-zinc-100 flex flex-col gap-4">
-              <h3 className="font-bold text-zinc-900">Add New Service</h3>
+              <h3 className="font-bold text-primary">Add New Service</h3>
               <div className="grid grid-cols-2 gap-4">
                 <input required name="name" type="text" placeholder="Service Name" className="rounded-xl border px-4 py-3 text-sm focus:border-primary" />
                 <input name="price" type="number" placeholder="Price (₹)" className="rounded-xl border px-4 py-3 text-sm focus:border-primary" />
@@ -335,7 +335,7 @@ export default function AdminClient({ users, vendors, products, categories, orde
                 <input name="image" type="text" placeholder="Image URL" className="rounded-xl border px-4 py-3 text-sm focus:border-primary" />
                 <textarea name="description" placeholder="Description" className="rounded-xl border px-4 py-3 text-sm focus:border-primary col-span-2 resize-none" rows={2} />
               </div>
-              <button type="submit" className="bg-zinc-900 text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-primary transition w-max">Create Service</button>
+              <button type="submit" className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-primary transition w-max">Create Service</button>
             </form>
 
             <div className="bg-white rounded-3xl shadow-sm border border-zinc-100 overflow-hidden">
@@ -353,7 +353,7 @@ export default function AdminClient({ users, vendors, products, categories, orde
                       <td className="px-6 py-4 flex items-center gap-3">
                         <img src={s.image || "/images/placeholder.jpg"} className="w-10 h-10 rounded object-cover" />
                         <div>
-                          <p className="font-bold text-zinc-900 text-sm">{s.name}</p>
+                          <p className="font-bold text-primary text-sm">{s.name}</p>
                           <p className="text-xs text-zinc-500 truncate max-w-sm">{s.description}</p>
                         </div>
                       </td>
@@ -388,7 +388,7 @@ export default function AdminClient({ users, vendors, products, categories, orde
               <tbody className="divide-y divide-zinc-100">
                 {bookings.map((b: any) => (
                   <tr key={b.id}>
-                    <td className="px-6 py-4 font-bold text-zinc-900 text-sm">{b.service?.name}</td>
+                    <td className="px-6 py-4 font-bold text-primary text-sm">{b.service?.name}</td>
                     <td className="px-6 py-4 text-sm text-zinc-500">{b.user?.email}</td>
                     <td className="px-6 py-4 text-sm text-zinc-500">{b.date} {b.time}</td>
                     <td className="px-6 py-4 text-sm text-zinc-500">{b.provider?.name || "Unassigned"}</td>

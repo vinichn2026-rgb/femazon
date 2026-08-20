@@ -37,10 +37,10 @@ export function InstagramFeed() {
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
             {/* Hover Overlay */}
-            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4 text-center">
+            <div className="absolute inset-0 bg-primary/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4 text-center">
               <div className="flex flex-col items-center justify-center transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                 <span className="text-white text-sm font-bold tracking-widest uppercase mb-3">{post.serviceName}</span>
-                <span className="text-white text-[10px] font-bold tracking-widest uppercase border border-white px-5 py-2 rounded-full hover:bg-white hover:text-black transition-colors">
+                <span className="text-white text-[10px] font-bold tracking-widest uppercase border border-white px-5 py-2 rounded-full hover:bg-white hover:text-primary transition-colors">
                   Book Now
                 </span>
               </div>

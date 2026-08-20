@@ -88,7 +88,7 @@ export default async function Home() {
                     className="w-full h-full object-cover transition duration-700 group-hover:scale-105"
                   />
                   {/* Subtle Hover overlay */}
-                  <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 </div>
                 <h3 className="text-center font-sans text-[13px] font-bold tracking-[0.15em] uppercase text-text-main group-hover:text-primary transition">
                   {category.title}
@@ -154,7 +154,7 @@ export default async function Home() {
                     className="w-full h-full object-cover transition duration-700 group-hover:scale-105"
                   />
                   {/* Subtle overlay */}
-                  <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 </div>
                 <h3 className="font-sans text-[15px] font-bold tracking-wider uppercase text-text-main group-hover:text-primary transition">
                   {item.title}

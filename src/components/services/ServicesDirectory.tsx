@@ -78,7 +78,7 @@ export function ServicesDirectory() {
   };
 
   return (
-    <main className="min-h-screen bg-zinc-50 px-6 py-16 text-zinc-900">
+    <main className="min-h-screen bg-zinc-50 px-6 py-16 text-primary">
       <div className="mx-auto flex max-w-6xl flex-col gap-8">
         <section className="rounded-[2rem] border border-zinc-200 bg-white p-8 shadow-sm">
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-amber-600">
@@ -124,7 +124,7 @@ export function ServicesDirectory() {
                 <button
                   type="button"
                   onClick={() => handleOpen(service)}
-                  className="rounded-full bg-zinc-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-zinc-800"
+                  className="rounded-full bg-primary px-5 py-3 text-sm font-medium text-white transition hover:bg-primary"
                 >
                   Book slot
                 </button>
@@ -136,7 +136,7 @@ export function ServicesDirectory() {
 
       {selectedService ? (
         <div
-          className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4"
+          className="fixed inset-0 z-50 grid place-items-center bg-primary/40 p-4"
           onClick={handleClose}
         >
           <div
@@ -154,7 +154,7 @@ export function ServicesDirectory() {
               <button
                 type="button"
                 onClick={handleClose}
-                className="rounded-full border border-zinc-200 px-3 py-2 text-zinc-500 transition hover:border-zinc-300 hover:text-zinc-900"
+                className="rounded-full border border-zinc-200 px-3 py-2 text-zinc-500 transition hover:border-zinc-300 hover:text-primary"
               >
                 Close
               </button>
@@ -201,7 +201,7 @@ export function ServicesDirectory() {
                   type="button"
                   disabled={!selectedSlot}
                   onClick={handleConfirmBooking}
-                  className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-zinc-900 px-5 py-3 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500 hover:bg-zinc-800"
+                  className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-medium text-white transition disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-500 hover:bg-primary"
                 >
                   Confirm booking
                 </button>

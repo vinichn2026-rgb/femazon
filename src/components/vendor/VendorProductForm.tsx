@@ -94,7 +94,7 @@ export function VendorProductForm() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="col-span-full inline-flex items-center justify-center rounded-full bg-zinc-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-300"
+          className="col-span-full inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-medium text-white transition hover:bg-primary disabled:cursor-not-allowed disabled:bg-zinc-300"
         >
           {isSubmitting ? "Saving..." : "Add product"}
         </button>

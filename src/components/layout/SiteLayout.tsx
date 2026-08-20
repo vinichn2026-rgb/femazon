@@ -243,7 +243,7 @@ export function SiteLayout({
 
       {/* Mobile Sliding Menu (Accordion) */}
       <div 
-        className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
+        className={`fixed inset-0 z-50 bg-primary/60 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
           isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={() => setIsMobileMenuOpen(false)}

@@ -10,7 +10,7 @@ export default function UnauthorizedPage() {
               </svg>
             </div>
 
-            <h1 className="text-2xl font-semibold text-zinc-900">Access Restricted</h1>
+            <h1 className="text-2xl font-semibold text-primary">Access Restricted</h1>
 
             <p className="max-w-xl text-sm text-zinc-600">You don't have permission to access this page.</p>
 
