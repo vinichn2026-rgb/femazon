@@ -5,11 +5,18 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
+import { Pool } from 'pg';
+
 const createPrismaClient = () => {
-  // Use a fallback dummy URL during Vercel build step if DATABASE_URL is undefined
-  // This prevents PrismaClientInitializationError during static page generation
   const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:dummy@localhost:5432/postgres';
-  const adapter = new PrismaPg(connectionString);
+  
+  const pool = new Pool({
+    connectionString,
+    // Enable SSL to satisfy Supabase requirements, ignoring self-signed certs if any
+    ssl: { rejectUnauthorized: false },
+  });
+  
+  const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });
 };
 
