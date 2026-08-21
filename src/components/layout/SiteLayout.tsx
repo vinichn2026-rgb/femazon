@@ -342,7 +342,7 @@ export function SiteLayout({
         <div className="mx-auto max-w-[1400px] px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
             
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col items-center gap-4 text-center md:items-start md:text-left">
               <h4 className="font-serif text-sm font-bold tracking-widest uppercase text-primary mb-2">Shop</h4>
               <Link href="/shop?sort=newest" className="text-xs font-medium text-text-muted hover:text-primary transition">New Arrivals</Link>
               <Link href="/shop?category=clothing" className="text-xs font-medium text-text-muted hover:text-primary transition">Clothing</Link>
@@ -352,7 +352,7 @@ export function SiteLayout({
               <Link href="/shop?category=offers" className="text-xs font-medium text-primary hover:underline transition">Offers</Link>
             </div>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col items-center gap-4 text-center md:items-start md:text-left">
               <h4 className="font-serif text-sm font-bold tracking-widest uppercase text-primary mb-2">Services</h4>
               <Link href="/services/makeup" className="text-xs font-medium text-text-muted hover:text-primary transition">Makeup</Link>
               <Link href="/services/mehndi" className="text-xs font-medium text-text-muted hover:text-primary transition">Mehndi</Link>
@@ -361,13 +361,13 @@ export function SiteLayout({
               <Link href="/services/shopping-assistant" className="text-xs font-medium text-text-muted hover:text-primary transition">Shopping Assistant</Link>
             </div>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col items-center gap-4 text-center md:items-start md:text-left">
               <h4 className="font-serif text-sm font-bold tracking-widest uppercase text-primary mb-2">AI</h4>
               <Link href="/ai-wardrobe" className="text-xs font-medium text-text-muted hover:text-primary transition">AI Wardrobe</Link>
               <Link href="/ai-wardrobe/suggestions" className="text-xs font-medium text-text-muted hover:text-primary transition">Outfit Suggestions</Link>
             </div>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col items-center gap-4 text-center md:items-start md:text-left">
               <h4 className="font-serif text-sm font-bold tracking-widest uppercase text-primary mb-2">Customer Care</h4>
               <Link href="/contact" className="text-xs font-medium text-text-muted hover:text-primary transition">Contact Us</Link>
               <Link href="/track-order" className="text-xs font-medium text-text-muted hover:text-primary transition">Track Order</Link>
@@ -376,7 +376,7 @@ export function SiteLayout({
               <Link href="/faqs" className="text-xs font-medium text-text-muted hover:text-primary transition">FAQs</Link>
             </div>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col items-center gap-4 text-center md:items-start md:text-left">
               <h4 className="font-serif text-sm font-bold tracking-widest uppercase text-primary mb-2">Company</h4>
               <Link href="/about" className="text-xs font-medium text-text-muted hover:text-primary transition">About Femazon</Link>
               <Link href="/vendor/register" className="text-xs font-medium text-text-muted hover:text-primary transition">Become a Seller</Link>
