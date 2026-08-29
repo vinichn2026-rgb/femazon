@@ -36,7 +36,7 @@ export function ProductCard({ product, isWishlisted = false, onQuickAdd, onToggl
   const hasSecondaryImage = images.length > 1;
 
   return (
-    <Link href={`/product/${product.id}`} className="group flex flex-col cursor-pointer h-full">
+    <Link href={`/products/${(product as any).slug || product.id}`} className="group flex flex-col cursor-pointer h-full">
       {/* Media Area */}
       <div className="relative w-full aspect-[3/4] bg-zinc-50 overflow-hidden mb-4">
         {/* Images with cross-fade hover */}
@@ -73,71 +73,57 @@ export function ProductCard({ product, isWishlisted = false, onQuickAdd, onToggl
         {/* Top-Right Wishlist */}
         <button 
           onClick={handleWishlist}
-          className="absolute top-4 right-4 z-10 p-2 flex items-center justify-center text-zinc-400 hover:text-[#E53E3E] transition-all duration-300 group/btn bg-white/80 hover:bg-white backdrop-blur-sm border border-zinc-200"
+          className="absolute top-3 right-3 z-10 p-1 flex items-center justify-center text-zinc-400 hover:text-[#E53E3E] transition-all duration-300 group/btn"
         >
           <Heart 
-            size={16} 
-            className={`transition-all duration-300 ${isWishlisted ? 'fill-[#E53E3E] text-[#E53E3E]' : 'group-hover/btn:scale-110'}`} 
+            size={18} 
+            className={`transition-all duration-300 drop-shadow-sm ${isWishlisted ? 'fill-[#E53E3E] text-[#E53E3E]' : 'fill-white/30 hover:fill-white group-hover/btn:scale-110'}`} 
           />
         </button>
+        {/* Size Selection Overlay on Hover */}
+        <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20 bg-white/90 backdrop-blur-sm border-t border-zinc-200">
+          <p className="text-[10px] uppercase font-bold tracking-widest text-text-muted mb-2 text-center">Select Size</p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {(product.sizes || ["S", "M", "L"]).map((size) => (
+              <button 
+                key={size}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (onQuickAdd) onQuickAdd({...product, sizes: [size]});
+                }}
+                className="w-8 h-8 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-[10px] font-bold text-text-main hover:border-text-main hover:bg-text-main hover:text-white transition-colors"
+              >
+                {size}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Product Details Area */}
       <div className="flex flex-col flex-1 px-1">
-        <h3 className="text-[13px] md:text-[14px] text-primary font-bold leading-snug line-clamp-1 hover:text-zinc-600 transition-colors">
+        {/* Brand Display */}
+        {(product as any).vendorName || product.brand ? (
+          <h2 className="text-[12px] text-text-main font-bold uppercase tracking-widest mt-2 mb-1">
+            {(product as any).vendorName || product.brand}
+          </h2>
+        ) : null}
+
+        <h3 className="text-[12px] text-text-muted font-normal leading-snug line-clamp-1 mb-1">
           {product.name}
         </h3>
         
-        {/* Vendor/Brand Display */}
-        {(product as any).vendorName || product.brand ? (
-          <p className="text-[11px] text-zinc-500 font-medium uppercase tracking-widest mt-1 mb-2">
-            {(product as any).vendorName || product.brand}
-          </p>
-        ) : null}
-
-        <div className="flex items-baseline flex-wrap gap-x-2 gap-y-1 mb-1.5">
-          <span className="text-[14px] md:text-[15px] font-bold text-primary">
+        <div className="flex items-center gap-x-2 mt-auto">
+          <span className="text-[12px] font-normal text-text-main">
             ₹{product.price.toLocaleString('en-IN')}
           </span>
           {product.originalPrice > product.price && (
-            <>
-              <span className="text-[12px] text-zinc-400 line-through">
-                ₹{product.originalPrice.toLocaleString('en-IN')}
-              </span>
-              <span className="text-[11px] font-bold text-[#E53E3E]">
-                {product.discount}% OFF
-              </span>
-            </>
+            <span className="text-[12px] text-text-muted/60 line-through">
+              ₹{product.originalPrice.toLocaleString('en-IN')}
+            </span>
           )}
         </div>
-
-        {/* Sizes and Color Swatches */}
-        <div className="flex items-center justify-between mt-auto pt-3 border-t border-zinc-100">
-          <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
-            Sizes: XS - XXL
-          </span>
-
-          {product.colors && product.colors.length > 0 && (
-            <div className="flex items-center gap-1">
-              {product.colors.slice(0, 3).map((colorName, idx) => {
-                const hex = COLOR_MAP[colorName] || "#E2E8F0";
-                return (
-                  <div 
-                    key={idx}
-                    className="w-3 h-3 rounded-full border border-zinc-200"
-                    style={{ backgroundColor: hex }}
-                    title={colorName}
-                  />
-                );
-              })}
-            </div>
-          )}
-        </div>
-        
-        {/* Add to Bag Button */}
-        <button className="mt-4 w-full bg-transparent hover:bg-primary text-primary hover:text-white border border-primary transition-colors py-2.5 text-[11px] font-bold uppercase tracking-widest">
-          Add to Bag
-        </button>
       </div>
     </Link>
   );

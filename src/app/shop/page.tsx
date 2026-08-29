@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { ShopClient } from '@/components/shop/ShopClient';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 
 export const dynamic = 'force-dynamic';
 
@@ -64,6 +64,7 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
 
     return {
       id: p.id.toString(),
+      slug: p.slug,
       name: p.name,
       brand: vendorName, 
       vendorName: vendorName,
@@ -71,7 +72,7 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
       originalPrice: p.price,
       discount: discountPercent,
       category: p.category || "Dresses",
-      subCategory: p.category || "Dresses",
+      subCategory: p.subcategory || p.category || "Dresses",
       image: p.image || (images.length > 0 ? images[0] : "https://via.placeholder.com/600x800"),
       hoverImage: images.length > 1 ? images[1] : p.image,
       images: images.length > 0 ? images : (p.image ? [p.image] : []),

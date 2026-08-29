@@ -4,8 +4,9 @@ import StoreClient from "./StoreClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function VendorStorePage({ params }: { params: { vendorId: string } }) {
-  const vendorId = parseInt(params.vendorId);
+export default async function VendorStorePage({ params }: { params: Promise<{ vendorId: string }> }) {
+  const resolvedParams = await params;
+  const vendorId = parseInt(resolvedParams.vendorId);
   
   if (isNaN(vendorId)) {
     notFound();

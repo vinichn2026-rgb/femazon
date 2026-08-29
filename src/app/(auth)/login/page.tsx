@@ -75,7 +75,8 @@ export default function LoginPage() {
           <div className="absolute inset-0 bg-[url('/login_bg.png')] bg-cover bg-center" />
           <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/40 to-transparent mix-blend-multiply" />
           <div className="relative z-10 flex h-full flex-col items-start justify-end p-16 text-white pb-24">
-            <h2 className="font-serif text-6xl tracking-tight text-white mb-6">FEMAZON</h2>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/femazon-logo.png" alt="Femazon" className="h-16 w-auto object-contain mb-6 bg-white/95 p-3 rounded-2xl shadow-xl" />
             <div className="w-16 h-1 bg-white/50 mb-6"></div>
             <p className="mt-4 max-w-sm text-2xl font-serif text-white/90 leading-snug">
               Premium styles and curated services for modern women.
@@ -85,9 +86,12 @@ export default function LoginPage() {
 
         <div className="flex items-center justify-center p-8">
           <div className="w-full max-w-md">
-            <div className="mb-8 text-center">
-              <h1 className="text-xs font-bold uppercase tracking-widest text-primary">FEMAZON</h1>
-              <h2 className="mt-2 font-serif text-3xl text-text-main">Welcome Back</h2>
+            <div className="mb-8 text-center flex flex-col items-center">
+              <Link href="/">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/femazon-logo.png" alt="Femazon" className="h-12 w-auto object-contain mb-3 hover:opacity-85 transition-opacity" />
+              </Link>
+              <h2 className="mt-1 font-serif text-3xl text-text-main">Welcome Back</h2>
               <p className="mt-2 text-sm text-text-muted">Sign in to continue shopping and booking services.</p>
             </div>
 

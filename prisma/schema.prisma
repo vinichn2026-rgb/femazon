@@ -48,6 +48,8 @@ model Product {
   images        String?     // Stored as JSON string
   category      String?
   subcategory   String?
+  dressType     String?
+  occasion      String?
   stock         Int         @default(0)
   sizes         String?     // Store as JSON or comma-separated string for SQLite compatibility
   colors        String?     // Store as JSON or comma-separated string for SQLite compatibility

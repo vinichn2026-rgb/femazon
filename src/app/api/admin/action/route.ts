@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/lib/prisma';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 
 export async function POST(request: Request) {
   try {
@@ -40,20 +40,67 @@ export async function POST(request: Request) {
         });
         return NextResponse.json({ success: true });
 
-      case 'CREATE_PRODUCT':
-        const slug = payload.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now();
+      case 'CREATE_PRODUCT': {
+        const slug = (payload.name || 'product').toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now();
+        const mainImage = payload.image || (payload.images && payload.images.length > 0 ? payload.images[0] : "");
+        const imagesJson = payload.images ? JSON.stringify(payload.images) : JSON.stringify(mainImage ? [mainImage] : []);
+        const sizesJson = Array.isArray(payload.sizes) ? JSON.stringify(payload.sizes) : payload.sizes ? JSON.stringify([payload.sizes]) : JSON.stringify(["M", "L", "XL"]);
+        const colorsJson = Array.isArray(payload.colors) ? JSON.stringify(payload.colors) : payload.color ? JSON.stringify([payload.color]) : JSON.stringify(["Green"]);
+
         const nativeProduct = await prisma.product.create({
           data: {
             name: payload.name,
             slug: slug,
+            description: payload.description || "",
             price: Math.round(Number(payload.price)),
-            stock: Math.round(Number(payload.stock)),
-            category: payload.category || "General",
-            image: payload.image || "",
+            discountPrice: payload.discountPrice ? Math.round(Number(payload.discountPrice)) : null,
+            stock: Math.round(Number(payload.stock || 25)),
+            category: payload.category || "Chudithar",
+            subcategory: payload.pattern || payload.subcategory || "A-Line Pattern",
+            dressType: payload.pattern || "A-Line Pattern",
+            image: mainImage,
+            images: imagesJson,
+            sizes: sizesJson,
+            colors: colorsJson,
             approvalStatus: 'APPROVED'
           }
         });
         return NextResponse.json(nativeProduct);
+      }
+
+      case 'UPDATE_PRODUCT': {
+        const mainImage = payload.image || (payload.images && payload.images.length > 0 ? payload.images[0] : undefined);
+        const imagesJson = payload.images ? JSON.stringify(payload.images) : undefined;
+        const sizesJson = Array.isArray(payload.sizes) ? JSON.stringify(payload.sizes) : undefined;
+        const colorsJson = Array.isArray(payload.colors) ? JSON.stringify(payload.colors) : payload.color ? JSON.stringify([payload.color]) : undefined;
+
+        const updatedProduct = await prisma.product.update({
+          where: { id: Number(payload.productId || payload.id) },
+          data: {
+            name: payload.name,
+            description: payload.description,
+            price: payload.price !== undefined ? Math.round(Number(payload.price)) : undefined,
+            discountPrice: payload.discountPrice !== undefined ? (payload.discountPrice ? Math.round(Number(payload.discountPrice)) : null) : undefined,
+            stock: payload.stock !== undefined ? Math.round(Number(payload.stock)) : undefined,
+            category: payload.category,
+            subcategory: payload.pattern || payload.subcategory,
+            dressType: payload.pattern,
+            image: mainImage,
+            images: imagesJson,
+            sizes: sizesJson,
+            colors: colorsJson,
+            approvalStatus: payload.approvalStatus || 'APPROVED'
+          }
+        });
+        return NextResponse.json(updatedProduct);
+      }
+
+      case 'DELETE_PRODUCT': {
+        await prisma.product.delete({
+          where: { id: Number(payload.productId || payload.id) }
+        });
+        return NextResponse.json({ success: true });
+      }
 
       case 'DELETE_USER':
         await prisma.user.delete({

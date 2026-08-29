@@ -261,8 +261,10 @@ export default function CategoryClient({ category, initialProducts, initialWishl
       {/* 4. All Products with Filters */}
       <div id="all-products" className="mx-auto max-w-[1400px] px-4 sm:px-6 mt-16 md:mt-24 flex flex-col lg:flex-row gap-8 lg:gap-12 relative">
         
-        {/* Filter Sidebar */}
         <FilterSidebar 
+          categories={["All", "Dresses", "Ethnic", "Tops", "Co-ords", "Accessories", "Kurtis"]}
+          selectedCategory={category?.name || "All"}
+          onSelectCategory={(c) => router.push(`/shop?category=${c}`)}
           filters={filters}
           onFilterChange={handleFilterChange}
           onClearAll={handleClearAllFilters}

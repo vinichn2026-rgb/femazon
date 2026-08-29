@@ -4,13 +4,25 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ChevronRight, SlidersHorizontal, PackageX } from 'lucide-react';
-import { CategoryTabs } from '@/components/shop/CategoryTabs';
+
 import { ShopControls } from '@/components/shop/ShopControls';
 import { ActiveFilterChips } from '@/components/shop/ActiveFilterChips';
 import { FilterSidebar, FilterState } from '@/components/shop/FilterSidebar';
 import { ProductCard, ProductCardSkeleton } from '@/components/shop/ProductCard';
+import { LuxuryPromoBanner } from '@/components/shop/LuxuryPromoBanner';
 
-const CATEGORIES = ["All", "Dresses", "Ethnic", "Tops", "Co-ords", "Accessories", "Kurtis"];
+const CATEGORIES = [
+  "All",
+  "Chudithar",
+  "Kurti",
+  "Anarkali",
+  "Saree",
+  "Occasions",
+  "Ethnic",
+  "Dresses",
+  "Co-ords",
+  "Tops"
+];
 
 const initialFilterState: FilterState = {
   subcategories: [],
@@ -35,11 +47,11 @@ export function ShopClient({ initialProducts, initialCategory, initialWishlistId
   const [wishlist, setWishlist] = useState<number[]>(initialWishlistIds);
   
   // Try to match the incoming category case-insensitively with CATEGORIES
-  const matchedCat = CATEGORIES.find(c => c.toLowerCase() === initialCategory.toLowerCase()) || "All";
+  const matchedCat = CATEGORIES.find(c => c.toLowerCase() === (initialCategory || "").toLowerCase()) || CATEGORIES[0];
   
   const [selectedCategory, setSelectedCategory] = useState(matchedCat);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSort, setSelectedSort] = useState("Featured");
+  const [selectedSort, setSelectedSort] = useState("Recommended");
   
   const [filters, setFilters] = useState<FilterState>(initialFilterState);
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
@@ -122,13 +134,49 @@ export function ShopClient({ initialProducts, initialCategory, initialWishlistId
       }
 
       // 2. Main Category
-      if (selectedCategory !== "All" && p.category.toLowerCase() !== selectedCategory.toLowerCase()) {
-        return false;
+      if (selectedCategory !== "All") {
+        const sel = selectedCategory.toLowerCase().trim();
+        const pCat = (p.category || "").toLowerCase();
+        const pSub = (p.subCategory || "").toLowerCase();
+        const pName = (p.name || "").toLowerCase();
+
+        let matchesCategory = pCat === sel || pCat.includes(sel) || pSub.includes(sel) || pName.includes(sel);
+
+        if (sel === 'chudithar') {
+          matchesCategory = pCat.includes('chudi') || pSub.includes('chudi') || pName.includes('chudi') || pCat.includes('suit') || pName.includes('suit');
+        } else if (sel === 'kurti') {
+          matchesCategory = pCat.includes('kurt') || pSub.includes('kurt') || pName.includes('kurt');
+        } else if (sel === 'anarkali') {
+          matchesCategory = pCat.includes('anarkali') || pSub.includes('anarkali') || pName.includes('anarkali');
+        } else if (sel === 'saree') {
+          matchesCategory = pCat.includes('saree') || pCat.includes('sari') || pName.includes('saree') || pName.includes('sari');
+        } else if (sel === 'occasions') {
+          matchesCategory = true;
+        } else if (sel === 'ethnic') {
+          matchesCategory = pCat.includes('ethnic') || pCat.includes('chudi') || pCat.includes('kurt') || pCat.includes('anarkali') || pCat.includes('saree') || pSub.includes('chudi') || pName.includes('chudi') || pName.includes('anarkali');
+        } else if (sel === 'dresses') {
+          matchesCategory = pCat.includes('dress') || pSub.includes('dress') || pName.includes('dress') || pSub.includes('midi') || pSub.includes('maxi');
+        } else if (sel === 'co-ords') {
+          matchesCategory = pCat.includes('coord') || pCat.includes('co-ord') || pSub.includes('coord') || pName.includes('co-ord') || pName.includes('set') || pSub.includes('sets');
+        } else if (sel === 'tops') {
+          matchesCategory = pCat.includes('top') || pCat.includes('shirt') || pCat.includes('blouse') || pCat.includes('tunic') || pSub.includes('top') || pName.includes('top') || pName.includes('shirt') || pName.includes('blouse') || pName.includes('tunic');
+        }
+
+        if (!matchesCategory) {
+          return false;
+        }
       }
 
       // 3. Sub-categories
-      if (filters.subcategories.length > 0 && !filters.subcategories.includes(p.subCategory)) {
-        return false;
+      if (filters.subcategories.length > 0) {
+        const matchesSub = filters.subcategories.some(sub => {
+          const s = sub.toLowerCase();
+          const pSub = (p.subCategory || "").toLowerCase();
+          const pName = (p.name || "").toLowerCase();
+          const pCat = (p.category || "").toLowerCase();
+          return pSub.includes(s) || pName.includes(s) || pCat.includes(s) || s.includes(pSub) || s.includes(pCat);
+        });
+        if (!matchesSub) return false;
       }
 
       // 4. Brands
@@ -169,16 +217,22 @@ export function ShopClient({ initialProducts, initialCategory, initialWishlistId
   const sortedProducts = useMemo(() => {
     const sorted = [...filteredProducts];
     switch (selectedSort) {
+      case "Price Low to High":
       case "Price: Low to High":
         return sorted.sort((a, b) => a.price - b.price);
+      case "Price High to Low":
       case "Price: High to Low":
         return sorted.sort((a, b) => b.price - a.price);
+      case "Discount High to Low":
+        return sorted.sort((a, b) => (b.discount || 0) - (a.discount || 0));
+      case "Popularity":
       case "Customer Popular":
         return sorted.sort((a, b) => (b.rating * b.reviewCount) - (a.rating * a.reviewCount));
+      case "New Arrivals":
       case "Newest Arrivals":
+      case "Recommended":
       case "Featured":
       default:
-        // Already sorted by newest initially, so keep relative order or custom featured
         return sorted;
     }
   }, [filteredProducts, selectedSort]);
@@ -257,51 +311,19 @@ export function ShopClient({ initialProducts, initialCategory, initialWishlistId
 
   return (
     <div className="bg-surface min-h-screen text-text-main font-sans pb-24">
-      {/* 1. Page Header (Premium Editorial Banner) */}
-      <div className="relative w-full h-[40vh] min-h-[350px] flex items-center justify-center overflow-hidden bg-primary">
-        {/* Background Image */}
-        <div className="absolute inset-0 w-full h-full">
-          {bannerImage ? (
-            <img 
-              src={bannerImage} 
-              alt="Shop Collection" 
-              className="w-full h-full object-cover object-center opacity-60"
-            />
-          ) : (
-            <div className="w-full h-full bg-primary" />
-          )}
-          <div className="absolute inset-0 bg-primary/20" /> {/* Dark overlay for text readability */}
-        </div>
-
-        {/* Content */}
-        <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 max-w-3xl">
-          <h1 className="font-serif text-4xl md:text-6xl font-normal text-white tracking-widest mb-4 uppercase">
-            Shop The Collection
-          </h1>
-          <p className="font-sans text-[14px] md:text-[16px] text-zinc-200 mb-8 max-w-lg mx-auto tracking-wide">
-            Curated styles made for every woman.
-          </p>
-          
-          <button className="bg-white text-primary hover:bg-zinc-100 transition-colors px-8 py-3.5 text-[12px] font-bold uppercase tracking-widest border border-white">
-            Explore Collection
-          </button>
-        </div>
-      </div>
-
-      <div className="bg-surface shadow-sm sticky top-[88px] z-30">
-        {/* Horizontal Category Tabs */}
-        <CategoryTabs 
-          categories={CATEGORIES}
-          selectedCategory={selectedCategory}
-          onSelectCategory={setSelectedCategory}
-        />
-      </div>
+      {/* Luxury Burgundy & Gold Promo Banner */}
+      <LuxuryPromoBanner />
 
       {/* 2. Main Layout Architecture */}
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 mt-8 md:mt-12 flex flex-col lg:flex-row gap-8 lg:gap-12 relative">
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 pt-4 md:pt-6 flex flex-col lg:flex-row gap-8 lg:gap-12 relative">
         
         {/* Filter Sidebar (Desktop & Mobile Drawer) */}
         <FilterSidebar 
+          categories={CATEGORIES}
+          selectedCategory={selectedCategory}
+          onSelectCategory={(c) => {
+            setSelectedCategory(c);
+          }}
           filters={filters}
           onFilterChange={handleFilterChange}
           onClearAll={handleClearAllFilters}
@@ -315,10 +337,14 @@ export function ShopClient({ initialProducts, initialCategory, initialWishlistId
           {/* Top Control Bar & Active Filters */}
           <ShopControls 
             totalItems={totalItems}
+            selectedCategory={selectedCategory}
             searchQuery={searchQuery}
             onSearchChange={(q) => setSearchQuery(q)}
             selectedSort={selectedSort}
             onSortChange={(s) => setSelectedSort(s)}
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            onOpenMobileFilters={() => setIsFilterDrawerOpen(true)}
           />
 
           <ActiveFilterChips 

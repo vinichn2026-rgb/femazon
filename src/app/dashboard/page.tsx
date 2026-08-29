@@ -1,5 +1,5 @@
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 import { redirect } from 'next/navigation';
 import { VendorProductForm } from '@/components/vendor/VendorProductForm';
 import { BookingRequests } from '@/components/vendor/BookingRequests';

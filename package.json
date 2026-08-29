@@ -6,17 +6,16 @@
     "dev": "node scripts/run-with-port.js dev",
     "build": "next build",
     "start": "node scripts/run-with-port.js start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.7.1",
     "@next-auth/prisma-adapter": "^1.0.7",
-    "@prisma/adapter-better-sqlite3": "^7.9.1",
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
     "@types/bcryptjs": "^2.4.6",
     "bcryptjs": "^3.0.3",
-    "better-sqlite3": "^13.0.3",
     "clsx": "^2.1.1",
     "framer-motion": "^13.0.0",
     "lucide-react": "^1.31.0",
@@ -32,7 +31,6 @@
   "devDependencies": {
     "@prisma/config": "^7.9.1",
     "@tailwindcss/postcss": "^4",
-    "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^20",
     "@types/pg": "^8.23.1",
     "@types/react": "^19",
@@ -41,6 +39,10 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.0",
     "tailwindcss": "^4",
+    "tsx": "^4.23.12",
     "typescript": "^5"
+  },
+  "prisma": {
+    "seed": "npx tsx scripts/seed-shop.ts"
   }
 }

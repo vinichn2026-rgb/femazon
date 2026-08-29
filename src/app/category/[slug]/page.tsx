@@ -1,12 +1,13 @@
 import { prisma } from "@/lib/prisma";
 import CategoryClient from "./CategoryClient";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/authOptions";
 
 export const dynamic = "force-dynamic";
 
-export default async function CategoryPage({ params }: { params: { slug: string } }) {
-  const { slug } = params;
+export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+  const resolvedParams = await params;
+  const { slug } = resolvedParams;
   
   // Try to find the category in the DB
   let category = await prisma.category.findUnique({

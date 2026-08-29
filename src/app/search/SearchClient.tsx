@@ -8,6 +8,7 @@ import { FilterSidebar, FilterState } from '@/components/shop/FilterSidebar';
 import { ShopControls } from '@/components/shop/ShopControls';
 import { ActiveFilterChips } from '@/components/shop/ActiveFilterChips';
 import { ProductCard, ProductCardSkeleton } from '@/components/shop/ProductCard';
+import { LuxuryPromoBanner } from '@/components/shop/LuxuryPromoBanner';
 
 const initialFilterState: FilterState = {
   subcategories: [],
@@ -156,24 +157,8 @@ export default function SearchClient({ query, initialProducts, initialWishlistId
 
   return (
     <div className="bg-surface min-h-screen text-text-main font-sans pb-24">
-      
-      {/* Search Header */}
-      <div className="bg-[#fbf9f6] border-b border-accent/10 pt-12 md:pt-16 pb-8">
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center text-primary">
-              <Search size={24} />
-            </div>
-            <div>
-              <p className="font-sans text-[13px] font-bold tracking-widest uppercase text-text-muted mb-1">Search Results</p>
-              <h1 className="font-serif text-3xl md:text-5xl font-normal text-text-main">
-                "{query}"
-              </h1>
-            </div>
-          </div>
-          <p className="text-zinc-500 mt-2">{initialProducts.length} items matched your search.</p>
-        </div>
-      </div>
+      {/* Luxury Burgundy & Gold Promo Banner */}
+      <LuxuryPromoBanner />
 
       {initialProducts.length === 0 ? (
         // Empty State
@@ -207,6 +192,9 @@ export default function SearchClient({ query, initialProducts, initialWishlistId
           
           {/* Filter Sidebar */}
           <FilterSidebar 
+            categories={["All", "Dresses", "Ethnic", "Tops", "Co-ords", "Accessories", "Kurtis"]}
+            selectedCategory="All"
+            onSelectCategory={(c) => router.push(`/shop?category=${c}`)}
             filters={filters}
             onFilterChange={handleFilterChange}
             onClearAll={handleClearAllFilters}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -77,9 +78,12 @@ export default function RegisterPage() {
     <main className="flex min-h-screen items-center justify-center bg-surface p-6">
       <div className="w-full max-w-md">
         <form onSubmit={handleSubmit} className="space-y-6 rounded-[2rem] bg-white p-8 shadow-sm border border-accent/20">
-          <div className="text-center mb-8">
-            <h1 className="text-xs font-bold uppercase tracking-widest text-primary">FEMAZON</h1>
-            <h2 className="mt-2 font-serif text-3xl text-text-main">Create Account</h2>
+          <div className="text-center mb-8 flex flex-col items-center">
+            <Link href="/">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/femazon-logo.png" alt="Femazon" className="h-12 w-auto object-contain mb-3 hover:opacity-85 transition-opacity" />
+            </Link>
+            <h2 className="mt-1 font-serif text-3xl text-text-main">Create Account</h2>
             <p className="mt-2 text-sm text-text-muted">Join Femazon to shop premium styles and book services.</p>
           </div>
 

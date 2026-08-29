@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Search, Menu, Heart, ShoppingBag, UserCircle2, Camera, X, ChevronDown, ChevronRight } from 'lucide-react';
 import NotificationDropdown from './NotificationDropdown';
+import { SearchBar } from './SearchBar';
 
 type AuthSession = {
   id: string;
@@ -15,23 +16,60 @@ type AuthSession = {
 
 // Rich Navigation Data replacing the old structure
 const richNavigationData: Record<string, any[]> = {
-  Shop: [
+  SHOP: [
     {
-      title: "TRENDING CATEGORIES",
+      title: "CHUDITHAR & SUITS",
       items: [
-        { name: "Dresses", desc: "Maxi, Midi & Mini styles", href: "/shop?category=dresses", dotColor: "bg-rose-400", badge: "HOT" },
-        { name: "Tops & Shirts", desc: "Everyday & party wear", href: "/shop?category=tops", dotColor: "bg-purple-400", badge: "" },
-        { name: "Ethnic Wear", desc: "Kurti, Sarees & Lehengas", href: "/shop?category=ethnic", dotColor: "bg-orange-400", badge: "NEW" },
-        { name: "Co-ords", desc: "Matching sets for ease", href: "/shop?category=coords", dotColor: "bg-emerald-400", badge: "" }
+        { name: "Anarkali Chudithar", href: "/search?q=Anarkali%20Chudithar" },
+        { name: "Straight Cut Chudithar", href: "/search?q=Straight%20Cut%20Chudithar" },
+        { name: "Pakistani Style Suit", href: "/search?q=Pakistani%20Style%20Suit" },
+        { name: "Palazzo & Sharara Suit", href: "/search?q=Sharara%20Suit" },
+        { name: "Kurta Dupatta Sets", href: "/search?q=Kurta%20with%20Dupatta%20Set" }
       ]
     },
     {
-      title: "ESSENTIALS",
+      title: "DRESSES",
       items: [
-        { name: "Bottom Wear", desc: "Jeans, Trousers & Skirts", href: "/shop?category=bottoms", dotColor: "bg-blue-400", badge: "" },
-        { name: "Activewear", desc: "Gym & yoga fits", href: "/shop?category=activewear", dotColor: "bg-rose-400", badge: "30% OFF" },
-        { name: "Accessories", desc: "Jewelry, Bags & Belts", href: "/shop?category=accessories", dotColor: "bg-amber-400", badge: "" },
-        { name: "Shoes", desc: "Heels, Flats & Sneakers", href: "/shop?category=shoes", dotColor: "bg-indigo-400", badge: "" }
+        { name: "Midi Dresses", href: "/search?q=Midi%20Dresses" },
+        { name: "Maxi Dresses", href: "/search?q=Maxi%20Dresses" },
+        { name: "Mini Dresses", href: "/search?q=Mini%20Dresses" },
+        { name: "Party Dresses", href: "/search?q=Party%20Dresses" }
+      ]
+    },
+    {
+      title: "ETHNIC",
+      items: [
+        { name: "Kurtas", href: "/search?q=Kurtas" },
+        { name: "Anarkali", href: "/search?q=Anarkali" },
+        { name: "Ethnic Dresses", href: "/search?q=Ethnic%20Dresses" },
+        { name: "Kurta Sets", href: "/search?q=Kurta%20Sets" }
+      ]
+    },
+    {
+      title: "WESTERN",
+      items: [
+        { name: "Bodycon", href: "/search?q=Bodycon" },
+        { name: "A-Line", href: "/search?q=A-Line" },
+        { name: "Shirt Dresses", href: "/search?q=Shirt%20Dresses" },
+        { name: "Maxi Dresses", href: "/search?q=Western%20Maxi" }
+      ]
+    },
+    {
+      title: "TOPS & CO-ORDS",
+      items: [
+        { name: "Crop Tops", href: "/search?q=Crop%20Tops" },
+        { name: "Shirts & Blouses", href: "/search?q=Shirts" },
+        { name: "Co-ords & Sets", href: "/search?q=Co-ords" },
+        { name: "Indo-Western", href: "/search?q=Indo-Western" }
+      ]
+    },
+    {
+      title: "OCCASION",
+      items: [
+        { name: "Wedding Edit", href: "/search?q=Wedding" },
+        { name: "Party & Festive", href: "/search?q=Party" },
+        { name: "Casual Everyday", href: "/search?q=Casual" },
+        { name: "Workwear / Office", href: "/search?q=Office" }
       ]
     }
   ],
@@ -56,13 +94,13 @@ const richNavigationData: Record<string, any[]> = {
   ]
 };
 
-const mainNavLinks = [
-  { name: 'New Arrivals', hasMega: false, href: '/shop?sort=new' },
-  { name: 'Categories', hasMega: true, href: '/categories' },
-  { name: 'Services', hasMega: true, href: '/services' },
-  { name: 'Wardrobe', hasMega: false, href: '/wardrobe' },
-  { name: 'Blog', hasMega: false, href: '/blog' }
-];
+  const mainNavLinks = [
+    { name: 'EXPLORE', hasMega: false, href: '/' },
+    { name: 'SHOP', hasMega: true, href: '/shop' },
+    { name: 'CURATED', hasMega: false, href: '/#curated' },
+    { name: 'SERVICES', hasMega: true, href: '/services' },
+    { name: 'AI WARDROBE', hasMega: false, href: '/ai-wardrobe' },
+  ];
 
 export function SiteLayout({
   children,
@@ -104,8 +142,8 @@ export function SiteLayout({
       </div>
 
       {/* 2. Main Navigation */}
-      <header className="sticky top-0 z-40 w-full bg-surface/95 backdrop-blur-md transition-all shadow-sm border-b border-accent/10">
-        <div className="mx-auto flex h-[88px] max-w-[1400px] items-center justify-between px-6">
+      <header className="sticky top-0 z-50 w-full bg-surface/95 backdrop-blur-md transition-all shadow-sm border-b border-accent/10">
+        <div className="mx-auto flex h-[88px] max-w-[1400px] items-center justify-between px-6 relative">
           
           {/* Mobile Menu Toggle */}
           <button 
@@ -116,16 +154,22 @@ export function SiteLayout({
           </button>
 
           {/* Left: Logo */}
-          <Link href="/" className="group flex items-center shrink-0">
-            <span className="font-serif text-[32px] font-light tracking-widest text-primary transition group-hover:opacity-80">
-              FEMAZON<span className="text-secondary text-lg">.</span>
-            </span>
+          <Link href="/" className="group flex items-center shrink-0 py-1">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img 
+              src="/femazon-logo.png" 
+              alt="Femazon" 
+              className="h-13 sm:h-15 md:h-16 lg:h-[68px] w-auto object-contain transition-transform duration-200 group-hover:scale-105" 
+            />
           </Link>
 
           {/* Center: Desktop Navigation Links */}
           <nav className="hidden h-full flex-1 items-center justify-center gap-6 md:flex lg:gap-8">
             {mainNavLinks.map((link) => (
-              <div key={link.name} className="group flex h-full items-center relative">
+              <div 
+                key={link.name} 
+                className={`group flex h-full items-center ${link.name !== 'SHOP' ? 'relative' : ''}`}
+              >
                 <Link 
                   href={link.href} 
                   className="flex h-full items-center text-[13px] font-bold tracking-widest uppercase transition border-b-2 border-transparent hover:text-primary text-text-main group-hover:text-primary gap-1"
@@ -134,9 +178,38 @@ export function SiteLayout({
                   {link.hasMega && <ChevronDown size={14} className="transition-transform duration-300 group-hover:-rotate-180" />}
                 </Link>
 
-                {/* Desktop Rich Dropdown / Mega Menu */}
-                {link.hasMega && richNavigationData[link.name] && (
-                  <div className="absolute left-1/2 -translate-x-1/2 top-full z-50 w-max min-w-[500px] invisible opacity-0 translate-y-2 bg-white shadow-xl shadow-slate-200/40 border border-slate-100 rounded-2xl transition-all duration-300 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 p-6 flex gap-8">
+                {/* Desktop Rich Dropdown / Mega Menu - Centered relative to header container */}
+                {link.hasMega && link.name === 'SHOP' && (
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full z-50 w-[1060px] max-w-[calc(100vw-48px)] invisible opacity-0 translate-y-2 bg-white shadow-2xl border border-stone-200/80 rounded-2xl transition-all duration-300 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 flex flex-col overflow-hidden">
+                    <div className="grid grid-cols-6 p-8 gap-6">
+                      {richNavigationData[link.name]?.map((col, idx) => (
+                        <div key={idx} className="flex flex-col">
+                          <h4 className="mb-4 text-xs font-bold tracking-widest text-[#4A1513] uppercase border-b border-stone-100 pb-2">{col.title}</h4>
+                          <ul className="flex flex-col gap-2.5">
+                            {col.items.map((item: any) => (
+                              <li key={item.name}>
+                                <Link href={item.href} className="text-xs text-stone-600 hover:text-[#4A1513] hover:font-semibold transition-colors">
+                                  {item.name}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Bottom CTA */}
+                    <Link href="/shop" className="bg-[#4A1513] p-3.5 sm:p-4 flex justify-center group/cta hover:bg-[#3D110F] transition-colors">
+                      <div className="text-[12px] font-bold uppercase tracking-[0.2em] text-white flex items-center gap-2">
+                        Explore All Categories <ChevronRight size={16} className="transition-transform duration-300 group-hover/cta:translate-x-1" />
+                      </div>
+                    </Link>
+                  </div>
+                )}
+
+                {/* Dropdown for Services/Other */}
+                {link.hasMega && link.name !== 'SHOP' && richNavigationData[link.name] && (
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full z-50 w-max min-w-[480px] invisible opacity-0 translate-y-2 bg-white shadow-xl border border-stone-200/80 rounded-2xl transition-all duration-300 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 p-6 flex gap-8">
                     {richNavigationData[link.name]?.map((col, idx) => (
                       <div key={idx} className="flex flex-col flex-1">
                         <h4 className="mb-3 px-3 text-[11px] font-semibold tracking-wider text-primary uppercase">
@@ -186,29 +259,10 @@ export function SiteLayout({
           </nav>
 
           {/* Right: Actions (Search, User, Cart) */}
-          <div className="flex shrink-0 items-center justify-end gap-5 lg:gap-6">
-            
-            {isSearchOpen ? (
-              <form onSubmit={handleSearchSubmit} className="relative flex items-center">
-                <input 
-                  type="text" 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search products..." 
-                  className="h-10 w-48 md:w-64 rounded-full border border-zinc-300 bg-zinc-50 pl-10 pr-8 text-sm outline-none focus:border-primary transition-all"
-                  autoFocus
-                />
-                <Search size={16} className="absolute left-4 text-zinc-400" />
-                <button type="button" onClick={() => setIsSearchOpen(false)} className="absolute right-3 text-zinc-400 hover:text-text-main">
-                  <X size={16} />
-                </button>
-              </form>
-            ) : (
-              <button onClick={() => setIsSearchOpen(true)} className="flex items-center text-text-main transition hover:text-primary">
-                <Search size={22} strokeWidth={1.5} />
-                <span className="sr-only">Search</span>
-              </button>
-            )}
+          <div className="flex shrink-0 items-center justify-end gap-3 sm:gap-4 lg:gap-5">
+            <div className="hidden sm:block">
+              <SearchBar />
+            </div>
             
             {isLoggedIn ? (
               <>
@@ -255,11 +309,23 @@ export function SiteLayout({
       >
         <div className="flex h-full flex-col">
           {/* Mobile Header */}
-          <div className="flex items-center justify-between border-b border-accent/20 px-6 py-4">
-            <span className="font-serif text-xl font-black text-primary">Femazon.</span>
-            <button onClick={() => setIsMobileMenuOpen(false)} className="text-text-muted hover:text-text-main">
+          <div className="flex items-center justify-between border-b border-accent/20 px-6 py-3.5">
+            <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img 
+                src="/femazon-logo.png" 
+                alt="Femazon" 
+                className="h-10 sm:h-11 w-auto object-contain" 
+              />
+            </Link>
+            <button onClick={() => setIsMobileMenuOpen(false)} className="text-text-muted hover:text-text-main p-1">
               <X size={24} strokeWidth={1.5} />
             </button>
+          </div>
+
+          {/* Mobile Search */}
+          <div className="px-6 pt-4 pb-1">
+            <SearchBar className="!max-w-full" />
           </div>
 
           {/* Mobile Nav Links */}

@@ -4,9 +4,10 @@ import Link from 'next/link';
 import { Star, Clock, CheckCircle2, MapPin } from 'lucide-react';
 import ReviewSection from '@/components/reviews/ReviewSection';
 
-export default async function ServiceDetailsPage({ params }: { params: { slug: string } }) {
+export default async function ServiceDetailsPage({ params }: { params: Promise<{ slug: string }> }) {
+  const resolvedParams = await params;
   const service = await prisma.service.findUnique({
-    where: { slug: params.slug },
+    where: { slug: resolvedParams.slug },
     include: {
       providers: true
     }

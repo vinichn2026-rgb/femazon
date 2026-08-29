@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 
 export const MOCK_INSTAGRAM_FEED = [
   { id: '1', imageUrl: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=600&auto=format&fit=crop', handle: '@bridal_makeup', postLink: '/services/makeup', serviceName: 'Makeup Artists' },
@@ -12,36 +13,40 @@ export const MOCK_INSTAGRAM_FEED = [
 
 export function InstagramFeed() {
   return (
-    <section className="mx-auto max-w-[1400px] px-4 sm:px-6 mt-16 md:mt-24 mb-16 md:mb-24">
+    <section className="mx-auto max-w-[1400px] px-4 sm:px-6 my-8 md:my-12">
       {/* Header Section */}
-      <div className="text-center mb-10">
-        <h2 className="font-serif text-2xl md:text-3xl font-bold tracking-[0.1em] text-primary uppercase">
+      <div className="text-center mb-8">
+        <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.25em] text-[#4A1513] block mb-1.5">
+          Verified Professionals
+        </span>
+        <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-normal tracking-wide text-[#3D110F]">
           Our Expert Services
         </h2>
-        <p className="font-sans text-sm md:text-[15px] text-text-muted mt-3">
-          Book top professionals or tag <span className="font-medium text-text-main">@femazon_services</span> to be featured.
+        <p className="font-sans text-xs sm:text-sm text-text-muted mt-2">
+          Book top bridal specialists or tag <span className="font-medium text-[#3D110F]">@femazon_services</span> to be featured.
         </p>
       </div>
 
       {/* Media Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 mb-12">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5 sm:gap-4 mb-6 sm:mb-8">
         {MOCK_INSTAGRAM_FEED.map((post) => (
           <Link 
             key={post.id} 
             href={post.postLink}
-            className="group relative aspect-[4/5] overflow-hidden rounded-2xl block bg-accent/10 shadow-sm"
+            className="group relative aspect-[4/5] overflow-hidden rounded-xl sm:rounded-2xl block bg-accent/10 shadow-sm border border-stone-200/50"
           >
             <img 
               src={post.imageUrl} 
               alt={`${post.serviceName} preview`} 
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-108"
             />
             {/* Hover Overlay */}
-            <div className="absolute inset-0 bg-primary/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4 text-center">
-              <div className="flex flex-col items-center justify-center transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                <span className="text-white text-sm font-bold tracking-widest uppercase mb-3">{post.serviceName}</span>
-                <span className="text-white text-[10px] font-bold tracking-widest uppercase border border-white px-5 py-2 rounded-full hover:bg-white hover:text-primary transition-colors">
-                  Book Now
+            <div className="absolute inset-0 bg-[#3D110F]/65 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-2.5 sm:p-3 text-center">
+              <div className="flex flex-col items-center justify-center transform translate-y-3 group-hover:translate-y-0 transition-transform duration-300">
+                <span className="text-white text-[11px] sm:text-sm font-serif font-normal tracking-wide mb-2 sm:mb-2.5 line-clamp-1">{post.serviceName}</span>
+                <span className="inline-flex items-center gap-1 text-white text-[8.5px] sm:text-[10px] font-bold tracking-widest uppercase border border-white/80 px-2.5 sm:px-3.5 py-0.5 sm:py-1 rounded-full hover:bg-white hover:text-[#3D110F] transition-colors">
+                  <span>Book Now</span>
+                  <ArrowRight size={9} />
                 </span>
               </div>
             </div>
@@ -53,9 +58,10 @@ export function InstagramFeed() {
       <div className="flex justify-center">
         <Link 
           href="/services" 
-          className="flex items-center gap-2 bg-primary text-white px-8 py-3.5 rounded-full font-bold text-[12px] uppercase tracking-widest shadow-md hover:opacity-90 hover:shadow-lg transition-all"
+          className="group inline-flex items-center gap-2 bg-[#3D110F] hover:bg-[#2A0B09] text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-sans text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] shadow-md hover:shadow-lg transition-all duration-300 active:scale-95 cursor-pointer"
         >
-          View All Services
+          <span>View All Services</span>
+          <ArrowRight size={12} className="transition-transform duration-300 group-hover:translate-x-1" />
         </Link>
       </div>
     </section>

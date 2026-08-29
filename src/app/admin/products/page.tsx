@@ -1,10 +1,13 @@
-export default function AdminProductsPage() {
-  return (
-    <main className="min-h-screen bg-zinc-50 p-8">
-      <div className="mx-auto max-w-6xl rounded-3xl bg-white p-8 shadow-sm">
-        <h1 className="text-3xl font-semibold text-primary">Admin Products</h1>
-        <p className="mt-3 text-zinc-600">Manage marketplace products across the platform.</p>
-      </div>
-    </main>
-  );
+import { prisma } from "@/lib/prisma";
+import { AdminProductsClient } from "./AdminProductsClient";
+
+export const dynamic = "force-dynamic";
+
+export default async function AdminProductsPage() {
+  const products = await prisma.product.findMany({
+    orderBy: { createdAt: "desc" }
+  });
+
+  return <AdminProductsClient initialProducts={products} />;
 }
+

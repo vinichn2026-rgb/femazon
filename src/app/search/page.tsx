@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import SearchClient from "./SearchClient";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/authOptions";
 
 export const dynamic = "force-dynamic";
 
@@ -32,17 +32,76 @@ export default async function SearchPage({ searchParams }: { searchParams: { q?:
     orderBy: { createdAt: 'desc' }
   });
 
-  // Filter in memory for simplicity with SQLite
-  const lowerQuery = query.toLowerCase();
-  const matchedProducts = dbProducts.filter((p: any) => {
+  // Smart fashion synonym & token mapper
+  const lowerQuery = query.toLowerCase().trim();
+  
+  const normalizeText = (str: string) => {
+    return str
+      .toLowerCase()
+      .replace(/[_-]/g, ' ')
+      .replace(/chudidars?|chudidhars?|chudi|salwars?|suits?/g, 'chudi')
+      .replace(/kurtas?|kurtis?|tunics?/g, 'kurti')
+      .replace(/sarees?|saris?/g, 'saree')
+      .replace(/dresses?|gowns?|frocks?/g, 'dress')
+      .replace(/co[- ]?ords?|sets?|two[- ]piece/g, 'coord')
+      .replace(/tops?|shirts?|blouses?/g, 'top')
+      .replace(/jewels?|jewelry|necklaces?|accessories/g, 'accessory')
+      .replace(/anarkalis?/g, 'anarkali');
+  };
+
+  const normQuery = normalizeText(lowerQuery);
+  const tokens = normQuery.split(/\s+/).filter(t => t.length > 1 && !['png', 'jpg', 'jpeg', 'image', 'screenshot', 'file'].includes(t));
+
+  let matchedProducts = dbProducts.filter((p: any) => {
     if (!lowerQuery) return false;
-    return (
-      p.name.toLowerCase().includes(lowerQuery) ||
-      (p.description && p.description.toLowerCase().includes(lowerQuery)) ||
-      (p.category && p.category.toLowerCase().includes(lowerQuery)) ||
-      (p.subcategory && p.subcategory.toLowerCase().includes(lowerQuery))
-    );
+    const combined = `${p.name} ${p.description || ''} ${p.category || ''} ${p.subcategory || ''} ${p.dressType || ''} ${p.occasion || ''}`;
+    const normCombined = normalizeText(combined);
+
+    // 1. Direct or normalized query match
+    if (combined.toLowerCase().includes(lowerQuery) || normCombined.includes(normQuery)) {
+      return true;
+    }
+
+    // 2. Token match (e.g. "pink chudi" matches "chudi" / "chudidar")
+    if (tokens.length > 0 && tokens.some(t => normCombined.includes(t) || combined.toLowerCase().includes(t))) {
+      return true;
+    }
+
+    return false;
   });
+
+  // If specific visual search term yielded no matches, fallback to closest category or top approved products
+  if (matchedProducts.length === 0 && lowerQuery) {
+    if (normQuery.includes('chudi') || normQuery.includes('ethnic') || normQuery.includes('saree') || normQuery.includes('kurti')) {
+      matchedProducts = dbProducts.filter((p: any) => 
+        (p.category && ['Ethnic', 'Kurtis', 'Dresses'].includes(p.category)) ||
+        p.name.toLowerCase().includes('kurti') ||
+        p.name.toLowerCase().includes('suit') ||
+        p.name.toLowerCase().includes('saree')
+      );
+    } else if (normQuery.includes('dress') || normQuery.includes('gown')) {
+      matchedProducts = dbProducts.filter((p: any) => 
+        (p.category && ['Dresses', 'Ethnic'].includes(p.category)) ||
+        p.name.toLowerCase().includes('dress') ||
+        p.name.toLowerCase().includes('gown')
+      );
+    } else if (normQuery.includes('coord')) {
+      matchedProducts = dbProducts.filter((p: any) => 
+        (p.category && ['Co-ords'].includes(p.category)) ||
+        p.name.toLowerCase().includes('coord')
+      );
+    } else if (normQuery.includes('top')) {
+      matchedProducts = dbProducts.filter((p: any) => 
+        (p.category && ['Tops'].includes(p.category)) ||
+        p.name.toLowerCase().includes('top')
+      );
+    }
+  }
+
+  // If still completely empty, show featured collection so real products always display
+  if (matchedProducts.length === 0) {
+    matchedProducts = dbProducts.slice(0, 8);
+  }
 
   const formattedProducts = matchedProducts.map((p: any) => {
     const isSale = p.discountPrice && p.discountPrice < p.price;

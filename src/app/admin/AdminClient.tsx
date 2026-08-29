@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Sparkles, Users, Store, Package, Grid, CalendarDays, ShoppingCart, CheckCircle, XCircle, Trash2, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -40,34 +41,44 @@ export default function AdminClient({ users, vendors, products, categories, orde
   return (
     <div className="min-h-screen bg-surface flex">
       {/* Sidebar */}
-      <aside className="w-64 bg-primary text-white min-h-screen fixed left-0 top-0 hidden md:flex flex-col z-50">
+      <aside className="w-64 bg-primary text-white min-h-screen sticky top-0 hidden md:flex flex-col self-start z-30">
         <div className="p-6 border-b border-primary">
           <h2 className="font-serif text-2xl font-bold">Admin Portal</h2>
         </div>
         <nav className="flex-1 p-4 space-y-1">
           {[
             { id: 'overview', icon: <Grid size={18}/>, label: 'Overview' },
+            { id: 'products', icon: <Package size={18}/>, label: 'Products (New UI)', href: '/admin/products' },
             { id: 'users', icon: <Users size={18}/>, label: 'Users' },
             { id: 'vendors', icon: <Store size={18}/>, label: 'Vendors' },
-            { id: 'products', icon: <Package size={18}/>, label: 'Products' },
             { id: 'categories', icon: <Grid size={18}/>, label: 'Categories' },
             { id: 'services', icon: <Sparkles size={18}/>, label: 'Services' },
             { id: 'orders', icon: <ShoppingCart size={18}/>, label: 'Orders' },
             { id: 'bookings', icon: <CalendarDays size={18}/>, label: 'Bookings' },
           ].map(tab => (
-            <button 
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition ${activeTab === tab.id ? 'bg-primary text-white' : 'text-zinc-400 hover:bg-primary hover:text-white'}`}
-            >
-              {tab.icon} {tab.label}
-            </button>
+            tab.href ? (
+              <Link
+                key={tab.id}
+                href={tab.href}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition text-zinc-400 hover:bg-primary hover:text-white"
+              >
+                {tab.icon} {tab.label}
+              </Link>
+            ) : (
+              <button 
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition ${activeTab === tab.id ? 'bg-primary text-white' : 'text-zinc-400 hover:bg-primary hover:text-white'}`}
+              >
+                {tab.icon} {tab.label}
+              </button>
+            )
           ))}
         </nav>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 md:ml-64 p-6 md:p-10">
+      <main className="flex-1 p-6 md:p-10">
         <div className="mb-10">
           <h1 className="font-serif text-3xl font-bold text-primary mb-2 capitalize">{activeTab}</h1>
           <p className="text-sm text-zinc-500">Manage {activeTab} across the platform.</p>
