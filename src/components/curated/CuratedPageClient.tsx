@@ -10,8 +10,7 @@ import {
   ShoppingBag, 
   Heart, 
   Wand2, 
-  Crown,
-  Layers,
+  Layers, 
   Palette
 } from "lucide-react";
 
@@ -265,39 +264,25 @@ export function CuratedPageClient({ trendingProducts }: CuratedPageProps) {
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-stone-900 font-sans selection:bg-[#4A1513] selection:text-white">
       
-      {/* 1. Step 2: Hero Section (Curated For Every Moment) */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#3D110F] via-[#4A1513] to-[#2B0E0D] text-white py-16 sm:py-24 md:py-28 px-4 text-center border-b border-[#E5C3A6]/20">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#E5C3A6_1px,transparent_1px)] [background-size:20px_20px]"></div>
-        
-        <div className="relative z-10 mx-auto max-w-4xl px-4 flex flex-col items-center">
-          {/* Small text */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 mb-4 sm:mb-6">
-            <Sparkles size={13} className="text-[#E5C3A6] animate-pulse" />
-            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.3em] text-[#F3DFCA]">
+      {/* 1. Clean Editorial Header (No dark hero banner) */}
+      <div className="pt-8 sm:pt-12 pb-4 text-center border-b border-stone-200/60 bg-white">
+        <div className="mx-auto max-w-4xl px-4 flex flex-col items-center">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#4A1513]/5 border border-[#4A1513]/15 mb-3">
+            <Sparkles size={12} className="text-[#4A1513]" />
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.3em] text-[#4A1513]">
               FEMAZON EDITS
             </span>
           </div>
 
-          {/* Main heading */}
-          <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl text-white font-normal tracking-tight leading-[1.15] max-w-3xl mb-4 sm:mb-6">
+          <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl text-[#3D110F] font-normal tracking-tight mb-2">
             Curated For Every Moment
           </h1>
 
-          {/* Description */}
-          <p className="text-stone-200/90 text-sm sm:text-base md:text-lg max-w-2xl font-light leading-relaxed mb-8 sm:mb-10">
-            Discover handpicked styles designed for every occasion, mood, and version of you. From royal celebrations to understated daily luxury.
+          <p className="text-stone-500 text-xs sm:text-sm md:text-base max-w-xl font-light leading-relaxed">
+            Discover handpicked styles designed for every occasion, mood, and version of you.
           </p>
-
-          {/* CTA Button */}
-          <a
-            href="#moments"
-            className="group inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-white hover:bg-[#3D110F] text-[#3D110F] hover:text-white border border-white font-bold text-[12px] sm:text-[13px] uppercase tracking-[0.2em] shadow-[0px_4px_20px_rgba(0,0,0,0.25)] transition-all duration-300 transform hover:-translate-y-0.5"
-          >
-            <span>EXPLORE THE EDITS</span>
-            <span className="transition-transform duration-300 group-hover:translate-y-1">↓</span>
-          </a>
         </div>
-      </section>
+      </div>
 
       {/* 2. Step 3: Main Category - Shop By Moment */}
       <section id="moments" className="py-12 sm:py-16 md:py-20 border-b border-stone-200/70 scroll-mt-20">
@@ -551,48 +536,7 @@ export function CuratedPageClient({ trendingProducts }: CuratedPageProps) {
         </div>
       </section>
 
-      {/* 6. Step 7: Featured Collection Banner (The Wedding Edit 2026) */}
-      <section className="py-12 sm:py-16 md:py-20">
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
-          <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-stone-200/80 bg-stone-900 min-h-[380px] sm:min-h-[440px] flex items-center">
-            {/* Background Banner Image */}
-            <img
-              src="https://images.unsplash.com/photo-1610047614301-13c63f00c032?q=80&w=1600&h=900&auto=format&fit=crop"
-              alt="The Wedding Edit"
-              className="absolute inset-0 w-full h-full object-cover object-center opacity-40 hover:scale-105 transition-transform duration-1000"
-            />
-            
-            {/* Overlay Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent"></div>
 
-            {/* Content */}
-            <div className="relative z-10 max-w-2xl p-6 sm:p-12 md:p-16 text-white">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E5C3A6]/20 border border-[#E5C3A6]/30 mb-4">
-                <Crown size={14} className="text-[#E5C3A6]" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#F3DFCA]">
-                  COUTURE HIGHLIGHT
-                </span>
-              </div>
-
-              <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl text-white font-normal tracking-tight mb-4 leading-tight">
-                The Wedding Edit 2026
-              </h2>
-
-              <p className="text-stone-200 text-sm sm:text-base font-light leading-relaxed mb-8 max-w-lg">
-                From hand-embroidered royal sarees to statement bridal lehengas, discover couture looks crafted for once-in-a-lifetime celebrations.
-              </p>
-
-              <Link
-                href="/shop?category=Occasions&subcategory=Wedding%20Wear"
-                className="group inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full bg-white hover:bg-[#4A1513] text-[#4A1513] hover:text-white border border-white font-bold text-[12px] uppercase tracking-[0.2em] shadow-lg transition-all duration-300"
-              >
-                <span>EXPLORE COLLECTION</span>
-                <ArrowRight size={13} className="transition-transform duration-300 group-hover:translate-x-1" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* 7. Step 8: AI Integration (Your Personal AI Edit) */}
       <section className="py-14 sm:py-18 bg-gradient-to-b from-white to-[#F9F5F0] border-t border-stone-200/70">
