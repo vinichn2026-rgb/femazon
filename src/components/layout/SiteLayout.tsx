@@ -97,7 +97,7 @@ const richNavigationData: Record<string, any[]> = {
   const mainNavLinks = [
     { name: 'EXPLORE', hasMega: false, href: '/' },
     { name: 'SHOP', hasMega: true, href: '/shop' },
-    { name: 'CURATED', hasMega: false, href: '/#curated' },
+    { name: 'CURATED', hasMega: false, href: '/curated' },
     { name: 'SERVICES', hasMega: true, href: '/services' },
     { name: 'AI WARDROBE', hasMega: false, href: '/ai-wardrobe' },
   ];
