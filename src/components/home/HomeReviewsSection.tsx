@@ -196,11 +196,12 @@ export function HomeReviewsSection() {
                       <h3 className="font-sans text-[13px] font-bold text-text-main flex items-center gap-1.5">
                         {item.name}
                         {item.verified && (
-                          <CheckCircle2
-                            size={14}
-                            className="text-emerald-600 inline"
-                            title="Verified Buyer"
-                          />
+                          <span title="Verified Buyer" className="inline-flex items-center">
+                            <CheckCircle2
+                              size={14}
+                              className="text-emerald-600 inline"
+                            />
+                          </span>
                         )}
                       </h3>
                       <p className="text-[11px] text-text-muted">{item.location}</p>
