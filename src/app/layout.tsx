@@ -1,23 +1,35 @@
 import type { Metadata } from 'next';
-import { Inter, Playfair_Display } from 'next/font/google';
+import { Montserrat, Playfair_Display, Jost } from 'next/font/google';
 import { cookies } from 'next/headers';
 import './globals.css';
 import { SiteLayout } from '@/components/layout/SiteLayout';
 import { getSessionFromCookie } from '@/lib/auth';
+import { FemazonStoreProvider } from '@/context/FemazonStoreContext';
 
-const inter = Inter({
-  variable: '--font-inter',
+const montserrat = Montserrat({
+  variable: '--font-montserrat',
   subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  display: 'swap',
+});
+
+const jost = Jost({
+  variable: '--font-jost',
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  display: 'swap',
 });
 
 const playfair = Playfair_Display({
   variable: '--font-playfair',
   subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: 'Femazon',
-  description: 'A modern luxury marketplace experience built with Next.js and Prisma',
+  title: 'Femazon | Luxury Indian Couture & Designer Wear',
+  description: 'Shop luxury Indian designer couture, bridal lehengas, silk sarees, and contemporary anarkali sets.',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -28,7 +40,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   );
 
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable} h-full antialiased`}>
+    <html lang="en" className={`${montserrat.variable} ${jost.variable} ${playfair.variable} h-full antialiased`}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -38,7 +50,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
       </head>
       <body className="min-h-full flex flex-col font-sans">
-        <SiteLayout authSession={authSession}>{children}</SiteLayout>
+        <FemazonStoreProvider>
+          <SiteLayout authSession={authSession}>{children}</SiteLayout>
+        </FemazonStoreProvider>
       </body>
     </html>
   );

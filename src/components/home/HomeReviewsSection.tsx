@@ -168,7 +168,7 @@ export function HomeReviewsSection() {
 
             <button
               onClick={() => setIsModalOpen(true)}
-              className="group inline-flex items-center gap-1.5 sm:gap-2 bg-[#3D110F] hover:bg-[#2A0B09] text-white text-[10px] sm:text-xs font-bold uppercase tracking-[0.18em] px-4 sm:px-6 py-2 sm:py-3 rounded-full shadow-md hover:shadow-lg transition-all duration-300 active:scale-95 cursor-pointer shrink-0"
+              className="group inline-flex items-center gap-1.5 sm:gap-2 bg-[#3D110F] hover:bg-[#2A0B09] text-white text-[10px] sm:text-xs font-bold uppercase tracking-[0.18em] px-4 sm:px-6 py-2 sm:py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 active:scale-95 cursor-pointer shrink-0"
             >
               <span>Rate & Review</span>
               <ArrowRight size={12} className="transition-transform duration-300 group-hover:translate-x-1" />
@@ -181,7 +181,7 @@ export function HomeReviewsSection() {
           {reviews.slice(0, 4).map((item) => (
             <div
               key={item.id}
-              className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm hover:shadow-md border border-stone-200/80 transition-all duration-300 flex flex-col justify-between"
+              className="bg-white rounded-sm p-4 sm:p-6 shadow-sm hover:shadow-md border border-stone-200/80 transition-all duration-300 flex flex-col justify-between"
             >
               <div>
                 {/* User Info & Rating */}
@@ -237,7 +237,7 @@ export function HomeReviewsSection() {
                     <img
                       src={item.itemImage}
                       alt={item.purchasedItem}
-                      className="w-7 h-7 rounded-md object-cover shrink-0"
+                      className="w-7 h-7 rounded-xs object-cover shrink-0"
                     />
                   )}
                   <span className="text-[11px] font-medium text-text-muted truncate">
@@ -261,7 +261,7 @@ export function HomeReviewsSection() {
       {/* Modal: Write a Review / Rate & Review */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-stone-200 relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-sm max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-stone-200 relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsModalOpen(false)}
               className="absolute top-5 right-5 text-stone-400 hover:text-text-main p-1"
@@ -292,7 +292,7 @@ export function HomeReviewsSection() {
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   {/* Star Rating Picker */}
-                  <div className="flex flex-col items-center justify-center p-3 bg-stone-50 rounded-2xl mb-2">
+                  <div className="flex flex-col items-center justify-center p-3 bg-stone-50 rounded-xs mb-2">
                     <span className="text-xs font-bold uppercase tracking-wider text-text-muted mb-2">
                       Tap to Rate
                     </span>
@@ -320,7 +320,7 @@ export function HomeReviewsSection() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[11px] font-bold uppercase tracking-wider text-text-muted mb-1">
-                        Your Name *
+                        Your Full Name *
                       </label>
                       <input
                         type="text"
@@ -328,7 +328,7 @@ export function HomeReviewsSection() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="e.g. Priyadarshini R."
-                        className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-primary"
+                        className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:outline-none focus:border-primary"
                       />
                     </div>
 
@@ -341,7 +341,7 @@ export function HomeReviewsSection() {
                         value={location}
                         onChange={(e) => setLocation(e.target.value)}
                         placeholder="e.g. Chennai"
-                        className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-primary"
+                        className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:outline-none focus:border-primary"
                       />
                     </div>
                   </div>
@@ -356,7 +356,7 @@ export function HomeReviewsSection() {
                       value={itemPurchased}
                       onChange={(e) => setItemPurchased(e.target.value)}
                       placeholder="e.g. Festive Anarkali Set / Makeup Service"
-                      className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-primary"
+                      className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:outline-none focus:border-primary"
                     />
                   </div>
 
@@ -369,8 +369,8 @@ export function HomeReviewsSection() {
                       type="text"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      placeholder="e.g. Outstanding craftsmanship & fitting!"
-                      className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-primary"
+                      placeholder="e.g. Beautiful fabric & prompt delivery"
+                      className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:outline-none focus:border-primary"
                     />
                   </div>
 
@@ -385,14 +385,14 @@ export function HomeReviewsSection() {
                       value={reviewText}
                       onChange={(e) => setReviewText(e.target.value)}
                       placeholder="Write your honest thoughts about the fabric, style, delivery or stylist experience..."
-                      className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl text-sm focus:outline-none focus:border-primary resize-none"
+                      className="w-full px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:outline-none focus:border-primary resize-none"
                     />
                   </div>
 
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    className="w-full bg-primary hover:bg-[#3D110F] text-white font-bold text-xs uppercase tracking-[0.2em] py-3.5 rounded-full shadow-lg transition-all cursor-pointer"
+                    className="w-full bg-primary hover:bg-[#3D110F] text-white font-bold text-xs uppercase tracking-[0.2em] py-3.5 rounded-lg shadow-lg transition-all cursor-pointer"
                   >
                     Submit Review
                   </button>

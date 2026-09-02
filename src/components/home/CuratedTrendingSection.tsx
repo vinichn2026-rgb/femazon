@@ -129,7 +129,7 @@ export function CuratedTrendingSection() {
         </div>
 
         {/* Carousel Container with Overlapping Navigation Arrows */}
-        <div className="relative group">
+        <div className="relative group/carousel">
           
           {/* Left Navigation Arrow */}
           <button
@@ -167,43 +167,43 @@ export function CuratedTrendingSection() {
             {CURATED_STORIES.map((story) => (
               <div
                 key={story.id}
-                className="w-[145px] sm:w-[195px] md:w-[225px] lg:w-[245px] xl:w-[255px] shrink-0 snap-start group"
+                className="w-[145px] sm:w-[195px] md:w-[225px] lg:w-[245px] xl:w-[255px] shrink-0 snap-start"
               >
                 <Link
                   href={story.link}
-                  className="block relative aspect-[3/4] w-full rounded-xl sm:rounded-2xl md:rounded-[22px] overflow-hidden bg-stone-100 shadow-[0px_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0px_8px_22px_rgba(74,21,19,0.2)] transition-all duration-500 border border-stone-200/50"
+                  className="group/card block relative aspect-[3/4] w-full rounded-md overflow-hidden bg-stone-100 shadow-[0px_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0px_8px_22px_rgba(74,21,19,0.2)] transition-all duration-500 border border-stone-200/50 cursor-pointer"
                 >
                   {/* Campaign Image */}
                   <img
                     src={story.image}
                     alt={story.headingText}
-                    className="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-108"
+                    className="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover/card:scale-108"
                   />
 
                   {/* Soft Royal Maroon-Black Vignette Gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#230908]/95 via-[#230908]/40 to-transparent opacity-85 group-hover:opacity-95 transition-opacity duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#230908]/95 via-[#230908]/40 to-transparent opacity-85 group-hover/card:opacity-95 transition-opacity duration-500" />
 
                   {/* Top Badge in White & Maroon */}
                   <div className="absolute top-2 sm:top-3 left-2 sm:left-3 z-10">
-                    <span className="inline-block px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-white/95 text-[#4A1513] text-[7.5px] sm:text-[9px] font-bold uppercase tracking-[0.18em] shadow-sm border border-stone-100">
+                    <span className="inline-block px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xs bg-white/95 text-[#4A1513] text-[7.5px] sm:text-[9px] font-bold uppercase tracking-[0.18em] shadow-sm border border-stone-100">
                       {story.badge}
                     </span>
                   </div>
 
                   {/* Bottom Editorial Content */}
                   <div className="absolute bottom-0 inset-x-0 p-2.5 sm:p-4 z-10 text-white flex flex-col justify-end">
-                    <h3 className="font-serif text-[13.5px] sm:text-lg md:text-xl text-white font-normal leading-tight tracking-tight mb-0.5 sm:mb-1 group-hover:text-[#F8EAE1] transition-colors line-clamp-1">
+                    <h3 className="font-serif text-[13.5px] sm:text-lg md:text-xl text-white font-normal leading-tight tracking-tight mb-0.5 sm:mb-1 group-hover/card:text-[#F8EAE1] transition-colors line-clamp-1">
                       {story.headingText}
                     </h3>
                     <p className="text-[10px] sm:text-xs text-stone-200/90 line-clamp-1 font-light mb-2 sm:mb-3 leading-relaxed">
                       {story.subText}
                     </p>
 
-                    {/* Classy Pill "Shop Now" Button (White & Maroon Capsule) */}
+                    {/* Classy Pill "Shop Now" Button with consistent light rounded-sm */}
                     <div className="pt-0.5">
-                      <span className="inline-flex items-center gap-1 sm:gap-1.5 bg-white/95 text-[#3D110F] px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full font-sans text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.18em] shadow-sm transition-all duration-300 group-hover:bg-[#3D110F] group-hover:text-white group-hover:border-white/50 border border-white/80">
+                      <span className="inline-flex items-center gap-1 sm:gap-1.5 bg-white/95 text-[#3D110F] px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-sm font-sans text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.18em] shadow-sm transition-all duration-300 group-hover/card:bg-[#3D110F] group-hover/card:text-white group-hover/card:border-white/50 border border-white/80">
                         <span>{story.buttonText}</span>
-                        <ArrowRight size={11} className="transition-transform duration-300 group-hover:translate-x-1" />
+                        <ArrowRight size={11} className="transition-transform duration-300 group-hover/card:translate-x-1" />
                       </span>
                     </div>
                   </div>

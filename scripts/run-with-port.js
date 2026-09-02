@@ -36,13 +36,10 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`Starting Next.js on http://localhost:${port}`);
+  const nextBin = require.resolve('next/dist/bin/next');
+  const args = [nextBin, mode, '-p', String(port)];
 
-  const command = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-  const args = ['next', mode, '-p', String(port)];
-
-  const child = spawn(command, args, {
-    shell: process.platform === 'win32',
+  const child = spawn(process.execPath, args, {
     stdio: 'inherit',
     env: { ...process.env, PORT: String(port) },
   });

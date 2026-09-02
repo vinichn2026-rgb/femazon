@@ -12,9 +12,7 @@ import {
   Sparkles,
   Maximize2,
   X,
-  Ruler,
   MessageCircle,
-  Headphones,
   Phone,
   Mail,
   ChevronDown,
@@ -24,6 +22,10 @@ import {
   Percent,
   Check
 } from 'lucide-react';
+
+import { ProductVirtualTryOnModal } from '@/components/vton/ProductVirtualTryOnModal';
+import { ProductCheckoutDrawer } from '@/components/shop/ProductCheckoutDrawer';
+import { generateWhatsAppLink } from '@/lib/whatsapp';
 
 interface ProductDetailClientProps {
   product: any;
@@ -39,6 +41,9 @@ export function ProductDetailClient({
   isWishlisted: initialWishlisted = false
 }: ProductDetailClientProps) {
   const router = useRouter();
+  const [isTryOnModalOpen, setIsTryOnModalOpen] = useState(false);
+  const [isCheckoutDrawerOpen, setIsCheckoutDrawerOpen] = useState(false);
+  const [checkoutDrawerMode, setCheckoutDrawerMode] = useState<'bag' | 'checkout'>('bag');
 
   // Parse images safely
   let images: string[] = [];
@@ -63,8 +68,8 @@ export function ProductDetailClient({
     ];
   }
 
-  // Parse sizes safely
-  let sizes: string[] = ["3XS", "XXS", "XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL"];
+  // Parse sizes safely (Matching Aza Fashions)
+  let sizes: string[] = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "Custom Fit"];
   try {
     if (product.sizes) {
       const parsed = typeof product.sizes === 'string' ? JSON.parse(product.sizes) : product.sizes;
@@ -73,7 +78,7 @@ export function ProductDetailClient({
   } catch (e) {}
 
   // Parse colors safely
-  let colors: string[] = ["Sage Blossom", "Pastel Lavender", "Ivory Rose", "Sunset Peach"];
+  let colors: string[] = ["Slate Gray", "Midnight Maroon", "Sage Blossom", "Ivory Rose"];
   try {
     if (product.colors) {
       const parsed = typeof product.colors === 'string' ? JSON.parse(product.colors) : product.colors;
@@ -81,21 +86,20 @@ export function ProductDetailClient({
     }
   } catch (e) {}
 
-  const [selectedSize, setSelectedSize] = useState(sizes[4] || "M");
-  const [selectedColor, setSelectedColor] = useState(colors[0] || "Sage Blossom");
+  const [selectedSize, setSelectedSize] = useState("M");
+  const [selectedColor, setSelectedColor] = useState(colors[0] || "Slate Gray");
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(initialWishlisted);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [cartSuccessMessage, setCartSuccessMessage] = useState('');
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
-  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
 
   // Delivery Pincode State
   const [pincode, setPincode] = useState('600001');
   const [isEditingPincode, setIsEditingPincode] = useState(false);
 
   // Similar Items Tab Filter
-  const [activeSimilarTab, setActiveSimilarTab] = useState<'closest' | 'designer' | 'exclusive' | 'ready'>('closest');
+  const [activeSimilarTab, setActiveSimilarTab] = useState<'closest' | 'designer' | 'exclusive'>('closest');
 
   // Accordion open states
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
@@ -166,17 +170,22 @@ export function ProductDetailClient({
     }
   };
 
-  // Extract Designer Name & Display Title
+  // Extract Designer Name & Display Title (Matching Aza Fashions)
+  const isSurkhSyahi = product.name?.toLowerCase().includes('surkh') || product.slug?.includes('surkh') || product.name?.toLowerCase().includes('aaina') || product.id === '678643' || product.id === 'p1';
   const isPaulmiHarsh = product.name?.toLowerCase().includes('paulmi') || product.slug?.includes('paulmi');
   const isSheetalBatra = product.name?.toLowerCase().includes('sheetal batra') || product.slug?.includes('sheetal-batra');
   
-  const designerName = isPaulmiHarsh 
+  const designerName = isSurkhSyahi
+    ? "Surkh Syahi"
+    : isPaulmiHarsh 
     ? "Paulmi and Harsh" 
     : isSheetalBatra 
     ? "Sheetal Batra" 
-    : (product.name?.split('-')[0]?.trim() || "Femazon Atelier");
+    : (product.brand || product.name?.split('-')[0]?.trim() || "Femazon Atelier");
 
-  const displayTitle = isPaulmiHarsh
+  const displayTitle = isSurkhSyahi
+    ? "Aaina Mirrors V-neck Anarkali Set in Gray Chinon"
+    : isPaulmiHarsh
     ? "Laverna Floral Printed & Embroidered Chanderi Silk Kurta and Pant Set"
     : isSheetalBatra
     ? "Orange Chanderi Silk Umaira Embroidered Flared Anarkali Salwar Set"
@@ -186,14 +195,11 @@ export function ProductDetailClient({
   const filteredSimilarItems = useMemo(() => {
     if (similarProducts.length === 0) return [];
     if (activeSimilarTab === 'designer') {
-      const dMatches = similarProducts.filter(p => p.name?.toLowerCase().includes(designerName.toLowerCase()));
+      const dMatches = similarProducts.filter(p => p.name?.toLowerCase().includes(designerName.toLowerCase()) || p.brand?.toLowerCase().includes(designerName.toLowerCase()));
       return dMatches.length > 0 ? dMatches : similarProducts.slice(0, 8);
     }
     if (activeSimilarTab === 'exclusive') {
       return similarProducts.slice(0, 8);
-    }
-    if (activeSimilarTab === 'ready') {
-      return similarProducts.filter(p => (p.stock || 0) > 0).slice(0, 8);
     }
     return similarProducts.slice(0, 8);
   }, [similarProducts, activeSimilarTab, designerName]);
@@ -328,29 +334,35 @@ export function ProductDetailClient({
               <h1 className="font-serif text-base sm:text-lg text-stone-800 font-normal mt-1 leading-snug">
                 {displayTitle}
               </h1>
-              <p className="text-xs text-stone-400 mt-0.5">
-                Set of 2: Chanderi Silk Kurta &amp; Silk Trousers
+              <p className="text-xs text-stone-500 mt-0.5 font-medium">
+                {isSurkhSyahi
+                  ? "Set of 3: Chinon Mirror Anarkali, Trousers & Embroidered Dupatta"
+                  : isPaulmiHarsh
+                  ? "Set of 2: Chanderi Silk Kurta & Silk Trousers"
+                  : isSheetalBatra
+                  ? "Set of 3: Flared Anarkali, Salwar & Silk Dupatta"
+                  : "Set of 3: Luxury Indian Designer Couture Set"}
               </p>
             </div>
 
             {/* Price Box */}
             <div className="pt-1 pb-2 border-b border-stone-100">
               <div className="flex items-baseline gap-2.5">
-                <span className="font-serif text-2xl sm:text-3xl font-bold text-stone-900">
+                <span className="font-sans text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight tabular-nums">
                   ₹{currentPrice.toLocaleString('en-IN')}
                 </span>
                 {product.discountPrice && (
-                  <span className="text-sm text-stone-400 line-through">
+                  <span className="font-sans text-sm text-stone-400 line-through font-normal tabular-nums">
                     ₹{originalPrice.toLocaleString('en-IN')}
                   </span>
                 )}
                 {product.discountPrice && (
-                  <span className="text-xs font-bold text-[#4A1513] bg-[#4A1513]/10 px-2 py-0.5 rounded">
+                  <span className="font-sans text-xs font-semibold text-[#4A1513] bg-[#4A1513]/10 px-2 py-0.5 rounded tracking-wide">
                     Save {Math.round(((originalPrice - currentPrice) / originalPrice) * 100)}%
                   </span>
                 )}
               </div>
-              <span className="text-[11px] text-stone-500 block mt-1">
+              <span className="text-[11px] text-stone-500 block mt-1 font-normal">
                 Price inclusive of all taxes · Free Express Shipping
               </span>
             </div>
@@ -380,18 +392,39 @@ export function ProductDetailClient({
               </div>
             </div>
 
+            {/* ========================================================================= */}
+            {/* LUXURY VIRTUAL TRY-ON CALLOUT (Direct in-page modal trigger) */}
+            {/* ========================================================================= */}
+            {product.category !== 'Accessories' && (
+              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-[#FAF5F2] via-[#FFF9F6] to-[#FAF5F2] border border-[#4A1513]/25 shadow-2xs flex items-center justify-between gap-3 group hover:border-[#4A1513]/50 transition-all duration-300">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-white border border-[#4A1513]/20 flex items-center justify-center text-[#4A1513] shadow-2xs group-hover:scale-105 transition-transform shrink-0">
+                    <Sparkles size={18} className="animate-pulse text-[#4A1513]" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#4A1513]">Virtual Try On</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#4A1513] animate-ping" />
+                    </div>
+                    <p className="text-[11.5px] text-stone-600 font-medium leading-tight">See how this outfit looks on you.</p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsTryOnModalOpen(true)}
+                  className="px-4 py-2 bg-[#4A1513] hover:bg-[#350B0A] text-white text-[10.5px] font-bold uppercase tracking-wider rounded-xl shadow-xs hover:shadow-md active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+                >
+                  <Sparkles size={12} />
+                  <span>TRY THIS LOOK</span>
+                </button>
+              </div>
+            )}
+
             {/* Size Selector */}
             <div className="space-y-2 pt-1">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-bold uppercase tracking-wider text-stone-800">Select Size</span>
-                <button
-                  type="button"
-                  onClick={() => setIsSizeGuideOpen(true)}
-                  className="inline-flex items-center gap-1 text-[#4A1513] hover:underline cursor-pointer font-semibold"
-                >
-                  <Ruler size={13} />
-                  <span>Size guide &amp; measurements</span>
-                </button>
               </div>
 
               {/* Size Buttons Grid */}
@@ -411,39 +444,43 @@ export function ProductDetailClient({
                   </button>
                 ))}
               </div>
-
-              {/* Ships by Date Pill */}
-              <div className="flex items-center gap-1.5 text-xs text-stone-600 pt-1">
-                <Truck size={14} className="text-[#4A1513]" />
-                <span>Dispatch: <strong className="text-stone-900">⚡ Ready To Ship in 24-48 Hours</strong></span>
-              </div>
             </div>
 
-            {/* Action Buttons: Add To Cart & Speak To Stylist */}
-            <div className="flex items-center gap-3 pt-3">
+            {/* Action Buttons: Buy Now & Add To Bag (Aza Style) with light subtle radius */}
+            <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
               <button
                 type="button"
-                onClick={handleAddToCart}
-                disabled={isAddingToCart}
-                className="flex-1 h-13 bg-[#4A1513] hover:bg-[#350B0A] text-white text-xs font-bold uppercase tracking-[0.2em] transition-all shadow-md flex items-center justify-center gap-2 active:scale-98 cursor-pointer rounded-xl"
+                onClick={() => {
+                  if (!selectedSize) {
+                    setSelectedSize(sizes[0] || 'M');
+                  }
+                  setCheckoutDrawerMode('checkout');
+                  setIsCheckoutDrawerOpen(true);
+                }}
+                className="flex-1 h-13 bg-[#4A1513] hover:bg-[#350B0A] text-white text-xs font-bold uppercase tracking-[0.18em] transition-all shadow-md flex items-center justify-center gap-2 active:scale-98 cursor-pointer rounded-sm"
               >
-                <ShoppingBag size={16} />
-                <span>{isAddingToCart ? 'ADDING...' : 'ADD TO CART'}</span>
+                <span>BUY NOW</span>
               </button>
 
-              <a
-                href="https://wa.me/918291990059?text=Hello%2C%20I%20would%20like%20styling%20assistance%20for%20Paulmi%20and%20Harsh%20Laverna%20Kurta%20Set"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 h-13 border-2 border-[#4A1513] bg-white hover:bg-[#4A1513]/5 text-[#4A1513] text-xs font-bold uppercase tracking-[0.2em] transition flex items-center justify-center gap-2 active:scale-98 cursor-pointer rounded-xl"
+              <button
+                type="button"
+                onClick={() => {
+                  if (!selectedSize) {
+                    setSelectedSize(sizes[0] || 'M');
+                  }
+                  setCheckoutDrawerMode('bag');
+                  setIsCheckoutDrawerOpen(true);
+                  handleAddToCart();
+                }}
+                className="flex-1 h-13 bg-white hover:bg-[#FAF5F2] border-2 border-[#4A1513] text-[#4A1513] text-xs font-bold uppercase tracking-[0.18em] transition-all shadow-xs flex items-center justify-center gap-2 active:scale-98 cursor-pointer rounded-sm"
               >
-                <Headphones size={16} />
-                <span>SPEAK TO STYLIST</span>
-              </a>
+                <ShoppingBag size={16} />
+                <span>ADD TO BAG</span>
+              </button>
             </div>
 
             {cartSuccessMessage && (
-              <p className="text-center text-xs font-semibold text-[#4A1513] bg-[#4A1513]/10 py-2.5 rounded-lg border border-[#4A1513]/20 animate-in fade-in">
+              <p className="text-center text-xs font-semibold text-[#4A1513] bg-[#4A1513]/10 py-2 rounded-lg border border-[#4A1513]/20 animate-in fade-in">
                 ✓ {cartSuccessMessage}
               </p>
             )}
@@ -532,11 +569,11 @@ export function ProductDetailClient({
                 {openAccordions.details && (
                   <div className="px-4 pb-4 text-xs text-stone-600 space-y-2.5 border-t border-stone-100 pt-3 leading-relaxed">
                     <p>{product.description}</p>
-                    <div className="grid grid-cols-2 gap-y-2 text-[11px] pt-2 border-t border-stone-100 text-stone-500">
-                      <div><strong className="text-stone-800">Set Includes:</strong> Kurta &amp; Silk Pants</div>
-                      <div><strong className="text-stone-800">Fabric:</strong> Pure Chanderi Silk &amp; Organza</div>
-                      <div><strong className="text-stone-800">Craft:</strong> Botanical Print &amp; Zardozi</div>
-                      <div><strong className="text-stone-800">Care:</strong> Dry Clean Only</div>
+                    <div className="grid grid-cols-2 gap-y-2 text-[11px] pt-2 border-t border-stone-100 text-stone-600">
+                      <div><strong className="text-stone-900">Set Includes:</strong> {isSurkhSyahi ? "Anarkali, Trousers & Dupatta" : "Kurta & Silk Pants"}</div>
+                      <div><strong className="text-stone-900">Fabric:</strong> {isSurkhSyahi ? "Pure Chinon Silk & Organza" : "Pure Chanderi Silk & Organza"}</div>
+                      <div><strong className="text-stone-900">Craft:</strong> {isSurkhSyahi ? "Mirror Work & Resham Embroidery" : "Botanical Print & Zardozi"}</div>
+                      <div><strong className="text-stone-900">Care:</strong> Dry Clean Only</div>
                     </div>
                   </div>
                 )}
@@ -564,30 +601,35 @@ export function ProductDetailClient({
 
             {/* Customer Support Strip */}
             <div className="pt-2">
-              <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider mb-2">Customer Support</h4>
+              <h4 className="text-xs font-bold text-stone-900 uppercase tracking-wider mb-2">Customer Support &amp; Stylist Assistance</h4>
               <div className="grid grid-cols-3 gap-2">
                 <a
-                  href="https://wa.me/918291990059"
+                  href={generateWhatsAppLink({
+                    type: 'product',
+                    itemName: product.name,
+                    itemId: product.id,
+                    selectedSize: selectedSize || 'M'
+                  })}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-1.5 p-2.5 rounded-lg border border-stone-200 hover:border-[#4A1513] text-[11px] font-bold text-stone-800 transition bg-white"
+                  className="flex items-center justify-center gap-1.5 p-2.5 rounded-xl border border-stone-200 hover:border-[#25D366] hover:bg-[#25D366]/5 text-[11px] font-bold text-stone-800 transition bg-white shadow-2xs"
                 >
-                  <MessageCircle size={13} className="text-[#4A1513]" />
-                  <span>Chat with us</span>
+                  <MessageCircle size={14} className="text-[#25D366]" />
+                  <span>Ask Stylist</span>
                 </a>
                 <a
-                  href="tel:02262767120"
-                  className="flex items-center justify-center gap-1.5 p-2.5 rounded-lg border border-stone-200 hover:border-[#4A1513] text-[11px] font-bold text-stone-800 transition bg-white"
+                  href="tel:+919876543210"
+                  className="flex items-center justify-center gap-1.5 p-2.5 rounded-xl border border-stone-200 hover:border-[#4A1513] text-[11px] font-bold text-stone-800 transition bg-white shadow-2xs"
                 >
                   <Phone size={13} className="text-[#4A1513]" />
-                  <span>022 62767120</span>
+                  <span>Call Stylist</span>
                 </a>
                 <a
-                  href="mailto:support@femazon.com"
-                  className="flex items-center justify-center gap-1.5 p-2.5 rounded-lg border border-stone-200 hover:border-[#4A1513] text-[11px] font-bold text-stone-800 transition bg-white"
+                  href="mailto:concierge@femazon.luxury"
+                  className="flex items-center justify-center gap-1.5 p-2.5 rounded-xl border border-stone-200 hover:border-[#4A1513] text-[11px] font-bold text-stone-800 transition bg-white shadow-2xs"
                 >
                   <Mail size={13} className="text-[#4A1513]" />
-                  <span>Mail us</span>
+                  <span>Email</span>
                 </a>
               </div>
             </div>
@@ -640,18 +682,6 @@ export function ProductDetailClient({
             >
               Femazon Exclusive
             </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveSimilarTab('ready')}
-              className={`px-5 py-2 rounded-full text-xs font-semibold tracking-wider transition cursor-pointer border ${
-                activeSimilarTab === 'ready'
-                  ? 'border-[#4A1513] text-[#4A1513] bg-[#4A1513]/10 shadow-xs'
-                  : 'border-stone-200 text-stone-600 bg-white hover:border-[#4A1513]'
-              }`}
-            >
-              Ready to Ship
-            </button>
           </div>
 
           {/* 4-Column Product Cards Grid */}
@@ -696,15 +726,29 @@ export function ProductDetailClient({
                     </button>
                   </div>
 
-                  {/* Micro Badges */}
-                  <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-[#4A1513] bg-[#4A1513]/10 px-2 py-0.5 rounded">
-                      ⚡ Ready to ship
-                    </span>
-                    {idx % 2 === 0 && (
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-amber-800 bg-amber-50 px-2 py-0.5 rounded">
-                        ✨ New Arrivals
+                  {/* Aza-style Pills below Image */}
+                  <div className="flex flex-col gap-1 mb-1.5">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[3px] bg-[#FAF3EC] text-[#2A2522] text-[11px] font-normal">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4A1513" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                          <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                          <circle cx="12" cy="13" r="3" />
+                        </svg>
+                        <span>Virtual Try-On</span>
                       </span>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[3px] bg-[#FAF3EC] text-[#2A2522] text-[11px] font-normal">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#4A1513" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                        </svg>
+                        <span>Ships in {item.deliveryDays || 3} days</span>
+                      </span>
+                    </div>
+                    {idx % 2 === 0 && (
+                      <div className="flex items-center">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-[3px] bg-[#FAF3EC] text-[#4A1513] text-[11px] font-semibold tracking-normal">
+                          Femazon Exclusive
+                        </span>
+                      </div>
                     )}
                   </div>
 
@@ -798,9 +842,6 @@ export function ProductDetailClient({
 
                   {/* Micro Badges */}
                   <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-[#4A1513] bg-[#4A1513]/10 px-2 py-0.5 rounded">
-                      ⚡ Ready to ship
-                    </span>
                     {idx === 0 && (
                       <span className="text-[9px] font-bold uppercase tracking-wider text-rose-700 bg-rose-50 px-2 py-0.5 rounded">
                         50% OFF
@@ -908,63 +949,41 @@ export function ProductDetailClient({
         </div>
       )}
 
-      {/* Size Guide Modal */}
-      {isSizeGuideOpen && (
-        <div
-          className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in"
-          onClick={() => setIsSizeGuideOpen(false)}
-        >
-          <div
-            className="bg-white max-w-lg w-full p-6 shadow-2xl rounded-2xl border border-stone-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between pb-4 border-b border-stone-200">
-              <div>
-                <h3 className="font-serif text-lg font-bold text-stone-900">Designer Size Guide</h3>
-                <p className="text-xs text-stone-500">Standard body measurements in Inches</p>
-              </div>
-              <button onClick={() => setIsSizeGuideOpen(false)} className="text-stone-400 hover:text-stone-900">
-                <X size={20} />
-              </button>
-            </div>
+      {/* In-Page AI Virtual Try-On Modal */}
+      <ProductVirtualTryOnModal
+        isOpen={isTryOnModalOpen}
+        onClose={() => setIsTryOnModalOpen(false)}
+        product={{
+          ...product,
+          images: images,
+          image: images[0] || product.image || "https://images.unsplash.com/photo-1583391733958-65e2be10c3fb?auto=format&fit=crop&q=85&w=800"
+        }}
+        selectedSize={selectedSize}
+        onAddToCart={(size) => {
+          if (size) setSelectedSize(size);
+          handleAddToCart();
+        }}
+      />
 
-            <div className="mt-4 overflow-x-auto">
-              <table className="w-full text-xs text-left">
-                <thead className="bg-stone-50 text-stone-700 font-bold uppercase text-[10px] tracking-wider">
-                  <tr>
-                    <th className="p-2.5">Size</th>
-                    <th className="p-2.5">Bust</th>
-                    <th className="p-2.5">Waist</th>
-                    <th className="p-2.5">Hip</th>
-                    <th className="p-2.5">Length</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-stone-100 text-stone-600">
-                  <tr><td className="p-2.5 font-bold text-stone-900">3XS</td><td className="p-2.5">30&quot;</td><td className="p-2.5">24&quot;</td><td className="p-2.5">32&quot;</td><td className="p-2.5">48&quot;</td></tr>
-                  <tr><td className="p-2.5 font-bold text-stone-900">XXS</td><td className="p-2.5">32&quot;</td><td className="p-2.5">26&quot;</td><td className="p-2.5">34&quot;</td><td className="p-2.5">48&quot;</td></tr>
-                  <tr><td className="p-2.5 font-bold text-stone-900">XS</td><td className="p-2.5">34&quot;</td><td className="p-2.5">28&quot;</td><td className="p-2.5">36&quot;</td><td className="p-2.5">48&quot;</td></tr>
-                  <tr><td className="p-2.5 font-bold text-stone-900">S</td><td className="p-2.5">36&quot;</td><td className="p-2.5">30&quot;</td><td className="p-2.5">38&quot;</td><td className="p-2.5">48&quot;</td></tr>
-                  <tr><td className="p-2.5 font-bold text-stone-900">M</td><td className="p-2.5">38&quot;</td><td className="p-2.5">32&quot;</td><td className="p-2.5">40&quot;</td><td className="p-2.5">48&quot;</td></tr>
-                  <tr><td className="p-2.5 font-bold text-stone-900">L</td><td className="p-2.5">40&quot;</td><td className="p-2.5">34&quot;</td><td className="p-2.5">42&quot;</td><td className="p-2.5">48&quot;</td></tr>
-                  <tr><td className="p-2.5 font-bold text-stone-900">XL</td><td className="p-2.5">42&quot;</td><td className="p-2.5">36&quot;</td><td className="p-2.5">44&quot;</td><td className="p-2.5">48&quot;</td></tr>
-                  <tr><td className="p-2.5 font-bold text-stone-900">XXL</td><td className="p-2.5">44&quot;</td><td className="p-2.5">38&quot;</td><td className="p-2.5">46&quot;</td><td className="p-2.5">48&quot;</td></tr>
-                  <tr><td className="p-2.5 font-bold text-stone-900">3XL</td><td className="p-2.5">46&quot;</td><td className="p-2.5">40&quot;</td><td className="p-2.5">48&quot;</td><td className="p-2.5">48&quot;</td></tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-stone-200 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setIsSizeGuideOpen(false)}
-                className="px-5 py-2 bg-[#4A1513] text-white text-xs font-bold uppercase tracking-wider rounded-lg"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Side Panel Bag & Instant Checkout Drawer */}
+      <ProductCheckoutDrawer
+        isOpen={isCheckoutDrawerOpen}
+        onClose={() => setIsCheckoutDrawerOpen(false)}
+        product={{
+          id: product.id,
+          name: product.name,
+          brand: designerName,
+          price: currentPrice,
+          originalPrice: originalPrice,
+          discountPrice: product.discountPrice ? currentPrice : undefined,
+          image: images[0] || product.image || "https://images.unsplash.com/photo-1583391733958-65e2be10c3fb?auto=format&fit=crop&q=85&w=800",
+          sizes: sizes,
+          category: product.category
+        }}
+        selectedSize={selectedSize || sizes[0] || 'M'}
+        onSelectSize={(sz) => setSelectedSize(sz)}
+        initialMode={checkoutDrawerMode}
+      />
     </div>
   );
 }

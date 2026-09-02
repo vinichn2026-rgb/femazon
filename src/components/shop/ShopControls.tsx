@@ -60,7 +60,6 @@ export function ShopControls({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const isReadyToShipActive = filters?.inStockOnly ?? false;
   const isOnSaleActive = filters?.onSale ?? false;
   const isCustomFitActive = filters?.sizes?.includes("Custom Fit") ?? false;
 
@@ -74,10 +73,10 @@ export function ShopControls({
   };
 
   const categoryDisplayTitle = selectedCategory === "All"
-    ? "All Womens Styles"
-    : selectedCategory.toLowerCase().includes("wear") || selectedCategory.toLowerCase().includes("sets")
-    ? selectedCategory
-    : `Womens ${selectedCategory} Sets`;
+    ? "All Collections"
+    : selectedCategory === "New"
+    ? "New Arrivals"
+    : selectedCategory;
 
   return (
     <div className="flex flex-col gap-4 pb-4 border-b border-stone-200/80 mb-6">
@@ -133,21 +132,7 @@ export function ShopControls({
             <span>Virtual Try-On</span>
           </Link>
 
-          {/* 3. Ready to Ship Pill */}
-          <button
-            type="button"
-            onClick={() => onFilterChange?.('inStockOnly', !isReadyToShipActive)}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer border ${
-              isReadyToShipActive
-                ? 'border-[#4A1513] bg-[#4A1513] text-white shadow-xs'
-                : 'border-stone-200 bg-white text-stone-700 hover:border-[#4A1513] hover:text-[#4A1513]'
-            }`}
-          >
-            <Zap size={12} className={isReadyToShipActive ? "text-white" : "text-[#4A1513]"} />
-            <span>Ready to Ship</span>
-          </button>
-
-          {/* 4. On Sale Pill */}
+          {/* 3. On Sale Pill */}
           <button
             type="button"
             onClick={() => onFilterChange?.('onSale', !isOnSaleActive)}

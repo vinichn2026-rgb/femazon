@@ -396,10 +396,6 @@ export function CuratedPageClient({ trendingProducts }: CuratedPageProps) {
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                   
-                  {/* Badge */}
-                  <span className="absolute top-2.5 left-2.5 text-[9px] font-bold uppercase tracking-wider text-white bg-[#4A1513] px-2.5 py-0.5 rounded-full shadow-sm">
-                    {item.badge}
-                  </span>
 
                   {/* Wishlist Icon */}
                   <button className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/90 backdrop-blur-md text-stone-700 hover:text-rose-600 flex items-center justify-center shadow-sm transition-colors">

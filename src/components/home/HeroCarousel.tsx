@@ -99,7 +99,7 @@ export function HeroCarousel() {
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
           <section
           aria-label="Femazon Hero Banner"
-          className="relative w-full aspect-[16/10] sm:aspect-[16/7.5] md:aspect-[16/6.2] min-h-[280px] sm:min-h-[360px] md:min-h-[400px] lg:min-h-[440px] max-h-[480px] rounded-2xl md:rounded-3xl overflow-hidden bg-neutral-900 shadow-md border border-stone-200/60 select-none group"
+          className="relative w-full aspect-[16/10] sm:aspect-[16/7.5] md:aspect-[16/6.2] min-h-[280px] sm:min-h-[360px] md:min-h-[400px] lg:min-h-[440px] max-h-[480px] rounded-md overflow-hidden bg-neutral-900 shadow-md border border-stone-200/60 select-none group"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
           onTouchStart={handleTouchStart}
@@ -160,11 +160,11 @@ export function HeroCarousel() {
                 {currentSlide.tagline}
               </p>
 
-              {/* Clean Luxury CTA Button: White Background & Maroon Text */}
+              {/* Clean Luxury CTA Button: Light subtle radius matching navbar search box */}
               <div>
                 <Link
                   href={currentSlide.link}
-                  className="group inline-flex items-center gap-1.5 sm:gap-2 bg-white hover:bg-[#3D110F] text-[#3D110F] hover:text-white px-4 sm:px-7 py-2 sm:py-2.5 rounded-full font-sans text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] shadow-lg hover:shadow-xl transition-all duration-300 border border-white hover:border-[#3D110F] active:scale-95 cursor-pointer"
+                  className="group inline-flex items-center gap-1.5 sm:gap-2 bg-white hover:bg-[#3D110F] text-[#3D110F] hover:text-white px-5 sm:px-7 py-2.5 sm:py-3 rounded-sm font-sans text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] shadow-md hover:shadow-lg transition-all duration-300 border border-white hover:border-[#3D110F] active:scale-95 cursor-pointer"
                 >
                   <span>{currentSlide.ctaText}</span>
                   <ArrowRight

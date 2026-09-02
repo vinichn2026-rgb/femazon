@@ -17,6 +17,7 @@ const initialFilterState: FilterState = {
   brands: [],
   inStockOnly: false,
   onSale: false,
+  readyToShip: false,
 };
 
 // Mock Subcategories based on user's request for "Women"

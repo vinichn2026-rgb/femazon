@@ -1,11 +1,18 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Search, Menu, Heart, ShoppingBag, UserCircle2, Camera, X, ChevronDown, ChevronRight } from 'lucide-react';
+import { Search, Menu, Heart, ShoppingBag, UserCircle2, Camera, X, ChevronDown, ChevronRight, MapPin, MessageCircle, LogOut, Sparkles } from 'lucide-react';
 import NotificationDropdown from './NotificationDropdown';
 import { SearchBar } from './SearchBar';
+import { useFemazonStore } from '@/context/FemazonStoreContext';
+import { GlobalCartDrawer } from '@/components/cart/GlobalCartDrawer';
+import { LogoutConfirmModal } from '@/components/auth/LogoutConfirmModal';
+import { WhatsAppFloatingButton } from '@/components/common/WhatsAppFloatingButton';
+import { FemazonAIChatDrawer } from '@/components/chat/FemazonAIChatDrawer';
+import { BrandLogo } from '@/components/common/BrandLogo';
+import { generateWhatsAppLink } from '@/lib/whatsapp';
 
 type AuthSession = {
   id: string;
@@ -96,11 +103,101 @@ const richNavigationData: Record<string, any[]> = {
 
   const mainNavLinks = [
     { name: 'EXPLORE', hasMega: false, href: '/' },
-    { name: 'SHOP', hasMega: true, href: '/shop' },
+    { name: 'SHOP', hasMega: false, href: '/shop' },
     { name: 'CURATED', hasMega: false, href: '/curated' },
     { name: 'SERVICES', hasMega: true, href: '/services' },
     { name: 'AI WARDROBE', hasMega: false, href: '/ai-wardrobe' },
   ];
+
+const SUB_NAV_ITEMS = [
+  "New", "Kurta Sets", "Lehengas", "Sarees", "Wedding", 
+  "Indo-Western", "Western Wear", "Virtual Try On", "Femazon Exclusive", 
+  "Dresses", "Femazon Services", "On Sale"
+];
+
+const DEFAULT_MENU_COLUMNS = [
+  {
+    title: "SHOP BY CATEGORY",
+    items: [
+      { label: "Kurta Sets", href: "/shop?category=Kurta+Sets" },
+      { label: "Lehengas", href: "/shop?category=Lehengas" },
+      { label: "Sarees", href: "/shop?category=Sarees" },
+      { label: "Dresses", href: "/shop?category=Dresses" },
+      { label: "Gowns", href: "/shop?category=Gowns" },
+      { label: "Kaftans", href: "/shop?category=Kaftans" },
+      { label: "Tops", href: "/shop?category=Tops" },
+      { label: "Co-ord Sets", href: "/shop?category=Co-ord+Sets" },
+      { label: "Indo-Western", href: "/shop?category=Indo-Western" },
+      { label: "Western Wear", href: "/shop?category=Western+Wear" },
+    ],
+  },
+  {
+    title: "OCCASION",
+    items: [
+      { label: "Wedding Edit", href: "/shop?category=Wedding" },
+      { label: "Festive Wear", href: "/shop?category=Festive" },
+      { label: "Party Wear", href: "/shop?category=Party" },
+      { label: "Casual Styles", href: "/shop?category=Casual" },
+      { label: "Office Wear", href: "/shop?category=Workwear" },
+      { label: "Vacation Edit", href: "/shop?category=Resortwear" },
+      { label: "Evening Looks", href: "/shop?category=Evening" },
+    ],
+  },
+  {
+    title: "CURATED EDITS",
+    items: [
+      { label: "The Silk Legacy", href: "/curated" },
+      { label: "Modern Indian Edit", href: "/curated" },
+      { label: "The Salwar Edit", href: "/shop?category=Kurta+Sets" },
+      { label: "Fusion Fever", href: "/curated" },
+      { label: "Light Festive Edit", href: "/curated" },
+      { label: "The Bridesmaid Edit", href: "/curated" },
+      { label: "Wedding Guest Edit", href: "/curated" },
+    ],
+  },
+];
+
+const DEFAULT_MENU_CARDS = [
+  {
+    title: "Wedding Lehengas",
+    subtitle: "Bridal Couture",
+    image: "https://images.unsplash.com/photo-1583391733958-65e2be10c3fb?auto=format&fit=crop&q=85&w=600",
+    href: "/shop?category=Lehengas",
+  },
+  {
+    title: "Festive Sarees",
+    subtitle: "Pure Silk Drapes",
+    image: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=85&w=600",
+    href: "/shop?category=Sarees",
+  },
+  {
+    title: "Modern Kurta Sets",
+    subtitle: "Contemporary Ethnic",
+    image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=85&w=600",
+    href: "/shop?category=Kurta+Sets",
+  },
+  {
+    title: "Evening Gowns",
+    subtitle: "Couture Silhouettes",
+    image: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&q=85&w=600",
+    href: "/shop?category=Gowns",
+  },
+];
+
+interface MegaMenuConfig {
+  columns: {
+    title: string;
+    items: { label: string; href: string }[];
+  }[];
+  cards: {
+    title: string;
+    subtitle: string;
+    image: string;
+    href: string;
+  }[];
+}
+
+const CATEGORY_MENU_CONFIGS: Record<string, MegaMenuConfig> = {};
 
 export function SiteLayout({
   children,
@@ -117,6 +214,9 @@ export function SiteLayout({
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+
+  // Global Real-time Store State
+  const { cartCount, openCart, wishlistCount, user, requestLogout } = useFemazonStore();
 
   const toggleAccordion = (name: string) => {
     setActiveAccordion(prev => prev === name ? null : name);
@@ -142,54 +242,223 @@ export function SiteLayout({
       </div>
 
       {/* 2. Main Navigation */}
-      <header className="sticky top-0 z-50 w-full bg-surface/95 backdrop-blur-md transition-all shadow-sm border-b border-accent/10">
-        <div className="mx-auto flex h-[88px] max-w-[1400px] items-center justify-between px-6 relative">
+      <header className="sticky top-0 z-50 w-full bg-white transition-all shadow-sm border-b border-stone-200">
+        {/* Tier 1: Logo, Search, Actions */}
+        <div className="mx-auto flex h-[92px] md:h-[102px] max-w-[1400px] items-center px-4 sm:px-6 relative gap-4 sm:gap-8">
           
           {/* Mobile Menu Toggle */}
           <button 
             onClick={() => setIsMobileMenuOpen(true)}
-            className="flex md:hidden text-text-main transition hover:text-primary mr-4"
+            className="flex md:hidden text-text-main transition hover:text-primary"
           >
             <Menu size={24} strokeWidth={1.5} />
           </button>
 
-          {/* Left: Logo */}
-          <Link href="/" className="group flex items-center shrink-0 py-1">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              src="/femazon-logo.png" 
-              alt="Femazon" 
-              className="h-13 sm:h-15 md:h-16 lg:h-[68px] w-auto object-contain transition-transform duration-200 group-hover:scale-105" 
-            />
-          </Link>
+          {/* Left: Brand Logo (Trendy Luxury Couture Wordmark) */}
+          <BrandLogo />
 
-          {/* Center: Desktop Navigation Links */}
-          <nav className="hidden h-full flex-1 items-center justify-center gap-6 md:flex lg:gap-8">
-            {mainNavLinks.map((link) => (
-              <div 
-                key={link.name} 
-                className={`group flex h-full items-center ${link.name !== 'SHOP' ? 'relative' : ''}`}
+          {/* Center: Search Bar (Minimal Subtle Radius) */}
+          <div className="flex-1 max-w-2xl mx-auto hidden md:block">
+             <form onSubmit={handleSearchSubmit} className="relative w-full border border-stone-300 rounded-sm h-[44px] flex items-center px-4 bg-[#f8f9fa] hover:bg-white transition-colors focus-within:bg-white focus-within:border-stone-400 focus-within:shadow-xs">
+               <Search size={17} className="text-stone-400 shrink-0" />
+               <input 
+                 type="text" 
+                 value={searchQuery}
+                 onChange={(e) => setSearchQuery(e.target.value)}
+                 placeholder="Search for products, brands and more" 
+                 className="w-full bg-transparent border-none focus:outline-none text-[13.5px] text-text-main px-3 placeholder:text-stone-400"
+               />
+               <div className="h-5 w-[1px] bg-stone-200 mx-3"></div>
+               <button type="button" className="flex items-center gap-2 text-stone-500 hover:text-primary transition-colors shrink-0 text-[12px] font-medium whitespace-nowrap">
+                 <Camera size={16} /> Image Search
+               </button>
+             </form>
+          </div>
+
+          {/* Right: Actions (Store, User, Wishlist, Cart, WhatsApp) */}
+          <div className="flex shrink-0 items-center justify-end gap-5 lg:gap-7 ml-auto">
+            <Link href="/stores" className="hidden xl:flex items-center gap-2 text-text-main hover:text-primary transition-colors">
+              <MapPin size={20} strokeWidth={1.5} />
+              <span className="text-[13px] font-medium">Find a store</span>
+            </Link>
+            
+            {/* User Account Dropdown (Aza Style with Minimal Radius) */}
+            <div className="group relative hidden items-center md:flex h-full py-6">
+              <Link 
+                href={isLoggedIn ? "/profile" : "/login"} 
+                className="text-stone-800 transition hover:text-[#4A1513]"
               >
+                <UserCircle2 size={23} strokeWidth={1.5} />
+              </Link>
+              
+              <div className="absolute right-0 top-full -mt-1 invisible opacity-0 translate-y-1 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 flex w-68 flex-col bg-white rounded-sm border border-stone-200/90 py-3 shadow-[0_10px_35px_rgba(0,0,0,0.12)] transition-all duration-200 z-50">
+                
+                {/* Header Row: Hi {Name} | 💎 Ruby */}
+                <div className="flex items-center justify-between px-4 pb-3 pt-1 border-b border-stone-100">
+                  <div className="truncate min-w-0 pr-2">
+                    <span className="text-[13px] font-bold text-stone-900 truncate block">
+                      Hi {user?.name ? user.name.split(' ')[0] : 'Guest'}
+                    </span>
+                    {user?.email && (
+                      <span className="text-[10px] text-stone-400 truncate block">
+                        {user.email}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 pl-2.5 border-l border-stone-200 shrink-0">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-xs border border-rose-300 bg-rose-50/80 text-stone-900 text-[10.5px] font-bold">
+                      <span>💎</span>
+                      <span>{user?.tier || 'Ruby'}</span>
+                    </span>
+                  </div>
+                </div>
+
+                {!isLoggedIn && (
+                  <div className="p-3 border-b border-stone-100">
+                    <Link
+                      href="/login"
+                      className="block w-full py-2 px-3 bg-[#4A1513] hover:bg-[#350B0A] text-white text-xs font-bold uppercase tracking-wider text-center rounded-sm transition shadow-xs"
+                    >
+                      Login / Sign Up
+                    </Link>
+                  </div>
+                )}
+
+                {/* Clean Navigation Links */}
+                <div className="py-1 text-[13px] text-stone-800 font-normal">
+                  <Link href="/profile" className="block px-4 py-2 hover:bg-stone-50 hover:text-[#4A1513] transition-colors">
+                    Account Details
+                  </Link>
+                  <Link href="/orders" className="block px-4 py-2 hover:bg-stone-50 hover:text-[#4A1513] transition-colors">
+                    Orders and Returns
+                  </Link>
+                  <Link href="/wallet" className="block px-4 py-2 hover:bg-stone-50 hover:text-[#4A1513] transition-colors">
+                    Femazon Wallet / Gift Cards
+                  </Link>
+                  <Link href="/addresses" className="block px-4 py-2 hover:bg-stone-50 hover:text-[#4A1513] transition-colors">
+                    Saved Addresses
+                  </Link>
+                  <Link href="/bookings" className="block px-4 py-2 hover:bg-stone-50 hover:text-[#4A1513] transition-colors">
+                    My Bookings
+                  </Link>
+                  <Link href="/settings" className="block px-4 py-2 hover:bg-stone-50 hover:text-[#4A1513] transition-colors">
+                    Settings
+                  </Link>
+                  
+                  {role === 'VENDOR' && (
+                    <Link href="/seller/dashboard" className="block px-4 py-2 text-[#4A1513] font-semibold hover:bg-stone-50 transition-colors">
+                      Vendor Dashboard
+                    </Link>
+                  )}
+                  {role === 'ADMIN' && (
+                    <Link href="/admin/dashboard" className="block px-4 py-2 text-[#4A1513] font-semibold hover:bg-stone-50 transition-colors">
+                      Admin Dashboard
+                    </Link>
+                  )}
+
+                  {isLoggedIn && (
+                    <>
+                      <div className="my-1.5 border-t border-stone-100" />
+                      <button
+                        type="button"
+                        onClick={requestLogout}
+                        className="w-full text-left px-4 py-2 text-rose-600 hover:bg-rose-50 font-semibold transition-colors flex items-center justify-between cursor-pointer"
+                      >
+                        <span>Logout</span>
+                        <LogOut size={13} />
+                      </button>
+                    </>
+                  )}
+                </div>
+
+              </div>
+            </div>
+
+            {/* Live Wishlist Counter */}
+            <Link href="/wishlist" className="relative text-stone-800 transition hover:text-[#4A1513]">
+              <Heart size={22} strokeWidth={1.5} />
+              {wishlistCount > 0 && (
+                <span className="absolute -right-2 -top-1.5 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#4A1513] text-[10px] font-bold text-white shadow-sm animate-in zoom-in">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
+
+            {/* Live Cart Trigger Button */}
+            <button 
+              type="button"
+              onClick={openCart}
+              className="relative text-stone-800 transition hover:text-[#4A1513] cursor-pointer"
+              title="Shopping Bag"
+            >
+              <ShoppingBag size={22} strokeWidth={1.5} />
+              {cartCount > 0 && (
+                <span className="absolute -right-2 -top-1.5 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#4A1513] text-[10px] font-bold text-white shadow-sm animate-in zoom-in">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+
+            {/* Direct WhatsApp Concierge Trigger */}
+            <a 
+              href={generateWhatsAppLink({ type: 'general' })}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:block text-[#25D366] hover:scale-110 transition-transform"
+              title="Chat with Concierge on WhatsApp"
+            >
+              <MessageCircle size={24} strokeWidth={1.5} />
+            </a>
+          </div>
+        </div>
+
+        {/* Tier 2: Horizontal Category Navigation (with Mega Menu) */}
+        <div className="w-full border-t border-stone-100 bg-white hidden md:block">
+          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 flex items-center justify-between h-[48px] relative">
+            {SUB_NAV_ITEMS.map((item) => {
+              const activeMenuData = CATEGORY_MENU_CONFIGS[item] || {
+                columns: DEFAULT_MENU_COLUMNS,
+                cards: DEFAULT_MENU_CARDS,
+              };
+
+              return (
+              <div key={item} className="group flex h-full items-center">
                 <Link 
-                  href={link.href} 
-                  className="flex h-full items-center text-[13px] font-bold tracking-widest uppercase transition border-b-2 border-transparent hover:text-primary text-text-main group-hover:text-primary gap-1"
+                  href={
+                    item === 'Virtual Try On'
+                      ? '/virtual-try-on'
+                      : item === 'Femazon Services'
+                      ? '/services'
+                      : `/shop?category=${encodeURIComponent(item)}`
+                  } 
+                  className={`flex h-full items-center text-[13px] tracking-wide transition-colors border-b-[3px] border-transparent group-hover:border-[#4A1513] ${
+                    item === 'On Sale'
+                      ? 'text-[#4A1513] font-semibold'
+                      : 'text-stone-600 hover:text-[#4A1513] hover:font-medium'
+                  }`}
                 >
-                  {link.name}
-                  {link.hasMega && <ChevronDown size={14} className="transition-transform duration-300 group-hover:-rotate-180" />}
+                  {item}
                 </Link>
 
-                {/* Desktop Rich Dropdown / Mega Menu - Centered relative to header container */}
-                {link.hasMega && link.name === 'SHOP' && (
-                  <div className="absolute left-1/2 -translate-x-1/2 top-full z-50 w-[1060px] max-w-[calc(100vw-48px)] invisible opacity-0 translate-y-2 bg-white shadow-2xl border border-stone-200/80 rounded-2xl transition-all duration-300 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 flex flex-col overflow-hidden">
-                    <div className="grid grid-cols-6 p-8 gap-6">
-                      {richNavigationData[link.name]?.map((col, idx) => (
-                        <div key={idx} className="flex flex-col">
-                          <h4 className="mb-4 text-xs font-bold tracking-widest text-[#4A1513] uppercase border-b border-stone-100 pb-2">{col.title}</h4>
-                          <ul className="flex flex-col gap-2.5">
-                            {col.items.map((item: any) => (
-                              <li key={item.name}>
-                                <Link href={item.href} className="text-xs text-stone-600 hover:text-[#4A1513] hover:font-semibold transition-colors">
-                                  {item.name}
+                {/* Mega Menu Dropdown (Sleek, Compact & Classy Half-Height) */}
+                <div className="absolute left-0 right-0 top-full z-50 invisible opacity-0 translate-y-1 bg-white shadow-xl border-t border-stone-200/90 transition-all duration-300 ease-out group-hover:visible group-hover:opacity-100 group-hover:translate-y-0">
+                  <div className="max-w-[1440px] mx-auto px-6 lg:px-8 py-4 flex gap-8 items-stretch bg-white">
+                    
+                    {/* LEFT SIDE (around 42% width): Clean 3-Column Text Navigation (No Designers) */}
+                    <div className="w-[42%] grid grid-cols-3 gap-5 py-1">
+                      {activeMenuData.columns.map((col, idx) => (
+                        <div key={col.title} className={`flex flex-col ${idx !== activeMenuData.columns.length - 1 ? 'border-r border-stone-100 pr-4' : ''}`}>
+                          <h4 className="font-serif text-[10.5px] font-bold tracking-[0.16em] uppercase text-[#4A1513] mb-2 pb-1 border-b border-stone-200/60 whitespace-nowrap">
+                            {col.title}
+                          </h4>
+                          <ul className="flex flex-col gap-1">
+                            {col.items.map((linkItem) => (
+                              <li key={linkItem.label}>
+                                <Link
+                                  href={linkItem.href}
+                                  className="text-[12px] text-stone-700 hover:text-[#4A1513] hover:font-medium hover:translate-x-1 transition-all duration-200 block py-0.5 leading-snug line-clamp-1"
+                                >
+                                  {linkItem.label}
                                 </Link>
                               </li>
                             ))}
@@ -198,99 +467,49 @@ export function SiteLayout({
                       ))}
                     </div>
 
-                    {/* Bottom CTA */}
-                    <Link href="/shop" className="bg-[#4A1513] p-3.5 sm:p-4 flex justify-center group/cta hover:bg-[#3D110F] transition-colors">
-                      <div className="text-[12px] font-bold uppercase tracking-[0.2em] text-white flex items-center gap-2">
-                        Explore All Categories <ChevronRight size={16} className="transition-transform duration-300 group-hover/cta:translate-x-1" />
+                    {/* Subtle Vertical Divider */}
+                    <div className="w-[1px] bg-stone-200/70 my-1 self-stretch" />
+
+                    {/* RIGHT SIDE (around 60% width): 4 Full-View Fashion Cards Horizontally */}
+                    <div className="w-[60%] flex flex-col justify-stretch py-1">
+                      <div className="grid grid-cols-4 gap-3.5 h-full">
+                        {activeMenuData.cards.map((card) => (
+                          <Link
+                            key={card.title}
+                            href={card.href}
+                            className="group/card flex flex-col h-full bg-white rounded-xl overflow-hidden border border-stone-200/80 hover:border-[#4A1513]/50 shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:shadow-lg transition-all duration-300 cursor-pointer"
+                          >
+                            {/* Full-View Image Container */}
+                            <div className="relative w-full flex-1 min-h-[145px] overflow-hidden bg-stone-100">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={card.image}
+                                alt={card.title}
+                                className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover/card:scale-105"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
+                            </div>
+
+                            {/* Content Below Image: Side-by-side row */}
+                            <div className="px-2.5 py-2.5 bg-white flex items-center justify-between gap-1 shrink-0 border-t border-stone-100">
+                              <h5 className="font-serif text-[11px] font-semibold text-stone-900 group-hover/card:text-[#4A1513] transition-colors leading-tight truncate">
+                                {card.title}
+                              </h5>
+                              <div className="flex items-center gap-0.5 text-[8.5px] font-bold tracking-[0.1em] uppercase text-[#4A1513] shrink-0 transition-colors">
+                                <span>SHOP NOW</span>
+                                <span className="group-hover/card:translate-x-0.5 transition-transform duration-200">→</span>
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
                       </div>
-                    </Link>
-                  </div>
-                )}
+                    </div>
 
-                {/* Dropdown for Services/Other */}
-                {link.hasMega && link.name !== 'SHOP' && richNavigationData[link.name] && (
-                  <div className="absolute left-1/2 -translate-x-1/2 top-full z-50 w-max min-w-[480px] invisible opacity-0 translate-y-2 bg-white shadow-xl border border-stone-200/80 rounded-2xl transition-all duration-300 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 p-6 flex gap-8">
-                    {richNavigationData[link.name]?.map((col, idx) => (
-                      <div key={idx} className="flex flex-col flex-1">
-                        <h4 className="mb-3 px-3 text-[11px] font-semibold tracking-wider text-primary uppercase">
-                          {col.title}
-                        </h4>
-                        <ul className="flex flex-col gap-1">
-                          {col.items.map((item: any, i: number) => (
-                            <li key={i}>
-                              <Link 
-                                href={item.href} 
-                                className="group/item flex items-center px-3 py-2.5 rounded-xl hover:bg-slate-50/80 transition-all duration-150"
-                              >
-                                {/* Center: Text */}
-                                <div className="flex flex-col flex-1">
-                                  <span className="font-medium text-sm text-slate-800 group-hover/item:text-primary transition-colors">
-                                    {item.name}
-                                  </span>
-                                  <span className="text-xs text-slate-400 group-hover/item:text-slate-500 font-normal mt-0.5">
-                                    {item.desc}
-                                  </span>
-                                </div>
-
-                                {/* Right: Badge or Arrow */}
-                                <div className="flex items-center justify-end shrink-0 ml-4">
-                                  {item.badge ? (
-                                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
-                                      item.badge === 'HOT' ? 'bg-rose-50 text-rose-600 border border-rose-100' :
-                                      item.badge === 'NEW' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
-                                      'bg-amber-50 text-amber-600 border border-amber-100'
-                                    }`}>
-                                      {item.badge}
-                                    </span>
-                                  ) : (
-                                    <ChevronRight size={16} className="text-slate-300 opacity-0 -translate-x-1 transition-all duration-300 group-hover/item:opacity-100 group-hover/item:translate-x-1" />
-                                  )}
-                                </div>
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </nav>
-
-          {/* Right: Actions (Search, User, Cart) */}
-          <div className="flex shrink-0 items-center justify-end gap-3 sm:gap-4 lg:gap-5">
-            <div className="hidden sm:block">
-              <SearchBar />
-            </div>
-            
-            {isLoggedIn ? (
-              <>
-                <NotificationDropdown />
-                <div className="group relative hidden items-center md:flex h-full py-6">
-                  <Link href="/profile" className="text-text-main transition hover:text-primary">
-                    <UserCircle2 size={22} strokeWidth={1.5} />
-                  </Link>
-                  <div className="absolute right-0 top-full -mt-2 invisible opacity-0 flex w-48 flex-col bg-surface border border-accent/20 p-2 shadow-xl transition-all group-hover:visible group-hover:opacity-100 z-50">
-                    <Link href="/profile" className="px-3 py-2 text-xs font-bold uppercase tracking-widest hover:bg-accent/10 hover:text-primary">My Account</Link>
-                    <Link href="/orders" className="px-3 py-2 text-xs font-bold uppercase tracking-widest hover:bg-accent/10 hover:text-primary">Orders</Link>
-                    {role === 'VENDOR' && <Link href="/seller/dashboard" className="px-3 py-2 text-xs font-bold uppercase tracking-widest hover:bg-accent/10 hover:text-primary">Vendor Dashboard</Link>}
-                    {role === 'ADMIN' && <Link href="/admin/dashboard" className="px-3 py-2 text-xs font-bold uppercase tracking-widest hover:bg-accent/10 hover:text-primary">Admin Dashboard</Link>}
-                    <div className="my-1 border-t border-accent/10"></div>
-                    <Link href="/api/auth/logout" className="px-3 py-2 text-xs font-bold uppercase tracking-widest text-primary hover:bg-primary/5">Logout</Link>
                   </div>
                 </div>
-              </>
-            ) : (
-              <Link href="/login" className="hidden text-text-main transition hover:text-primary md:block">
-                <UserCircle2 size={22} strokeWidth={1.5} />
-              </Link>
-            )}
-
-            <Link href="/cart" className="relative text-text-main transition hover:text-primary">
-              <ShoppingBag size={22} strokeWidth={1.5} />
-              <span className="absolute -right-2 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-secondary text-[9px] font-bold text-white shadow-sm">0</span>
-            </Link>
+              </div>
+            );
+          })}
           </div>
         </div>
       </header>
@@ -479,6 +698,20 @@ export function SiteLayout({
           </div>
         </div>
       </footer>
+
+      {/* Global Shopping Cart Drawer */}
+      <GlobalCartDrawer />
+
+      {/* Verified Logout Confirmation Modal */}
+      <LogoutConfirmModal />
+
+      {/* Branded Pulse WhatsApp FAB */}
+      <WhatsAppFloatingButton />
+
+      {/* WedMeGood Style AI Wedding & Couture Stylist Concierge */}
+      <Suspense fallback={null}>
+        <FemazonAIChatDrawer />
+      </Suspense>
     </div>
   );
 }

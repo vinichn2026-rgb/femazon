@@ -44,5 +44,10 @@
   },
   "prisma": {
     "seed": "npx tsx scripts/seed-shop.ts"
+  },
+  "overrides": {
+    "@prisma/config": {
+      "deepmerge-ts": "^8.0.2"
+    }
   }
 }

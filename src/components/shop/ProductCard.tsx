@@ -57,18 +57,6 @@ export function ProductCard({ product, isWishlisted = false, onQuickAdd, onToggl
           )}
         </div>
 
-        {/* Top-Left Badges */}
-        <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
-          {product.isNew && (
-            <span className="bg-white text-primary text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 w-fit border border-zinc-200">NEW</span>
-          )}
-          {product.isTrending && (
-            <span className="bg-primary text-white text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 w-fit">TRENDING</span>
-          )}
-          {!product.isTrending && product.rating > 4.5 && (
-            <span className="bg-[#E78A7A] text-white text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 w-fit">BESTSELLER</span>
-          )}
-        </div>
 
         {/* Top-Right Wishlist */}
         <button 
@@ -80,11 +68,11 @@ export function ProductCard({ product, isWishlisted = false, onQuickAdd, onToggl
             className={`transition-all duration-300 drop-shadow-sm ${isWishlisted ? 'fill-[#E53E3E] text-[#E53E3E]' : 'fill-white/30 hover:fill-white group-hover/btn:scale-110'}`} 
           />
         </button>
-        {/* Size Selection Overlay on Hover */}
-        <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20 bg-white/90 backdrop-blur-sm border-t border-zinc-200">
-          <p className="text-[10px] uppercase font-bold tracking-widest text-text-muted mb-2 text-center">Select Size</p>
-          <div className="flex flex-wrap justify-center gap-2">
-            {(product.sizes || ["S", "M", "L"]).map((size) => (
+        {/* Size Selection Overlay on Hover (Including XL, XXL) */}
+        <div className="absolute bottom-0 left-0 right-0 p-2.5 translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20 bg-white/95 backdrop-blur-xs border-t border-stone-200 shadow-lg">
+          <p className="text-[9.5px] uppercase font-bold tracking-widest text-[#4A1513] mb-1.5 text-center">Select Size</p>
+          <div className="flex flex-wrap justify-center gap-1.5">
+            {Array.from(new Set([...(product.sizes || ["XS", "S", "M", "L"]), "XL", "XXL"])).map((size) => (
               <button 
                 key={size}
                 onClick={(e) => {
@@ -92,7 +80,7 @@ export function ProductCard({ product, isWishlisted = false, onQuickAdd, onToggl
                   e.stopPropagation();
                   if (onQuickAdd) onQuickAdd({...product, sizes: [size]});
                 }}
-                className="w-8 h-8 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-[10px] font-bold text-text-main hover:border-text-main hover:bg-text-main hover:text-white transition-colors"
+                className="w-7 h-7 rounded-full border border-stone-300 bg-white flex items-center justify-center text-[9.5px] font-bold text-stone-800 hover:border-[#4A1513] hover:bg-[#4A1513] hover:text-white transition-colors cursor-pointer"
               >
                 {size}
               </button>
@@ -102,10 +90,51 @@ export function ProductCard({ product, isWishlisted = false, onQuickAdd, onToggl
       </div>
 
       {/* Product Details Area */}
-      <div className="flex flex-col flex-1 px-1">
+      <div className="flex flex-col flex-1 px-0.5">
+        {/* Aza-style Classy Pills below Image */}
+        <div className="flex flex-col gap-1 mt-2.5 mb-1.5">
+          {/* Row 1: Virtual Try-On & Shipping Info */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {/* Virtual Try-On Pill */}
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[3px] bg-[#FAF3EC] text-[#2A2522] text-[11px] font-normal">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4A1513" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                <circle cx="12" cy="13" r="3" />
+              </svg>
+              <span>Virtual Try-On</span>
+            </span>
+
+            {/* Ships in X Days / Ready to Ship Pill */}
+            {product.readyToShip ? (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[3px] bg-[#FAF3EC] text-[#2A2522] text-[11px] font-normal">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#4A1513" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+                <span>Ships in {product.deliveryDays || 3} days</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[3px] bg-[#FAF3EC] text-[#2A2522] text-[11px] font-normal">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#4A1513" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                </svg>
+                <span>Ships in 7-10 days</span>
+              </span>
+            )}
+          </div>
+
+          {/* Row 2: Femazon Exclusive Pill */}
+          {(product.isTrending || product.rating > 4.5 || (product as any).isExclusive) && (
+            <div className="flex items-center">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-[3px] bg-[#FAF3EC] text-[#4A1513] text-[11px] font-semibold tracking-normal">
+                Femazon Exclusive
+              </span>
+            </div>
+          )}
+        </div>
+
         {/* Brand Display */}
         {(product as any).vendorName || product.brand ? (
-          <h2 className="text-[12px] text-text-main font-bold uppercase tracking-widest mt-2 mb-1">
+          <h2 className="text-[12px] text-text-main font-bold uppercase tracking-widest mt-1 mb-0.5">
             {(product as any).vendorName || product.brand}
           </h2>
         ) : null}
@@ -114,15 +143,17 @@ export function ProductCard({ product, isWishlisted = false, onQuickAdd, onToggl
           {product.name}
         </h3>
         
-        <div className="flex items-center gap-x-2 mt-auto">
-          <span className="text-[12px] font-normal text-text-main">
-            ₹{product.price.toLocaleString('en-IN')}
-          </span>
-          {product.originalPrice > product.price && (
-            <span className="text-[12px] text-text-muted/60 line-through">
-              ₹{product.originalPrice.toLocaleString('en-IN')}
+        <div className="flex flex-col gap-0.5 mt-auto pt-0.5">
+          <div className="flex items-center gap-x-2">
+            <span className="font-sans text-[12.5px] font-bold text-stone-900 tracking-tight tabular-nums">
+              ₹{product.price.toLocaleString('en-IN')}
             </span>
-          )}
+            {product.originalPrice > product.price && (
+              <span className="font-sans text-[11.5px] text-stone-400 line-through tabular-nums font-normal">
+                ₹{product.originalPrice.toLocaleString('en-IN')}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </Link>

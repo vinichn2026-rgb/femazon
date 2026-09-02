@@ -15,6 +15,8 @@ export interface ProductType {
   isNew: boolean;
   isTrending: boolean;
   inStock: boolean;
+  readyToShip?: boolean;
+  deliveryDays?: number;
   createdAt: string; // ISO String
 }
 

@@ -108,7 +108,7 @@ export function NewArrivalsSpotlight() {
         </div>
 
         {/* Carousel Container with Aza-Style Overlapping Arrows */}
-        <div className="relative group">
+        <div className="relative group/carousel">
           
           {/* Left Arrow Button (Aza Overlapping Style) */}
           <button
@@ -150,21 +150,21 @@ export function NewArrivalsSpotlight() {
               >
                 <Link
                   href={card.link}
-                  className="group block relative aspect-[3/4] w-full rounded-xl sm:rounded-2xl md:rounded-[22px] overflow-hidden bg-stone-100 shadow-[0px_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0px_6px_16px_rgba(0,0,0,0.14)] transition-all duration-300 border border-stone-200/40"
+                  className="group/card block relative aspect-[3/4] w-full rounded-md overflow-hidden bg-stone-100 shadow-[0px_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0px_6px_16px_rgba(0,0,0,0.14)] transition-all duration-300 border border-stone-200/40 cursor-pointer"
                 >
                   {/* Card Image */}
                   <img
                     src={card.image}
                     alt={card.name}
-                    className="w-full h-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
+                    className="w-full h-full object-cover object-center transition-transform duration-500 ease-out group-hover/card:scale-108"
                   />
 
                   {/* Soft bottom vignette overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent opacity-85 group-hover:opacity-95 transition-opacity duration-300" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent opacity-85 group-hover/card:opacity-95 transition-opacity duration-300" />
 
                   {/* Centered Name at the Bottom */}
                   <div className="absolute bottom-0 inset-x-0 p-2.5 sm:p-4 z-10 text-center">
-                    <h3 className="font-serif text-[13px] sm:text-base md:text-lg text-white font-normal leading-snug tracking-wide drop-shadow-md group-hover:text-[#F3DFCA] transition-colors line-clamp-1">
+                    <h3 className="font-serif text-[13px] sm:text-base md:text-lg text-white font-normal leading-snug tracking-wide drop-shadow-md group-hover/card:text-[#F3DFCA] transition-colors line-clamp-1">
                       {card.name}
                     </h3>
                   </div>

@@ -91,7 +91,7 @@ export function ShopByCategory() {
         <div className="mt-3.5 sm:mt-5 flex justify-center">
           <Link
             href="/shop"
-            className="group inline-flex items-center gap-1.5 border border-[#3D110F]/30 hover:border-[#3D110F] text-[#3D110F] hover:text-white hover:bg-[#3D110F] px-5 sm:px-8 py-1.5 sm:py-2 rounded-full font-sans text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] transition-all duration-300 shadow-sm active:scale-95 text-center cursor-pointer"
+            className="group inline-flex items-center gap-1.5 border border-[#3D110F]/30 hover:border-[#3D110F] text-[#3D110F] hover:text-white hover:bg-[#3D110F] px-5 sm:px-8 py-2 sm:py-2.5 rounded-sm font-sans text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] transition-all duration-300 shadow-sm active:scale-95 text-center cursor-pointer"
           >
             <span>View All</span>
             <ArrowRight size={12} className="transition-transform duration-300 group-hover:translate-x-1" />

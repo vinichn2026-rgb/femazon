@@ -86,7 +86,7 @@ export function DesignerSpotlight() {
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 md:mb-10 gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#4A1513]/5 text-primary text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] mb-2.5">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-[#4A1513]/5 text-primary text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] mb-2.5">
               <Sparkles size={12} className="text-primary" />
               <span>Iconic Labels</span>
             </div>
@@ -134,7 +134,7 @@ export function DesignerSpotlight() {
               href={`/shop?brand=${encodeURIComponent(designer.name)}`}
               className="w-[270px] sm:w-[300px] md:w-[320px] shrink-0 snap-start group flex flex-col"
             >
-              <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-stone-100 shadow-sm mb-3.5 border border-stone-200/80">
+              <div className="relative aspect-[3/4] w-full overflow-hidden rounded-md bg-stone-100 shadow-sm mb-3.5 border border-stone-200/80">
                 <img
                   src={designer.image}
                   alt={designer.name}
@@ -145,7 +145,7 @@ export function DesignerSpotlight() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300" />
 
                 {designer.badge && (
-                  <span className="absolute top-3 left-3 bg-[#4A1513]/90 backdrop-blur-md text-[#E5C3A6] text-[9px] font-bold uppercase tracking-[0.2em] px-2.5 py-1 rounded-full border border-[#E5C3A6]/30">
+                  <span className="absolute top-3 left-3 bg-[#4A1513]/90 backdrop-blur-md text-[#E5C3A6] text-[9px] font-bold uppercase tracking-[0.2em] px-2.5 py-1 rounded-xs border border-[#E5C3A6]/30">
                     {designer.badge}
                   </span>
                 )}

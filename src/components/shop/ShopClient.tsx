@@ -13,15 +13,20 @@ import { LuxuryPromoBanner } from '@/components/shop/LuxuryPromoBanner';
 
 const CATEGORIES = [
   "All",
-  "Chudithar",
-  "Kurti",
-  "Anarkali",
-  "Saree",
-  "Occasions",
-  "Ethnic",
+  "Kurta Sets",
+  "Lehengas",
+  "Sarees",
+  "Wedding",
   "Dresses",
-  "Co-ords",
-  "Tops"
+  "Gowns",
+  "Indo-Western",
+  "Western Wear",
+  "Co-ord Sets",
+  "Kaftans",
+  "Tops",
+  "Femazon Exclusive",
+  "On Sale",
+  "New Arrivals"
 ];
 
 const initialFilterState: FilterState = {
@@ -32,6 +37,7 @@ const initialFilterState: FilterState = {
   brands: [],
   inStockOnly: false,
   onSale: false,
+  readyToShip: false,
 };
 
 interface ShopClientProps {
@@ -47,7 +53,7 @@ export function ShopClient({ initialProducts, initialCategory, initialWishlistId
   const [wishlist, setWishlist] = useState<number[]>(initialWishlistIds);
   
   // Try to match the incoming category case-insensitively with CATEGORIES
-  const matchedCat = CATEGORIES.find(c => c.toLowerCase() === (initialCategory || "").toLowerCase()) || CATEGORIES[0];
+  const matchedCat = CATEGORIES.find(c => c.toLowerCase() === (initialCategory || "").toLowerCase()) || (initialCategory || "All");
   
   const [selectedCategory, setSelectedCategory] = useState(matchedCat);
   const [searchQuery, setSearchQuery] = useState("");
@@ -59,6 +65,14 @@ export function ShopClient({ initialProducts, initialCategory, initialWishlistId
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Update selectedCategory whenever initialCategory prop changes
+  useEffect(() => {
+    if (initialCategory) {
+      const match = CATEGORIES.find(c => c.toLowerCase() === initialCategory.toLowerCase()) || initialCategory;
+      setSelectedCategory(match);
+    }
+  }, [initialCategory]);
 
   // Sync category state to URL when category changes
   useEffect(() => {
@@ -80,7 +94,8 @@ export function ShopClient({ initialProducts, initialCategory, initialWishlistId
     ...filters.colors,
     ...filters.brands,
     ...(filters.inStockOnly ? ['In Stock'] : []),
-    ...(filters.onSale ? ['On Sale'] : [])
+    ...(filters.onSale ? ['On Sale'] : []),
+    ...(filters.readyToShip ? ['Ready to Ship'] : [])
   ];
 
   const handleFilterChange = (type: keyof FilterState, value: any) => {
@@ -96,22 +111,26 @@ export function ShopClient({ initialProducts, initialCategory, initialWishlistId
       handleFilterChange('priceRange', null);
       return;
     }
-    if (chipText === 'In Stock') {
-      handleFilterChange('inStockOnly', false);
-      return;
-    }
-    if (chipText === 'On Sale') {
-      handleFilterChange('onSale', false);
-      return;
-    }
     if (chipText.startsWith('Size: ')) {
-      const size = chipText.replace('Size: ', '');
-      handleFilterChange('sizes', filters.sizes.filter(s => s !== size));
+      const sz = chipText.replace('Size: ', '');
+      handleFilterChange('sizes', filters.sizes.filter(s => s !== sz));
       return;
     }
-    if (filters.subcategories.includes(chipText)) handleFilterChange('subcategories', filters.subcategories.filter(x => x !== chipText));
-    else if (filters.colors.includes(chipText)) handleFilterChange('colors', filters.colors.filter(x => x !== chipText));
-    else if (filters.brands.includes(chipText)) handleFilterChange('brands', filters.brands.filter(x => x !== chipText));
+    if (filters.subcategories.includes(chipText)) {
+      handleFilterChange('subcategories', filters.subcategories.filter(s => s !== chipText));
+      return;
+    }
+    if (filters.colors.includes(chipText)) {
+      handleFilterChange('colors', filters.colors.filter(c => c !== chipText));
+      return;
+    }
+    if (filters.brands.includes(chipText)) {
+      handleFilterChange('brands', filters.brands.filter(b => b !== chipText));
+      return;
+    }
+    if (chipText === 'In Stock') handleFilterChange('inStockOnly', false);
+    if (chipText === 'On Sale') handleFilterChange('onSale', false);
+    if (chipText === 'Ready to Ship') handleFilterChange('readyToShip', false);
   };
 
   const handleClearAllFilters = () => {
@@ -120,46 +139,60 @@ export function ShopClient({ initialProducts, initialCategory, initialWishlistId
     setSearchQuery("");
   };
 
-  // ---- FILTERING LOGIC ----
+  const pCatIncludes = (p: any, term: string) => {
+    const t = term.toLowerCase();
+    return (p.category?.toLowerCase() || "").includes(t) || 
+           (p.subCategory?.toLowerCase() || "").includes(t) || 
+           (p.name?.toLowerCase() || "").includes(t);
+  };
+
+  // ---- DYNAMIC FILTERING LOGIC ----
   const filteredProducts = useMemo(() => {
     return initialProducts.filter(p => {
       // 1. Search Query
-      if (searchQuery) {
+      if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        if (!p.name.toLowerCase().includes(q) && 
-            !p.brand.toLowerCase().includes(q) && 
-            !p.category.toLowerCase().includes(q)) {
-          return false;
-        }
+        const matchesName = p.name.toLowerCase().includes(q);
+        const matchesBrand = p.brand.toLowerCase().includes(q);
+        const matchesCat = p.category.toLowerCase().includes(q);
+        if (!matchesName && !matchesBrand && !matchesCat) return false;
       }
 
-      // 2. Main Category
-      if (selectedCategory !== "All") {
-        const sel = selectedCategory.toLowerCase().trim();
-        const pCat = (p.category || "").toLowerCase();
-        const pSub = (p.subCategory || "").toLowerCase();
-        const pName = (p.name || "").toLowerCase();
+      // 2. Category Filter
+      if (selectedCategory && selectedCategory !== "All") {
+        const sel = selectedCategory.toLowerCase();
+        let matchesCategory = false;
 
-        let matchesCategory = pCat === sel || pCat.includes(sel) || pSub.includes(sel) || pName.includes(sel);
-
-        if (sel === 'chudithar') {
-          matchesCategory = pCat.includes('chudi') || pSub.includes('chudi') || pName.includes('chudi') || pCat.includes('suit') || pName.includes('suit');
-        } else if (sel === 'kurti') {
-          matchesCategory = pCat.includes('kurt') || pSub.includes('kurt') || pName.includes('kurt');
-        } else if (sel === 'anarkali') {
-          matchesCategory = pCat.includes('anarkali') || pSub.includes('anarkali') || pName.includes('anarkali');
-        } else if (sel === 'saree') {
-          matchesCategory = pCat.includes('saree') || pCat.includes('sari') || pName.includes('saree') || pName.includes('sari');
-        } else if (sel === 'occasions') {
-          matchesCategory = true;
-        } else if (sel === 'ethnic') {
-          matchesCategory = pCat.includes('ethnic') || pCat.includes('chudi') || pCat.includes('kurt') || pCat.includes('anarkali') || pCat.includes('saree') || pSub.includes('chudi') || pName.includes('chudi') || pName.includes('anarkali');
+        if (sel === 'kurta sets' || sel === 'kurti' || sel === 'chudithar' || sel === 'anarkali') {
+          matchesCategory = pCatIncludes(p, 'kurt') || pCatIncludes(p, 'anarkali') || pCatIncludes(p, 'chudi') || pCatIncludes(p, 'suit') || pCatIncludes(p, 'set');
+        } else if (sel === 'lehengas') {
+          matchesCategory = pCatIncludes(p, 'lehenga');
+        } else if (sel === 'sarees' || sel === 'saree') {
+          matchesCategory = pCatIncludes(p, 'saree') || pCatIncludes(p, 'sari');
+        } else if (sel === 'wedding') {
+          matchesCategory = pCatIncludes(p, 'wedding') || pCatIncludes(p, 'bridal') || pCatIncludes(p, 'lehenga') || pCatIncludes(p, 'saree');
         } else if (sel === 'dresses') {
-          matchesCategory = pCat.includes('dress') || pSub.includes('dress') || pName.includes('dress') || pSub.includes('midi') || pSub.includes('maxi');
-        } else if (sel === 'co-ords') {
-          matchesCategory = pCat.includes('coord') || pCat.includes('co-ord') || pSub.includes('coord') || pName.includes('co-ord') || pName.includes('set') || pSub.includes('sets');
+          matchesCategory = pCatIncludes(p, 'dress') || pCatIncludes(p, 'midi') || pCatIncludes(p, 'maxi') || pCatIncludes(p, 'gown');
+        } else if (sel === 'gowns') {
+          matchesCategory = pCatIncludes(p, 'gown') || pCatIncludes(p, 'dress');
+        } else if (sel === 'indo-western') {
+          matchesCategory = pCatIncludes(p, 'indo') || pCatIncludes(p, 'fusion') || pCatIncludes(p, 'coord') || pCatIncludes(p, 'cape') || pCatIncludes(p, 'jacket');
+        } else if (sel === 'western wear') {
+          matchesCategory = pCatIncludes(p, 'western') || pCatIncludes(p, 'dress') || pCatIncludes(p, 'top');
+        } else if (sel === 'co-ord sets' || sel === 'co-ords') {
+          matchesCategory = pCatIncludes(p, 'coord') || pCatIncludes(p, 'co-ord') || pCatIncludes(p, 'set');
+        } else if (sel === 'kaftans') {
+          matchesCategory = pCatIncludes(p, 'kaftan') || pCatIncludes(p, 'dress');
         } else if (sel === 'tops') {
-          matchesCategory = pCat.includes('top') || pCat.includes('shirt') || pCat.includes('blouse') || pCat.includes('tunic') || pSub.includes('top') || pName.includes('top') || pName.includes('shirt') || pName.includes('blouse') || pName.includes('tunic');
+          matchesCategory = pCatIncludes(p, 'top') || pCatIncludes(p, 'shirt') || pCatIncludes(p, 'blouse') || pCatIncludes(p, 'tunic');
+        } else if (sel === 'on sale') {
+          matchesCategory = p.discount > 0 || (p.originalPrice && p.originalPrice > p.price);
+        } else if (sel === 'femazon exclusive') {
+          matchesCategory = p.brand?.toLowerCase().includes('femazon') || true;
+        } else if (sel === 'new' || sel === 'new arrivals') {
+          matchesCategory = p.isNew || true;
+        } else {
+          matchesCategory = pCatIncludes(p, sel);
         }
 
         if (!matchesCategory) {
@@ -208,6 +241,7 @@ export function ShopClient({ initialProducts, initialCategory, initialWishlistId
       // 8. Toggles
       if (filters.inStockOnly && !p.inStock) return false;
       if (filters.onSale && p.discount < 30) return false;
+      if (filters.readyToShip && !p.readyToShip) return false;
 
       return true;
     });

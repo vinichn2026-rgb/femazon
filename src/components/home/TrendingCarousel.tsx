@@ -136,25 +136,25 @@ export function TrendingCarousel({ products }: { products?: any[] }) {
         {CURATED_EDITS.map((item) => (
           <div
             key={item.id}
-            className="w-[200px] sm:w-[230px] md:w-[260px] lg:w-[280px] shrink-0 snap-start group"
+            className="w-[200px] sm:w-[230px] md:w-[260px] lg:w-[280px] shrink-0 snap-start"
           >
             <Link
               href={item.link}
-              className="block relative aspect-[2/3] w-full rounded-2xl md:rounded-[22px] overflow-hidden bg-stone-100 shadow-[0px_2px_10px_rgba(0,0,0,0.08)] hover:shadow-[0px_8px_24px_rgba(0,0,0,0.16)] transition-all duration-500 border border-stone-200/50"
+              className="group/card block relative aspect-[2/3] w-full rounded-md overflow-hidden bg-stone-100 shadow-[0px_2px_10px_rgba(0,0,0,0.08)] hover:shadow-[0px_8px_24px_rgba(0,0,0,0.16)] transition-all duration-500 border border-stone-200/50 cursor-pointer"
             >
               {/* Background Image */}
               <img
                 src={item.image}
                 alt={item.title}
-                className="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-108"
+                className="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover/card:scale-108"
               />
 
               {/* Gradient Scrim */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-85 group-hover:opacity-95 transition-opacity duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-85 group-hover/card:opacity-95 transition-opacity duration-500" />
 
               {/* Top Luxury Badge */}
               <div className="absolute top-3.5 left-3.5 z-10">
-                <span className="inline-block px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-[9px] font-bold uppercase tracking-[0.18em] border border-white/25 shadow-sm">
+                <span className="inline-block px-2.5 py-1 rounded-xs bg-white/20 backdrop-blur-md text-white text-[9px] font-bold uppercase tracking-[0.18em] border border-white/25 shadow-sm">
                   {item.badge}
                 </span>
               </div>

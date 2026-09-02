@@ -11,6 +11,7 @@ export interface FilterState {
   brands: string[];
   inStockOnly: boolean;
   onSale: boolean;
+  readyToShip: boolean;
 }
 
 interface FilterSidebarProps {
@@ -555,12 +556,12 @@ export function FilterSidebar({ categories, selectedCategory, onSelectCategory, 
         {/* Shipping Time - Dummy */}
         <Accordion title="Shipping Time" defaultOpen={false}>
           <div className="space-y-3 pt-2">
-            <label className="flex items-center justify-between cursor-pointer group">
-              <span className="text-[13px] text-text-muted group-hover:text-text-main transition-colors">Ready to Ship</span>
-              <div className={`w-9 h-5 rounded-full transition-colors flex items-center px-0.5 ${filters.inStockOnly ? 'bg-text-main' : 'bg-accent/20'}`}>
-                <div className={`w-4 h-4 rounded-full bg-white transition-transform ${filters.inStockOnly ? 'translate-x-4' : 'translate-x-0'}`} />
+            <label className="flex items-center justify-between cursor-pointer group py-1">
+              <span className="text-[13px] text-stone-700 group-hover:text-[#4A1513] font-medium transition-colors">Ready to Ship</span>
+              <div className={`w-9 h-5 rounded-full transition-colors flex items-center px-0.5 ${filters.readyToShip ? 'bg-[#4A1513]' : 'bg-stone-200'}`}>
+                <div className={`w-4 h-4 rounded-full bg-white shadow-xs transition-transform ${filters.readyToShip ? 'translate-x-4' : 'translate-x-0'}`} />
               </div>
-              <input type="checkbox" className="hidden" checked={filters.inStockOnly} onChange={() => onFilterChange('inStockOnly', !filters.inStockOnly)} />
+              <input type="checkbox" className="hidden" checked={filters.readyToShip} onChange={() => onFilterChange('readyToShip', !filters.readyToShip)} />
             </label>
             <label className="flex items-center justify-between cursor-pointer group">
               <span className="text-[13px] text-text-muted group-hover:text-text-main transition-colors">1-2 Weeks</span>

@@ -81,6 +81,8 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
       isTrending: p.category === 'Co-ords' || p.category === 'Kurtis',
       isNew: p.category === 'Tops' || p.category === 'Ethnic',
       inStock: p.stock > 0,
+      readyToShip: p.readyToShip,
+      deliveryDays: p.deliveryDays,
       sizes,
       colors
     };

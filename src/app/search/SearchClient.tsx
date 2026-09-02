@@ -18,6 +18,7 @@ const initialFilterState: FilterState = {
   brands: [],
   inStockOnly: false,
   onSale: false,
+  readyToShip: false,
 };
 
 export default function SearchClient({ query, initialProducts, initialWishlistIds = [] }: any) {
