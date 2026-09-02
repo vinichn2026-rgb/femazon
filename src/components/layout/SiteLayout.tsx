@@ -257,20 +257,20 @@ export function SiteLayout({
           {/* Left: Brand Logo (Trendy Luxury Couture Wordmark) */}
           <BrandLogo />
 
-          {/* Center: Search Bar (Minimal Subtle Radius) */}
+          {/* Center: Search Bar (Luxury Maroon Shade & Subtle Minimal Radius) */}
           <div className="flex-1 max-w-2xl mx-auto hidden md:block">
-             <form onSubmit={handleSearchSubmit} className="relative w-full border border-stone-300 rounded-sm h-[44px] flex items-center px-4 bg-[#f8f9fa] hover:bg-white transition-colors focus-within:bg-white focus-within:border-stone-400 focus-within:shadow-xs">
-               <Search size={17} className="text-stone-400 shrink-0" />
+             <form onSubmit={handleSearchSubmit} className="group relative w-full border border-[#4A1513]/25 hover:border-[#4A1513]/50 rounded-sm h-[44px] flex items-center px-4 bg-[#4A1513]/[0.02] hover:bg-[#4A1513]/[0.04] transition-all duration-200 focus-within:bg-white focus-within:border-[#4A1513] focus-within:ring-2 focus-within:ring-[#4A1513]/15 focus-within:shadow-xs shadow-[0_1px_4px_rgba(74,21,19,0.04)]">
+               <Search size={17} className="text-[#4A1513]/60 group-focus-within:text-[#4A1513] shrink-0 transition-colors" />
                <input 
                  type="text" 
                  value={searchQuery}
                  onChange={(e) => setSearchQuery(e.target.value)}
                  placeholder="Search for products, brands and more" 
-                 className="w-full bg-transparent border-none focus:outline-none text-[13.5px] text-text-main px-3 placeholder:text-stone-400"
+                 className="w-full bg-transparent border-none focus:outline-none text-[13.5px] text-[#4A1513] px-3 placeholder:text-stone-400 focus:placeholder:text-stone-300 font-normal"
                />
-               <div className="h-5 w-[1px] bg-stone-200 mx-3"></div>
-               <button type="button" className="flex items-center gap-2 text-stone-500 hover:text-primary transition-colors shrink-0 text-[12px] font-medium whitespace-nowrap">
-                 <Camera size={16} /> Image Search
+               <div className="h-5 w-[1px] bg-[#4A1513]/20 mx-3"></div>
+               <button type="button" onClick={() => router.push('/search')} className="flex items-center gap-2 text-[#4A1513]/80 hover:text-[#4A1513] hover:bg-[#4A1513]/10 px-2.5 py-1 rounded-sm transition-colors shrink-0 text-[12px] font-medium whitespace-nowrap cursor-pointer">
+                 <Camera size={16} className="text-[#4A1513]" /> Image Search
                </button>
              </form>
           </div>

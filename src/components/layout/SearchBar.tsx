@@ -138,9 +138,9 @@ export function SearchBar({ className = '' }: { className?: string }) {
         onSubmit={handleSearch}
         className={`relative flex items-center w-full max-w-[210px] sm:max-w-[230px] md:max-w-[250px] lg:max-w-[270px] transition-all duration-200 ${className}`}
       >
-        <div className="group relative flex w-full h-[34px] items-center rounded-full border border-stone-200/90 bg-stone-100/70 pl-2.5 pr-1.5 text-xs shadow-xs transition-all duration-200 hover:border-stone-300 hover:bg-stone-50 focus-within:border-[#4A1513]/60 focus-within:bg-white focus-within:ring-2 focus-within:ring-[#4A1513]/10">
+        <div className="group relative flex w-full h-[36px] items-center rounded-sm border border-[#4A1513]/25 bg-[#4A1513]/[0.02] pl-2.5 pr-1.5 text-xs shadow-[0_1px_4px_rgba(74,21,19,0.04)] transition-all duration-200 hover:border-[#4A1513]/40 hover:bg-[#4A1513]/[0.04] focus-within:border-[#4A1513] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#4A1513]/15">
           {/* Left search icon */}
-          <Search className="h-3.5 w-3.5 shrink-0 text-stone-400 group-focus-within:text-[#4A1513] transition-colors" strokeWidth={1.75} />
+          <Search className="h-3.5 w-3.5 shrink-0 text-[#4A1513]/60 group-focus-within:text-[#4A1513] transition-colors" strokeWidth={1.75} />
 
           {/* Compact search text input */}
           <input
