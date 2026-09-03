@@ -1,174 +1,265 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { CalendarDays, Clock, MapPin, CheckCircle2, ChevronRight, UserCircle2 } from "lucide-react";
-
-type Booking = {
-  id: number;
-  date: string;
-  time: string;
-  status: string;
-  duration?: number;
-  location?: string;
-  total: number;
-  service: {
-    name: string;
-    image: string;
-  };
-  provider: {
-    name: string;
-    image: string;
-    rating: number;
-  };
-};
+import { 
+  CalendarDays, 
+  Clock, 
+  MapPin, 
+  CheckCircle2, 
+  ChevronRight, 
+  UserCircle2, 
+  AlertCircle,
+  Calendar,
+  Sparkles,
+  ExternalLink,
+  X
+} from "lucide-react";
+import { useFemazonStore, BookingItem } from "@/context/FemazonStoreContext";
 
 export default function MyBookingsPage() {
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { bookings, user } = useFemazonStore();
+  const [selectedBooking, setSelectedBooking] = useState<BookingItem | null>(null);
 
-  useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        const res = await fetch("/api/bookings");
-        if (res.status === 401) {
-          setError("Please log in to view your bookings.");
-          setLoading(false);
-          return;
-        }
-        const data = await res.json();
-        setBookings(data);
-      } catch (err) {
-        setError("Failed to load bookings.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchBookings();
-  }, []);
+  const getStatusBadge = (status: BookingItem['status']) => {
+    switch (status) {
+      case 'CONFIRMED':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold uppercase tracking-wider">
+            <CheckCircle2 size={13} /> Confirmed
+          </span>
+        );
+      case 'PENDING':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-bold uppercase tracking-wider">
+            <Clock size={13} /> Pending
+          </span>
+        );
+      case 'COMPLETED':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-100 text-stone-600 border border-stone-200 text-[11px] font-bold uppercase tracking-wider">
+            Completed
+          </span>
+        );
+      case 'CANCELLED':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-rose-600 border border-rose-200 text-[11px] font-bold uppercase tracking-wider">
+            Cancelled
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-100 text-stone-600 border border-stone-200 text-[11px] font-bold uppercase tracking-wider">
+            {status}
+          </span>
+        );
+    }
+  };
 
-  if (loading) {
-    return <div className="min-h-screen bg-surface p-8 flex justify-center items-center text-zinc-500">Loading your bookings...</div>;
-  }
-
-  if (error) {
-    return (
-      <main className="min-h-screen bg-surface p-8 flex justify-center items-center">
-        <div className="rounded-[2rem] border border-accent/20 bg-white p-12 shadow-sm text-center">
-          <CalendarDays size={48} className="mx-auto text-zinc-300 mb-6" />
-          <h2 className="font-serif text-2xl text-text-main mb-2">Sign in to view bookings</h2>
-          <p className="text-zinc-500 mb-8 max-w-sm">Log in to track your service appointments.</p>
-          <Link href="/login" className="rounded-full bg-text-main px-8 py-3.5 text-xs font-bold tracking-widest uppercase text-white hover:bg-primary transition-colors">
-            Login
-          </Link>
-        </div>
-      </main>
-    );
-  }
+  const formatDate = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr);
+      return {
+        month: d.toLocaleDateString('en-US', { month: 'short' }),
+        day: d.getDate(),
+        weekday: d.toLocaleDateString('en-US', { weekday: 'short' }),
+        full: d.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+      };
+    } catch {
+      return { month: 'SEP', day: 18, weekday: 'Fri', full: dateStr };
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-10">
+    <div className="space-y-8 max-w-5xl">
+      
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-stone-200">
         <div>
-          <h1 className="font-serif text-3xl md:text-4xl font-normal text-text-main mb-3">My Bookings</h1>
-          <p className="font-sans text-[15px] text-text-muted">
-            Manage your upcoming and past service appointments
+          <h1 className="font-serif text-3xl md:text-4xl font-normal text-stone-900 mb-2">
+            My Bookings
+          </h1>
+          <p className="font-sans text-[14.5px] text-stone-500">
+            Manage your personal styling, makeup, and bespoke couture appointments
           </p>
         </div>
-        <Link href="/services" className="hidden md:inline-flex bg-white text-text-main text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-full border border-accent/20 shadow-sm hover:border-primary/30 transition-colors">
-          Book a Service
+
+        <Link 
+          href="/services" 
+          className="inline-flex items-center justify-center gap-2 bg-[#4A1513] hover:bg-[#350B0A] text-white text-xs font-bold uppercase tracking-wider px-6 py-3 rounded-full transition shadow-xs self-start sm:self-auto"
+        >
+          <Sparkles size={14} />
+          <span>Book New Service</span>
         </Link>
       </div>
 
+      {/* Bookings List */}
       {bookings.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-[#fbf9f6] border border-accent/10 rounded-3xl mx-auto">
-          <CalendarDays size={48} className="text-zinc-300 mb-6" strokeWidth={1} />
-          <h3 className="font-serif text-2xl text-text-main mb-2">No bookings yet</h3>
-          <p className="text-text-muted max-w-[400px] mx-auto mb-8">
-            Ready to pamper yourself? Explore our professional styling, makeup, and planning services.
+        <div className="flex flex-col items-center justify-center py-20 px-6 text-center bg-white border border-stone-200 rounded-3xl">
+          <div className="w-16 h-16 rounded-full bg-[#FAF7F5] border border-stone-200 flex items-center justify-center text-[#4A1513] mb-4">
+            <CalendarDays size={28} strokeWidth={1.5} />
+          </div>
+          <h3 className="font-serif text-2xl text-stone-900 mb-2">No bookings found</h3>
+          <p className="text-stone-500 max-w-md mx-auto mb-8 text-sm leading-relaxed">
+            You don&apos;t have any appointments scheduled yet. Discover our verified fashion stylists, makeup artists, and event planners.
           </p>
           <Link 
             href="/services"
-            className="bg-text-main text-white font-bold text-[12px] uppercase tracking-widest px-8 py-3.5 rounded-full shadow-md hover:bg-primary transition-colors"
+            className="bg-[#4A1513] hover:bg-[#350B0A] text-white font-medium text-xs uppercase tracking-widest px-8 py-3.5 rounded-full shadow-sm transition"
           >
             Explore Services
           </Link>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="grid gap-5">
           {bookings.map((booking) => {
-            const bookingDate = new Date(booking.date);
-            const isPast = bookingDate < new Date(new Date().setHours(0,0,0,0));
-            
-            return (
-              <Link href={`/bookings/${booking.id}`} key={booking.id} className={`bg-white rounded-3xl border ${isPast ? 'border-zinc-200/60 opacity-75' : 'border-accent/20 shadow-sm'} overflow-hidden relative group block hover:border-primary/30 transition-all hover:shadow-md`}>
-                
-                {/* Status Badge */}
-                <div className="absolute top-6 right-6 flex gap-2">
-                  {booking.status === 'CONFIRMED' && !isPast && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 text-[10px] font-bold uppercase tracking-widest">
-                      <CheckCircle2 size={12} /> Confirmed
-                    </span>
-                  )}
-                  {isPast && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 text-zinc-500 border border-zinc-200 text-[10px] font-bold uppercase tracking-widest">
-                      Completed
-                    </span>
-                  )}
-                </div>
+            const formatted = formatDate(booking.date);
 
-                <div className="p-6 md:p-8 flex flex-col md:flex-row gap-6 md:gap-8">
+            return (
+              <div 
+                key={booking.id}
+                className="bg-white rounded-2xl sm:rounded-3xl border border-stone-200/90 p-5 sm:p-7 shadow-xs hover:shadow-md transition-all duration-200 group flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
+              >
+                {/* Left: Date Block + Service Details */}
+                <div className="flex items-start gap-4 sm:gap-6 flex-1 min-w-0">
                   
-                  {/* Date Block */}
-                  <div className="flex flex-col items-center justify-center shrink-0 w-24 h-24 rounded-2xl bg-primary/5 text-primary border border-primary/10">
-                    <span className="text-[10px] font-bold uppercase tracking-widest">{bookingDate.toLocaleDateString('en-US', { month: 'short' })}</span>
-                    <span className="font-serif text-3xl font-bold leading-none my-1">{bookingDate.getDate()}</span>
-                    <span className="text-xs font-semibold">{bookingDate.toLocaleDateString('en-US', { weekday: 'short' })}</span>
+                  {/* Calendar Date Block */}
+                  <div className="flex flex-col items-center justify-center shrink-0 w-20 h-20 sm:w-22 sm:h-22 rounded-2xl bg-[#FAF7F5] border border-stone-200 text-[#4A1513] select-none">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-stone-500">
+                      {formatted.month}
+                    </span>
+                    <span className="font-serif text-2xl sm:text-3xl font-bold leading-none my-1">
+                      {formatted.day}
+                    </span>
+                    <span className="text-[11px] font-semibold text-stone-600">
+                      {formatted.weekday}
+                    </span>
                   </div>
 
                   {/* Details */}
-                  <div className="flex-1 flex flex-col justify-center">
-                    <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-500 mb-1">
-                      Booking #BKG{String(booking.id).padStart(4, '0')}
-                    </p>
-                    <h3 className="font-serif text-2xl text-text-main mb-4 group-hover:text-primary transition-colors">{booking.service.name}</h3>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="flex items-center gap-3 text-sm text-zinc-600">
-                        <Clock size={16} className="text-zinc-400" />
-                        <span>{booking.time} {booking.duration ? `• ${booking.duration} ${booking.duration > 1 ? 'hours' : 'hour'}` : '• 1-2 hours'}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">
+                        #{booking.id}
+                      </span>
+                      {getStatusBadge(booking.status)}
+                    </div>
+
+                    <h3 className="font-serif text-xl sm:text-2xl text-stone-900 group-hover:text-[#4A1513] transition-colors leading-tight mb-2 truncate">
+                      {booking.serviceName}
+                    </h3>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 text-[13px] text-stone-600">
+                      <div className="flex items-center gap-2">
+                        <Clock size={14} className="text-[#4A1513]/70 shrink-0" />
+                        <span>{booking.time} ({booking.duration ? `${booking.duration} hr${booking.duration > 1 ? 's' : ''}` : '1-2 hrs'})</span>
                       </div>
-                      <div className="flex items-center gap-3 text-sm text-zinc-600">
-                        <MapPin size={16} className="text-zinc-400" />
-                        <span>{booking.location || "At-Home Service"}</span>
+                      
+                      <div className="flex items-center gap-2">
+                        <MapPin size={14} className="text-[#4A1513]/70 shrink-0" />
+                        <span className="truncate">{booking.location || 'At-Home Service'}</span>
                       </div>
-                      <div className="flex items-center gap-3 text-sm text-zinc-600">
-                        <UserCircle2 size={16} className="text-zinc-400" />
-                        <span>Professional: <strong className="text-text-main">{booking.provider.name}</strong></span>
+
+                      <div className="flex items-center gap-2 sm:col-span-2 mt-0.5">
+                        <UserCircle2 size={14} className="text-[#4A1513]/70 shrink-0" />
+                        <span>Specialist: <strong className="text-stone-800 font-semibold">{booking.providerName}</strong></span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Price & Action */}
-                  <div className="shrink-0 flex flex-col items-start md:items-end justify-center pt-6 md:pt-0 border-t md:border-t-0 md:border-l border-zinc-100 md:pl-8">
-                    <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-400 mb-1">Total</p>
-                    <p className="font-serif text-2xl text-text-main mb-4">₹{booking.total.toLocaleString('en-IN')}</p>
-                    
-                    <span className="text-[11px] font-bold uppercase tracking-widest text-text-main group-hover:text-primary transition-colors flex items-center gap-1">
-                      View Details <ChevronRight size={14} />
+                </div>
+
+                {/* Right: Total Price & View Details Action */}
+                <div className="w-full md:w-auto flex md:flex-col items-center md:items-end justify-between md:justify-center pt-4 md:pt-0 border-t md:border-t-0 md:border-l border-stone-100 md:pl-6 shrink-0 gap-3">
+                  <div className="text-left md:text-right">
+                    <span className="text-[10.5px] uppercase font-bold tracking-wider text-stone-400 block">Total Amount</span>
+                    <span className="font-serif text-xl sm:text-2xl font-bold text-stone-900">
+                      ₹{booking.total.toLocaleString('en-IN')}
                     </span>
                   </div>
 
+                  <button
+                    type="button"
+                    onClick={() => setSelectedBooking(booking)}
+                    className="inline-flex items-center gap-1 text-[12px] font-bold uppercase tracking-wider text-[#4A1513] hover:text-[#350B0A] hover:underline underline-offset-4 transition cursor-pointer py-1"
+                  >
+                    <span>View Details</span>
+                    <ChevronRight size={15} />
+                  </button>
                 </div>
-              </Link>
+
+              </div>
             );
           })}
         </div>
       )}
+
+      {/* Booking Details Modal */}
+      {selectedBooking && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-stone-200 relative animate-in zoom-in-95 duration-200 font-sans">
+            
+            <button
+              type="button"
+              onClick={() => setSelectedBooking(null)}
+              className="absolute top-5 right-5 text-stone-400 hover:text-stone-700 transition p-1 cursor-pointer"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs font-bold text-stone-400 uppercase tracking-widest">Booking Details</span>
+              {getStatusBadge(selectedBooking.status)}
+            </div>
+
+            <h2 className="font-serif text-2xl text-stone-900 mb-4">
+              {selectedBooking.serviceName}
+            </h2>
+
+            <div className="space-y-4 bg-[#FAF7F5] rounded-2xl p-5 border border-stone-200/80 mb-6 text-[13.5px]">
+              <div className="flex justify-between items-center pb-3 border-b border-stone-200/60">
+                <span className="text-stone-500">Service Specialist</span>
+                <span className="font-semibold text-stone-900">{selectedBooking.providerName}</span>
+              </div>
+              <div className="flex justify-between items-center pb-3 border-b border-stone-200/60">
+                <span className="text-stone-500">Date</span>
+                <span className="font-semibold text-stone-900">{formatDate(selectedBooking.date).full}</span>
+              </div>
+              <div className="flex justify-between items-center pb-3 border-b border-stone-200/60">
+                <span className="text-stone-500">Time</span>
+                <span className="font-semibold text-stone-900">{selectedBooking.time}</span>
+              </div>
+              <div className="flex justify-between items-center pb-3 border-b border-stone-200/60">
+                <span className="text-stone-500">Location</span>
+                <span className="font-semibold text-stone-900">{selectedBooking.location || 'At-Home Service'}</span>
+              </div>
+              <div className="flex justify-between items-center pt-1">
+                <span className="text-stone-500 font-medium">Total Paid</span>
+                <span className="font-serif text-lg font-bold text-[#4A1513]">₹{selectedBooking.total.toLocaleString('en-IN')}</span>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <Link
+                href="/services"
+                onClick={() => setSelectedBooking(null)}
+                className="flex-1 py-3 text-center rounded-full bg-[#4A1513] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#350B0A] transition"
+              >
+                Book Another Service
+              </Link>
+              <button
+                type="button"
+                onClick={() => setSelectedBooking(null)}
+                className="py-3 px-6 rounded-full border border-stone-300 text-stone-700 text-xs font-bold uppercase tracking-wider hover:bg-stone-50 transition cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
-

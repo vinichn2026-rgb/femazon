@@ -2,26 +2,25 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
+import { signToken } from '@/lib/session';
 
 const registerSchema = z
   .object({
-    name: z.string().trim().min(1, 'Name is required'),
-    email: z.string().trim().email('Email must be valid'),
+    firstName: z.string().trim().optional(),
+    lastName: z.string().trim().optional(),
+    name: z.string().trim().optional(),
+    email: z.string().trim().email('Please enter a valid email address'),
     phone: z
       .string()
       .trim()
-      .regex(/^\d{10}$/, 'Phone must be valid'),
+      .min(8, 'Phone number must be at least 8 digits'),
     password: z
       .string()
-      .min(8, 'Password must be at least 8 characters')
-      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-      .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-      .regex(/[0-9]/, 'Password must contain at least one number')
-      .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
+      .min(8, 'Password must be at least 8 characters'),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: 'confirmPassword must match password',
+    message: 'Passwords do not match',
     path: ['confirmPassword'],
   });
 
@@ -41,7 +40,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, message }, { status: 400 });
   }
 
-  const { name, email, phone, password } = parseResult.data;
+  const { firstName, lastName, name: providedName, email, phone, password } = parseResult.data;
+
+  const fullName = (providedName || `${firstName || ''} ${lastName || ''}`).trim() || 'Femazon Member';
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
@@ -53,9 +54,9 @@ export async function POST(request: Request) {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  await prisma.user.create({
+  const newUser = await prisma.user.create({
     data: {
-      name,
+      name: fullName,
       email,
       phone,
       password: hashedPassword,
@@ -63,5 +64,43 @@ export async function POST(request: Request) {
     },
   });
 
-  return NextResponse.json({ success: true, message: 'Account created successfully' }, { status: 201 });
+  // Automatically sign in the user by issuing session cookie
+  const secret = process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET || 'dev-secret';
+  const now = Math.floor(Date.now() / 1000);
+  const expiresIn = 60 * 60 * 24 * 7; // 7 days
+
+  const sessionPayload = {
+    sub: String(newUser.id),
+    name: newUser.name,
+    email: newUser.email,
+    role: newUser.role,
+    iat: now,
+    exp: now + expiresIn,
+  };
+
+  const token = signToken(sessionPayload, secret);
+  const isProd = process.env.NODE_ENV === 'production';
+
+  const cookieParts = [
+    `femazon_session=${token}`,
+    `Path=/`,
+    `HttpOnly`,
+    `SameSite=Lax`,
+    `Max-Age=${expiresIn}`,
+  ];
+  if (isProd) cookieParts.push('Secure');
+
+  const res = NextResponse.json({
+    success: true,
+    message: 'Account created successfully ✓',
+    user: {
+      id: String(newUser.id),
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role,
+    }
+  }, { status: 201 });
+
+  res.headers.append('Set-Cookie', cookieParts.join('; '));
+  return res;
 }

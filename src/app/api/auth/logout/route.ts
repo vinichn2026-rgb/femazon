@@ -1,17 +1,31 @@
 import { NextResponse } from 'next/server';
 
-export function GET(request: Request) {
-  const url = new URL('/', request.url);
-  const cookieValue = ['femazon_session='];
-  cookieValue.push('Path=/');
-  cookieValue.push('Max-Age=0');
-  cookieValue.push('HttpOnly');
-  cookieValue.push('SameSite=Lax');
-  if (process.env.NODE_ENV === 'production') {
-    cookieValue.push('Secure');
-  }
+function createClearedCookieResponse(response: NextResponse) {
+  const expiredCookies = [
+    'femazon_session=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax',
+    'next-auth.session-token=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax',
+    '__Secure-next-auth.session-token=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax; Secure',
+    'next-auth.callback-url=; Path=/; Max-Age=0; SameSite=Lax',
+    'next-auth.csrf-token=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax',
+  ];
 
-  const response = NextResponse.redirect(url);
-  response.headers.set('Set-Cookie', cookieValue.join('; '));
+  expiredCookies.forEach(cookie => {
+    response.headers.append('Set-Cookie', cookie);
+  });
+
   return response;
+}
+
+export async function POST() {
+  const response = NextResponse.json({
+    success: true,
+    message: "You've been logged out successfully."
+  });
+  return createClearedCookieResponse(response);
+}
+
+export async function GET(request: Request) {
+  const url = new URL('/shop', request.url);
+  const response = NextResponse.redirect(url);
+  return createClearedCookieResponse(response);
 }

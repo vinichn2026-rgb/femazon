@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 
 export interface CartItem {
@@ -29,13 +29,28 @@ export interface WishlistItem {
   category?: string;
 }
 
+export interface BookingItem {
+  id: number | string;
+  serviceName: string;
+  providerName: string;
+  providerImage?: string;
+  date: string;
+  time: string;
+  location?: string;
+  total: number;
+  status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+  duration?: number;
+  serviceImage?: string;
+}
+
 export interface UserProfile {
   id: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   phone?: string;
   role?: string;
-  tier: 'Member' | 'Ruby' | 'Gold' | 'Platinum' | 'Luxe Royal';
   avatar?: string;
 }
 
@@ -70,19 +85,71 @@ interface FemazonStoreContextType {
   moveWishlistToCart: (product: WishlistItem, size?: string) => void;
   moveAllWishlistToCart: () => void;
 
+  // Bookings
+  bookings: BookingItem[];
+  bookingCount: number;
+  addBooking: (booking: Omit<BookingItem, 'id'>) => void;
+  refreshBookings: () => Promise<void>;
+
   // Auth / Profile
   user: UserProfile | null;
   setUser: React.Dispatch<React.SetStateAction<UserProfile | null>>;
+  isLoggingOut: boolean;
   isLogoutConfirmOpen: boolean;
   requestLogout: () => void;
   confirmLogout: () => Promise<void>;
   cancelLogout: () => void;
+  refreshAuth: () => Promise<void>;
 }
 
 const FemazonStoreContext = createContext<FemazonStoreContextType | undefined>(undefined);
 
 const LOCAL_STORAGE_CART_KEY = "femazon_cart_v1";
 const LOCAL_STORAGE_WISHLIST_KEY = "femazon_wishlist_v1";
+const LOCAL_STORAGE_USER_KEY = "femazon_user_v1";
+const LOCAL_STORAGE_BOOKINGS_KEY = "femazon_bookings_v1";
+
+const DEFAULT_BOOKINGS: BookingItem[] = [
+  {
+    id: "BKG001",
+    serviceName: "Bridal Makeup & Hair Styling",
+    providerName: "Ananya Mehra",
+    providerImage: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200",
+    serviceImage: "https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?auto=format&fit=crop&q=80&w=600",
+    date: "2026-09-18",
+    time: "10:30 AM",
+    location: "In-Store Studio / South Extension, New Delhi",
+    total: 8500,
+    status: "CONFIRMED",
+    duration: 2
+  },
+  {
+    id: "BKG002",
+    serviceName: "Personal Fashion Consultation",
+    providerName: "Rhea Kapoor Studio",
+    providerImage: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200",
+    serviceImage: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=80&w=600",
+    date: "2026-09-24",
+    time: "03:00 PM",
+    location: "Online Video Consultation",
+    total: 4500,
+    status: "CONFIRMED",
+    duration: 1
+  },
+  {
+    id: "BKG003",
+    serviceName: "Festive Henna & Mehendi Art",
+    providerName: "Zoya Parveen",
+    providerImage: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200",
+    serviceImage: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&q=80&w=600",
+    date: "2026-10-02",
+    time: "11:00 AM",
+    location: "At-Home Service",
+    total: 3500,
+    status: "CONFIRMED",
+    duration: 3
+  }
+];
 
 export function FemazonStoreProvider({
   children,
@@ -132,59 +199,110 @@ export function FemazonStoreProvider({
       originalPrice: 52000,
       image: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=85&w=600",
       category: "Lehengas"
-    },
-    {
-      id: "w3",
-      productId: "p3",
-      name: "Brocade Silk Festive Saree",
-      brand: "Femazon Exclusive",
-      price: 14500,
-      originalPrice: 16500,
-      image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=85&w=600",
-      category: "Sarees"
-    },
-    {
-      id: "w4",
-      productId: "p4",
-      name: "Couture Evening Gown with Cape",
-      brand: "Label Niti Bothra",
-      price: 28000,
-      originalPrice: 32000,
-      image: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&q=85&w=600",
-      category: "Gowns"
     }
   ]);
+
+  // Bookings State (with active 3 bookings by default for demonstration)
+  const [bookings, setBookings] = useState<BookingItem[]>(DEFAULT_BOOKINGS);
 
   // Auth User State
   const [user, setUser] = useState<UserProfile | null>(initialUser || {
     id: "usr_101",
-    name: "Vinitha Chandran",
-    email: "vinitha@femazon.luxury",
+    name: "Priya Sharma",
+    firstName: "Priya",
+    lastName: "Sharma",
+    email: "priya.sharma@femazon.com",
     phone: "+91 98765 43210",
     role: "CUSTOMER",
-    tier: "Ruby",
     avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200"
   });
 
-  // Logout Modal State
+  // Logout Modal State & Loading
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // Refresh user auth from /api/auth/me or session
+  const refreshAuth = useCallback(async () => {
+    try {
+      const res = await fetch('/api/auth/me');
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.user) {
+          const nameParts = (data.user.name || '').trim().split(' ');
+          const firstName = nameParts[0] || 'Member';
+          const lastName = nameParts.slice(1).join(' ') || '';
+          setUser({
+            id: String(data.user.id),
+            name: data.user.name || firstName,
+            firstName,
+            lastName,
+            email: data.user.email,
+            phone: data.user.phone || '+91 98765 43210',
+            role: data.user.role || 'CUSTOMER',
+            avatar: data.user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200'
+          });
+        }
+      }
+    } catch (e) {
+      // Keep existing user if offline or unauthenticated
+    }
+  }, []);
+
+  // Fetch / Refresh Bookings
+  const refreshBookings = useCallback(async () => {
+    try {
+      const res = await fetch('/api/bookings');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped: BookingItem[] = data.map((b: any) => ({
+            id: b.id,
+            serviceName: b.service?.name || b.serviceName || 'Fashion Service',
+            providerName: b.provider?.name || b.providerName || 'Femazon Specialist',
+            providerImage: b.provider?.image || b.providerImage,
+            serviceImage: b.service?.image || b.serviceImage,
+            date: b.date || new Date().toISOString().split('T')[0],
+            time: b.time || '10:00 AM',
+            location: b.location || 'At-Home Service',
+            total: b.total || 3500,
+            status: b.status || 'CONFIRMED',
+            duration: b.duration || 1
+          }));
+          setBookings(mapped);
+        }
+      }
+    } catch (e) {
+      // Fallback to existing bookings
+    }
+  }, []);
 
   // Hydrate from LocalStorage
   useEffect(() => {
     setIsMounted(true);
     try {
       const savedCart = localStorage.getItem(LOCAL_STORAGE_CART_KEY);
-      if (savedCart) {
-        setCart(JSON.parse(savedCart));
-      }
+      if (savedCart) setCart(JSON.parse(savedCart));
+
       const savedWishlist = localStorage.getItem(LOCAL_STORAGE_WISHLIST_KEY);
-      if (savedWishlist) {
-        setWishlist(JSON.parse(savedWishlist));
+      if (savedWishlist) setWishlist(JSON.parse(savedWishlist));
+
+      const savedUser = localStorage.getItem(LOCAL_STORAGE_USER_KEY);
+      if (savedUser) {
+        setUser(JSON.parse(savedUser));
+      }
+
+      const savedBookings = localStorage.getItem(LOCAL_STORAGE_BOOKINGS_KEY);
+      if (savedBookings) {
+        setBookings(JSON.parse(savedBookings));
       }
     } catch (e) {
-      console.warn("Could not load stored cart/wishlist", e);
+      console.warn("Could not load stored state", e);
     }
-  }, []);
+
+    // Also check server auth session
+    refreshAuth();
+    refreshBookings();
+  }, [refreshAuth, refreshBookings]);
 
   // Sync Cart to LocalStorage
   useEffect(() => {
@@ -201,6 +319,26 @@ export function FemazonStoreProvider({
       localStorage.setItem(LOCAL_STORAGE_WISHLIST_KEY, JSON.stringify(wishlist));
     } catch (e) {}
   }, [wishlist, isMounted]);
+
+  // Sync User to LocalStorage
+  useEffect(() => {
+    if (!isMounted) return;
+    try {
+      if (user) {
+        localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(user));
+      } else {
+        localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
+      }
+    } catch (e) {}
+  }, [user, isMounted]);
+
+  // Sync Bookings to LocalStorage
+  useEffect(() => {
+    if (!isMounted) return;
+    try {
+      localStorage.setItem(LOCAL_STORAGE_BOOKINGS_KEY, JSON.stringify(bookings));
+    } catch (e) {}
+  }, [bookings, isMounted]);
 
   // Cart Helpers
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
@@ -323,20 +461,45 @@ export function FemazonStoreProvider({
     setIsCartOpen(true);
   };
 
+  // Bookings Helpers
+  // Count only active (CONFIRMED or PENDING) bookings
+  const activeBookings = bookings.filter(b => b.status === 'CONFIRMED' || b.status === 'PENDING');
+  const bookingCount = user ? activeBookings.length : 0;
+
+  const addBooking = (booking: Omit<BookingItem, 'id'>) => {
+    const newBooking: BookingItem = {
+      ...booking,
+      id: `BKG${String(bookings.length + 1).padStart(3, '0')}`
+    };
+    setBookings(prev => [newBooking, ...prev]);
+  };
+
   // Logout Handlers
   const requestLogout = () => setIsLogoutConfirmOpen(true);
   const cancelLogout = () => setIsLogoutConfirmOpen(false);
 
   const confirmLogout = async () => {
     try {
+      setIsLoggingOut(true);
       setIsLogoutConfirmOpen(false);
-      setUser(null);
-      localStorage.removeItem(LOCAL_STORAGE_CART_KEY);
-      localStorage.removeItem(LOCAL_STORAGE_WISHLIST_KEY);
+      
+      // Call server logout
       await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
-      router.push('/login');
+      
+      // Clear sensitive states
+      setUser(null);
+      localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
+      
+      // Brief aesthetic pause for "Signing you out..."
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      setIsLoggingOut(false);
+      router.push('/shop');
+      router.refresh();
     } catch (err) {
-      router.push('/login');
+      setIsLoggingOut(false);
+      setUser(null);
+      router.push('/shop');
     }
   };
 
@@ -363,12 +526,19 @@ export function FemazonStoreProvider({
         moveWishlistToCart,
         moveAllWishlistToCart,
 
+        bookings,
+        bookingCount,
+        addBooking,
+        refreshBookings,
+
         user,
         setUser,
+        isLoggingOut,
         isLogoutConfirmOpen,
         requestLogout,
         confirmLogout,
-        cancelLogout
+        cancelLogout,
+        refreshAuth
       }}
     >
       {children}

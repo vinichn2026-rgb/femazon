@@ -1,0 +1,81 @@
+import { NextResponse } from 'next/server';
+import { verifyOtpCode } from '@/lib/sms';
+import { signToken } from '@/lib/session';
+import { prisma } from '@/lib/prisma';
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const { phone, email, otp } = body;
+
+    const identifier = phone || email;
+
+    if (!identifier || !otp) {
+      return NextResponse.json(
+        { success: false, message: 'Verification code and identifier are required.' },
+        { status: 400 }
+      );
+    }
+
+    const verification = verifyOtpCode(identifier, otp);
+
+    if (!verification.success) {
+      return NextResponse.json(
+        { success: false, message: verification.message },
+        { status: 400 }
+      );
+    }
+
+    // Check if user exists in database or create session
+    let user = null;
+    if (email) {
+      user = await prisma.user.findUnique({ where: { email } });
+    }
+
+    // Set signed cookie if user is found
+    const secret = process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET || 'dev-secret';
+    const now = Math.floor(Date.now() / 1000);
+    const expiresIn = 60 * 60 * 24 * 7; // 7 days
+
+    const sessionPayload = {
+      sub: user ? String(user.id) : `user_${Date.now()}`,
+      name: user?.name || (email ? email.split('@')[0] : 'Femazon Member'),
+      email: user?.email || email || `${phone}@femazon.luxury`,
+      role: user?.role || 'CUSTOMER',
+      iat: now,
+      exp: now + expiresIn,
+    };
+
+    const token = signToken(sessionPayload, secret);
+    const isProd = process.env.NODE_ENV === 'production';
+
+    const cookieParts = [
+      `femazon_session=${token}`,
+      `Path=/`,
+      `HttpOnly`,
+      `SameSite=Lax`,
+      `Max-Age=${expiresIn}`,
+    ];
+    if (isProd) cookieParts.push('Secure');
+
+    const res = NextResponse.json({
+      success: true,
+      message: 'Account verified successfully ✓',
+      user: {
+        id: sessionPayload.sub,
+        name: sessionPayload.name,
+        email: sessionPayload.email,
+        role: sessionPayload.role,
+      }
+    });
+
+    res.headers.append('Set-Cookie', cookieParts.join('; '));
+    return res;
+  } catch (error) {
+    console.error('[OTP Verify Error]', error);
+    return NextResponse.json(
+      { success: false, message: 'Verification failed. Please try again.' },
+      { status: 500 }
+    );
+  }
+}

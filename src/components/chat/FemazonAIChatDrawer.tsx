@@ -324,28 +324,31 @@ export function FemazonAIChatDrawer() {
       {/* Floating AI Concierge Chatbot Launcher FAB */}
       <aside
         aria-label="Femazon AI Concierge Chatbot"
-        className="fixed bottom-24 right-5 sm:bottom-8 sm:right-24 z-[9990] flex items-center"
+        className="fixed bottom-22 right-5 sm:bottom-22 sm:right-6 z-[9990] flex items-center select-none"
       >
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="group relative flex items-center gap-2.5 bg-gradient-to-r from-[#4A1513] to-[#2B0B0A] hover:from-[#350B0A] hover:to-[#1E0605] text-white px-4 py-3 rounded-sm shadow-[0_8px_25px_rgba(74,21,19,0.35)] border border-[#E5C3A6]/40 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+          className="group relative flex items-center gap-3 bg-gradient-to-r from-[#4A1513] via-[#3B0E0D] to-[#2B0B0A] hover:from-[#350B0A] hover:to-[#1E0605] text-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-full shadow-[0_8px_30px_rgba(74,21,19,0.35)] hover:shadow-[0_12px_35px_rgba(74,21,19,0.5)] border border-[#E5C3A6]/60 hover:border-[#E5C3A6] transition-all duration-300 hover:scale-[1.03] active:scale-95 cursor-pointer backdrop-blur-md"
           aria-label="Open AI Concierge Chatbot"
         >
-          {/* Animated Sparkle Icon */}
-          <div className="relative flex items-center justify-center">
-            <Sparkles size={18} className="text-[#F3DFCA] animate-pulse" />
-            <span className="absolute -top-1 -right-1 flex h-2 w-2">
+          {/* Animated Sparkle Icon Badge */}
+          <div className="relative w-8 h-8 rounded-full bg-white/10 flex items-center justify-center border border-white/15 shrink-0 group-hover:bg-white/15 transition-colors">
+            <Sparkles size={16} className="text-[#F3DFCA] animate-pulse" />
+            <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#E5C3A6] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#E5C3A6]"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#E5C3A6] border border-[#4A1513]"></span>
             </span>
           </div>
 
-          <div className="text-left hidden sm:block">
-            <span className="block text-[11px] font-bold uppercase tracking-wider text-[#F3DFCA] leading-tight">
-              AI Concierge ✨
-            </span>
-            <span className="block text-[9.5px] text-stone-300 font-light leading-tight">
+          <div className="text-left hidden sm:block pr-1">
+            <div className="flex items-center gap-1.5">
+              <span className="block text-[11.5px] font-bold uppercase tracking-wider text-[#F3DFCA] leading-tight">
+                AI Concierge
+              </span>
+              <span className="text-[10px] text-[#F3DFCA]">✨</span>
+            </div>
+            <span className="block text-[10px] text-stone-300 font-normal leading-tight mt-0.5">
               Personal Stylist &amp; Best Friend
             </span>
           </div>
