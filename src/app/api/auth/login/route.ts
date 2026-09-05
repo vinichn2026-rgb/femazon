@@ -50,16 +50,7 @@ export async function POST(request: Request) {
   };
 
   const token = signToken(sessionPayload, secret);
-
-  const isProd = process.env.NODE_ENV === 'production';
-  const cookieParts = [
-    `femazon_session=${token}`,
-    `Path=/`,
-    `HttpOnly`,
-    `SameSite=Lax`,
-    `Max-Age=${expiresIn}`,
-  ];
-  if (isProd) cookieParts.push('Secure');
+  const isHttps = request.url.startsWith('https://');
 
   const res = NextResponse.json(
     {
@@ -74,7 +65,15 @@ export async function POST(request: Request) {
     { status: 200 }
   );
 
-  res.headers.append('Set-Cookie', cookieParts.join('; '));
+  res.cookies.set({
+    name: 'femazon_session',
+    value: token,
+    httpOnly: true,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: expiresIn,
+    secure: isHttps
+  });
 
   return res;
 }
