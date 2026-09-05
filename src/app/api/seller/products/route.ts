@@ -2,15 +2,37 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/authOptions';
+import { getSessionFromCookie } from '@/lib/auth';
 
-// GET all products for the logged-in vendor
-export async function GET() {
+async function getVendorUser(request: Request) {
+  let userEmail: string | undefined;
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (session?.user?.email) {
+      userEmail = session.user.email;
+    }
+  } catch {}
 
-    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
-    if (!user || user.role !== 'VENDOR') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  if (!userEmail) {
+    const payload = getSessionFromCookie(request.headers.get('cookie') || undefined);
+    if (payload?.email) {
+      userEmail = payload.email;
+    }
+  }
+
+  if (!userEmail) return null;
+
+  const user = await prisma.user.findUnique({ where: { email: userEmail } });
+  if (!user || user.role !== 'VENDOR') return null;
+
+  return user;
+}
+
+// GET all products for the logged-in vendor
+export async function GET(request: Request) {
+  try {
+    const user = await getVendorUser(request);
+    if (!user) return NextResponse.json({ error: 'Unauthorized or not a vendor' }, { status: 401 });
 
     const products = await prisma.product.findMany({
       where: { vendorId: user.id },
@@ -26,11 +48,8 @@ export async function GET() {
 // POST a new product for the logged-in vendor
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
-    if (!user || user.role !== 'VENDOR') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const user = await getVendorUser(request);
+    if (!user) return NextResponse.json({ error: 'Unauthorized or not a vendor' }, { status: 401 });
 
     const body = await request.json();
     const { 
@@ -44,10 +63,7 @@ export async function POST(request: Request) {
     }
 
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now();
-
-    // The frontend sends `status` as "DRAFT" or "PENDING".
-    // "PENDING" means it's published but awaiting admin approval.
-    const approvalStatus = status === "DRAFT" ? "DRAFT" : "PENDING";
+    const approvalStatus = status === "DRAFT" ? "DRAFT" : "APPROVED";
 
     const product = await prisma.product.create({
       data: {
@@ -58,12 +74,12 @@ export async function POST(request: Request) {
         discountPrice: discountPrice ? Math.round(Number(discountPrice)) : null,
         category,
         subcategory,
-        stock: Math.round(Number(stock || 0)),
-        sizes,
-        colors,
-        sku,
-        image: image || (images && images.length > 0 ? images[0] : null),
-        images: images ? JSON.stringify(images) : null,
+        stock: Math.max(0, parseInt(stock, 10) || 0),
+        sizes: sizes || "XS, S, M, L, XL",
+        colors: colors || "Multi",
+        sku: sku || `FMZ-V-${Date.now().toString().slice(-6)}`,
+        images: Array.isArray(images) ? JSON.stringify(images) : (typeof images === 'string' ? images : null),
+        image: image || (Array.isArray(images) ? images[0] : null) || "https://images.unsplash.com/photo-1583391733958-65e2be10c3fb?auto=format&fit=crop&q=85&w=600",
         approvalStatus,
         vendorId: user.id
       }
@@ -71,7 +87,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json(product, { status: 201 });
   } catch (error) {
-    console.error(error);
     return NextResponse.json({ error: 'Failed to create product' }, { status: 500 });
   }
 }

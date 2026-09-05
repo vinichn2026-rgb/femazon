@@ -109,47 +109,7 @@ const LOCAL_STORAGE_WISHLIST_KEY = "femazon_wishlist_v1";
 const LOCAL_STORAGE_USER_KEY = "femazon_user_v1";
 const LOCAL_STORAGE_BOOKINGS_KEY = "femazon_bookings_v1";
 
-const DEFAULT_BOOKINGS: BookingItem[] = [
-  {
-    id: "BKG001",
-    serviceName: "Bridal Makeup & Hair Styling",
-    providerName: "Ananya Mehra",
-    providerImage: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200",
-    serviceImage: "https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?auto=format&fit=crop&q=80&w=600",
-    date: "2026-09-18",
-    time: "10:30 AM",
-    location: "In-Store Studio / South Extension, New Delhi",
-    total: 8500,
-    status: "CONFIRMED",
-    duration: 2
-  },
-  {
-    id: "BKG002",
-    serviceName: "Personal Fashion Consultation",
-    providerName: "Rhea Kapoor Studio",
-    providerImage: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200",
-    serviceImage: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=80&w=600",
-    date: "2026-09-24",
-    time: "03:00 PM",
-    location: "Online Video Consultation",
-    total: 4500,
-    status: "CONFIRMED",
-    duration: 1
-  },
-  {
-    id: "BKG003",
-    serviceName: "Festive Henna & Mehendi Art",
-    providerName: "Zoya Parveen",
-    providerImage: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200",
-    serviceImage: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&q=80&w=600",
-    date: "2026-10-02",
-    time: "11:00 AM",
-    location: "At-Home Service",
-    total: 3500,
-    status: "CONFIRMED",
-    duration: 3
-  }
-];
+const DEFAULT_BOOKINGS: BookingItem[] = [];
 
 export function FemazonStoreProvider({
   children,
@@ -202,49 +162,55 @@ export function FemazonStoreProvider({
     }
   ]);
 
-  // Bookings State (with active 3 bookings by default for demonstration)
-  const [bookings, setBookings] = useState<BookingItem[]>(DEFAULT_BOOKINGS);
+  // Bookings State
+  const [bookings, setBookings] = useState<BookingItem[]>([]);
 
-  // Auth User State
-  const [user, setUser] = useState<UserProfile | null>(initialUser || {
-    id: "usr_101",
-    name: "Priya Sharma",
-    firstName: "Priya",
-    lastName: "Sharma",
-    email: "priya.sharma@femazon.com",
-    phone: "+91 98765 43210",
-    role: "CUSTOMER",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200"
-  });
+  // Auth User State (Starts null unless a valid authenticated session exists)
+  const [user, setUser] = useState<UserProfile | null>(initialUser || null);
 
   // Logout Modal State & Loading
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  // Refresh user auth from /api/auth/me or session
+  // Refresh user auth strictly from server session (/api/auth/me)
   const refreshAuth = useCallback(async () => {
     try {
       const res = await fetch('/api/auth/me');
       if (res.ok) {
         const data = await res.json();
-        if (data?.user) {
+        if (data?.success && data?.user) {
           const nameParts = (data.user.name || '').trim().split(' ');
           const firstName = nameParts[0] || 'Member';
           const lastName = nameParts.slice(1).join(' ') || '';
-          setUser({
+          const activeUser: UserProfile = {
             id: String(data.user.id),
             name: data.user.name || firstName,
             firstName,
             lastName,
             email: data.user.email,
-            phone: data.user.phone || '+91 98765 43210',
+            phone: data.user.phone || '',
             role: data.user.role || 'CUSTOMER',
             avatar: data.user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200'
-          });
+          };
+          setUser(activeUser);
+          try {
+            localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(activeUser));
+          } catch (e) {}
+          return;
         }
       }
+      
+      // If server returns 401 or invalid user, strictly log out
+      setUser(null);
+      try {
+        localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
+      } catch (e) {}
     } catch (e) {
-      // Keep existing user if offline or unauthenticated
+      // In case of error, do not assume logged in
+      setUser(null);
+      try {
+        localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
+      } catch (err) {}
     }
   }, []);
 
@@ -269,14 +235,16 @@ export function FemazonStoreProvider({
             duration: b.duration || 1
           }));
           setBookings(mapped);
+          return;
         }
       }
+      setBookings([]);
     } catch (e) {
-      // Fallback to existing bookings
+      setBookings([]);
     }
   }, []);
 
-  // Hydrate from LocalStorage
+  // Hydrate and validate session
   useEffect(() => {
     setIsMounted(true);
     try {
@@ -285,21 +253,11 @@ export function FemazonStoreProvider({
 
       const savedWishlist = localStorage.getItem(LOCAL_STORAGE_WISHLIST_KEY);
       if (savedWishlist) setWishlist(JSON.parse(savedWishlist));
-
-      const savedUser = localStorage.getItem(LOCAL_STORAGE_USER_KEY);
-      if (savedUser) {
-        setUser(JSON.parse(savedUser));
-      }
-
-      const savedBookings = localStorage.getItem(LOCAL_STORAGE_BOOKINGS_KEY);
-      if (savedBookings) {
-        setBookings(JSON.parse(savedBookings));
-      }
     } catch (e) {
       console.warn("Could not load stored state", e);
     }
 
-    // Also check server auth session
+    // Always validate session against server
     refreshAuth();
     refreshBookings();
   }, [refreshAuth, refreshBookings]);
