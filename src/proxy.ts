@@ -1,47 +1,54 @@
-import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export default withAuth(
-  function middleware(req) {
-    const { pathname } = req.nextUrl;
-    const role = req.nextauth.token?.role;
+export default function proxy(req: NextRequest) {
+  const { pathname } = req.nextUrl;
 
-    if (pathname.startsWith("/seller") || pathname.startsWith("/vendor")) {
-      if (role !== "VENDOR") {
-        return NextResponse.redirect(new URL("/login", req.url));
-      }
-    }
-    
-    if (pathname.startsWith("/admin")) {
-      if (role !== "ADMIN") {
-        return NextResponse.redirect(new URL("/login", req.url));
-      }
-    }
+  // Read femazon_session cookie or next-auth session cookie
+  const sessionCookie = req.cookies.get("femazon_session")?.value;
+  let role: string | null = null;
 
-    if (pathname.startsWith("/profile") || pathname.startsWith("/cart") || pathname.startsWith("/orders") || pathname.startsWith("/wishlist")) {
-      if (role === "VENDOR") {
-        return NextResponse.redirect(new URL("/seller/dashboard", req.url));
+  if (sessionCookie) {
+    try {
+      const [encoded] = sessionCookie.split('.');
+      if (encoded) {
+        // Base64 decode payload JSON
+        const decoded = Buffer.from(encoded, 'base64').toString('utf8');
+        const payload = JSON.parse(decoded);
+        const now = Math.floor(Date.now() / 1000);
+        if (!payload.exp || now <= payload.exp) {
+          role = payload.role || null;
+        }
       }
-      if (role === "ADMIN") {
-        return NextResponse.redirect(new URL("/admin/dashboard", req.url));
-      }
-    }
-  },
-  {
-    callbacks: {
-      authorized: ({ token }) => !!token,
-    },
+    } catch {}
   }
-);
+
+  // 1. Protected Admin Dashboard Routes
+  if (pathname.startsWith("/admin/dashboard") || pathname === "/admin/products" || pathname === "/admin/vendors" || pathname === "/admin/users" || pathname === "/admin/bookings" || pathname === "/admin/services") {
+    if (role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/admin", req.url));
+    }
+  }
+
+  // 2. Protected Vendor Dashboard Routes
+  if (pathname.startsWith("/vendor/dashboard") || pathname.startsWith("/seller/dashboard")) {
+    if (role !== "VENDOR") {
+      return NextResponse.redirect(new URL("/vendor", req.url));
+    }
+  }
+
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [
-    "/seller/:path*",
-    "/vendor/:path*",
-    "/admin/:path*",
-    "/profile/:path*",
-    "/cart",
-    "/wishlist",
-    "/orders"
+    "/admin/dashboard/:path*",
+    "/admin/products/:path*",
+    "/admin/vendors/:path*",
+    "/admin/users/:path*",
+    "/admin/bookings/:path*",
+    "/admin/services/:path*",
+    "/vendor/dashboard/:path*",
+    "/seller/dashboard/:path*"
   ],
 };
