@@ -69,9 +69,8 @@ export default function VendorLoginClient() {
       setIsSuccessTransition(true);
 
       setTimeout(() => {
-        router.push("/vendor/dashboard");
-        router.refresh();
-      }, 1000);
+        window.location.href = "/vendor/dashboard";
+      }, 700);
 
     } catch (err) {
       setErrorMessage("Connection error. Please check your network and try again.");

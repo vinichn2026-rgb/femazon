@@ -67,9 +67,8 @@ export default function AdminLoginClient() {
       setIsSuccessTransition(true);
 
       setTimeout(() => {
-        router.push("/admin/dashboard");
-        router.refresh();
-      }, 900);
+        window.location.href = "/admin/dashboard";
+      }, 700);
 
     } catch (err) {
       setErrorMessage("Connection error. Please try again.");

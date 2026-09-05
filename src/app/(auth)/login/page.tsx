@@ -80,10 +80,19 @@ function LoginForm() {
         return;
       }
 
-      // Extract User Name
+      // Extract User Role & Name
+      const role = data?.user?.role || 'CUSTOMER';
       const userName = data?.user?.name || cleanEmail.split('@')[0] || 'Member';
       const firstName = userName.split(' ')[0] || 'Member';
       setAuthenticatedUserName(firstName);
+
+      // Determine smart target URL
+      let targetUrl = callbackUrl;
+      if (role === 'ADMIN' && (callbackUrl === '/shop' || callbackUrl === '/' || callbackUrl === '/admin' || callbackUrl.startsWith('/admin'))) {
+        targetUrl = '/admin/dashboard';
+      } else if (role === 'VENDOR' && (callbackUrl === '/shop' || callbackUrl === '/' || callbackUrl === '/vendor' || callbackUrl.startsWith('/vendor'))) {
+        targetUrl = '/vendor/dashboard';
+      }
 
       // Update Global State
       setUser({
@@ -93,7 +102,7 @@ function LoginForm() {
         lastName: userName.split(' ').slice(1).join(' '),
         email: data.user.email,
         phone: data.user.phone || '+91 98765 43210',
-        role: data.user.role || 'CUSTOMER',
+        role: role,
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200'
       });
 
@@ -101,11 +110,10 @@ function LoginForm() {
       setIsLoading(false);
       setIsSuccessTransition(true);
 
-      // Refresh auth state and redirect to callbackUrl or /shop
+      // Refresh auth state and hard redirect to targetUrl
       setTimeout(() => {
-        router.push(callbackUrl);
-        router.refresh();
-      }, 1400);
+        window.location.href = targetUrl;
+      }, 900);
 
     } catch (err) {
       setErrorMessage('Something went wrong. Please check your connection and try again.');
