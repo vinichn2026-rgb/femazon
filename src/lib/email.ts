@@ -141,11 +141,14 @@ export async function sendOtpEmail({ to, name, otp }: SendOtpEmailParams): Promi
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        console.error('[Brevo Email Error Response]', data);
+        console.error('\n❌ [Brevo API Error Response]:', JSON.stringify(data, null, 2));
+        if (data?.message && data.message.includes('unrecognised IP address')) {
+          console.error(`⚠️ Brevo requires IP authorization for this machine. Please visit https://app.brevo.com/security/authorised_ips and add IP: 103.130.204.193\n`);
+        }
         return { success: false, error: data?.message || 'Brevo dispatch failed' };
       }
 
-      console.log(`[Brevo Email Sent Successfully] Message ID: ${data.messageId} to ${to}`);
+      console.log(`\n✅ [Brevo Email Sent Successfully] Message ID: ${data.messageId} to ${to}\n`);
       return { success: true, messageId: data.messageId };
     } catch (err: any) {
       console.error('[Brevo Email Exception]', err);
@@ -153,7 +156,36 @@ export async function sendOtpEmail({ to, name, otp }: SendOtpEmailParams): Promi
     }
   }
 
-  // 2. Resend Provider
+  // 2. SMTP Provider (Nodemailer - e.g. Gmail / Custom SMTP)
+  if (provider === 'smtp' || process.env.SMTP_USER) {
+    try {
+      const nodemailer = await import('nodemailer');
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        port: parseInt(process.env.SMTP_PORT || '587'),
+        secure: process.env.SMTP_PORT === '465',
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS || process.env.SMTP_PASSWORD
+        }
+      });
+
+      const info = await transporter.sendMail({
+        from: fromRaw,
+        to,
+        subject: 'Your Femazon verification code',
+        html: generateOtpEmailHtml({ name, otp })
+      });
+
+      console.log(`\n✅ [SMTP Email Sent Successfully] Message ID: ${info.messageId} to ${to}\n`);
+      return { success: true, messageId: info.messageId };
+    } catch (err: any) {
+      console.error('[SMTP Email Exception]', err);
+      return { success: false, error: err.message };
+    }
+  }
+
+  // 3. Resend Provider
   if (provider === 'resend') {
     try {
       const apiKey = process.env.RESEND_API_KEY || process.env.EMAIL_API_KEY;
@@ -186,13 +218,12 @@ export async function sendOtpEmail({ to, name, otp }: SendOtpEmailParams): Promi
     }
   }
 
-  // 3. Fallback / Development mode (When API Key is not yet placed in .env)
+  // 4. Fallback / Development mode
   console.log(`\n==================================================`);
   console.log(`[FEMAZON OTP DEVELOPMENT MODE]`);
   console.log(`To: ${to}`);
   console.log(`Generated OTP: ${otp}`);
   console.log(`(You can also use standard test OTP: 123456)`);
-  console.log(`To receive real emails via Brevo, set BREVO_API_KEY in .env`);
   console.log(`==================================================\n`);
 
   return { success: true, messageId: `dev_${Date.now()}` };

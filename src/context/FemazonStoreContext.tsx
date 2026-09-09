@@ -100,6 +100,16 @@ interface FemazonStoreContextType {
   confirmLogout: () => Promise<void>;
   cancelLogout: () => void;
   refreshAuth: () => Promise<void>;
+
+  // Auth Modal (Aza Fashions style)
+  isAuthModalOpen: boolean;
+  authModalView: 'login' | 'register' | 'otp';
+  openAuthModal: (view?: 'login' | 'register' | 'otp') => void;
+  closeAuthModal: () => void;
+
+  // Wallet
+  walletBalance: number;
+  addWalletCredits: (amount: number) => void;
 }
 
 const FemazonStoreContext = createContext<FemazonStoreContextType | undefined>(undefined);
@@ -167,6 +177,26 @@ export function FemazonStoreProvider({
 
   // Auth User State (Starts null unless a valid authenticated session exists)
   const [user, setUser] = useState<UserProfile | null>(initialUser || null);
+
+  // Auth Modal (Aza Fashions style slide/popup)
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalView, setAuthModalView] = useState<'login' | 'register' | 'otp'>('otp');
+
+  const openAuthModal = useCallback((view: 'login' | 'register' | 'otp' = 'otp') => {
+    setAuthModalView(view);
+    setIsAuthModalOpen(true);
+  }, []);
+
+  const closeAuthModal = useCallback(() => {
+    setIsAuthModalOpen(false);
+  }, []);
+
+  // Wallet State
+  const [walletBalance, setWalletBalance] = useState<number>(2500);
+
+  const addWalletCredits = useCallback((amount: number) => {
+    setWalletBalance(prev => prev + amount);
+  }, []);
 
   // Logout Modal State & Loading
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
@@ -496,7 +526,15 @@ export function FemazonStoreProvider({
         requestLogout,
         confirmLogout,
         cancelLogout,
-        refreshAuth
+        refreshAuth,
+
+        isAuthModalOpen,
+        authModalView,
+        openAuthModal,
+        closeAuthModal,
+
+        walletBalance,
+        addWalletCredits
       }}
     >
       {children}

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { UserCircle2, Package, Heart, ShoppingBag, CalendarDays, MapPin, Settings, Sparkles, LogOut } from "lucide-react";
+import { UserCircle2, Package, Heart, ShoppingBag, CalendarDays, MapPin, Settings, Sparkles, LogOut, Scissors, Wallet } from "lucide-react";
 import LogoutButton from "./LogoutButton"; // We'll create this simple client component
 
 export default function AccountLayout({ children }: { children: React.ReactNode }) {
@@ -10,6 +10,8 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
     { href: "/cart", label: "My Cart", icon: <ShoppingBag size={18} /> },
     { href: "/bookings", label: "My Bookings", icon: <CalendarDays size={18} /> },
     { href: "/wardrobe", label: "My Wardrobe", icon: <Sparkles size={18} /> },
+    { href: "/measurements", label: "My Measurements", icon: <Scissors size={18} /> },
+    { href: "/wallet", label: "Wallet & Credits", icon: <Wallet size={18} /> },
     { href: "/addresses", label: "Addresses", icon: <MapPin size={18} /> },
     { href: "/settings", label: "Settings", icon: <Settings size={18} /> },
   ];
