@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { AdminNavbar } from '@/components/admin/AdminNavbar';
 import {
   LayoutDashboard,
   Package,
@@ -26,7 +27,9 @@ import {
   CheckCircle2,
   Sparkles,
   RefreshCw,
-  ExternalLink
+  ExternalLink,
+  Loader2,
+  Truck
 } from 'lucide-react';
 
 const CATEGORIES = [
@@ -83,7 +86,18 @@ export function AdminProductsClient({ initialProducts }: { initialProducts: any[
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('All');
   const [currentPage, setCurrentPage] = useState(1);
+  const [isPageLoading, setIsPageLoading] = useState(false);
+  const [navigatingHref, setNavigatingHref] = useState<string | null>(null);
   const itemsPerPage = 10;
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage === currentPage || isPageLoading) return;
+    setIsPageLoading(true);
+    setTimeout(() => {
+      setCurrentPage(newPage);
+      setIsPageLoading(false);
+    }, 250);
+  };
 
   // Form State
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
@@ -295,6 +309,7 @@ export function AdminProductsClient({ initialProducts }: { initialProducts: any[
   const navMenuItems = [
     { label: "Dashboard", href: "/admin", icon: <LayoutDashboard size={18} /> },
     { label: "Products", href: "/admin/products", icon: <Package size={18} />, active: true },
+    { label: "Ready to Ship", href: "/vendor/products", icon: <Truck size={18} /> },
     { label: "Categories", href: "/admin", icon: <Layers size={18} /> },
     { label: "Orders", href: "/admin", icon: <ShoppingBag size={18} /> },
     { label: "Customers", href: "/admin", icon: <Users size={18} /> },
@@ -305,51 +320,12 @@ export function AdminProductsClient({ initialProducts }: { initialProducts: any[
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] text-stone-800 font-sans flex flex-col">
-      {/* Top Navbar */}
-      <header className="sticky top-0 z-40 bg-white border-b border-stone-200 shadow-2xs h-16 px-4 sm:px-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="md:hidden p-1.5 rounded-lg text-stone-600 hover:bg-stone-100"
-            aria-label="Toggle menu"
-          >
-            <Menu size={22} />
-          </button>
-
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-[#4A1513]/10 text-[#4A1513] flex items-center justify-center font-bold">
-              <Package size={18} />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xs sm:text-sm font-bold text-stone-900 tracking-tight leading-tight">Admin Console</span>
-              <span className="text-[10px] text-stone-500 font-medium">Products & Inventory</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <Link
-            href="/shop"
-            target="_blank"
-            className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-[#4A1513] bg-[#4A1513]/10 px-3 py-1.5 rounded-full hover:bg-[#4A1513]/20 transition"
-          >
-            <span>View Live Shop</span>
-            <ExternalLink size={13} />
-          </Link>
-
-          {/* Admin Avatar Pill */}
-          <div className="flex items-center gap-2.5 bg-stone-50 border border-stone-200/80 rounded-full py-1 pl-1.5 pr-3">
-            <div className="h-7 w-7 rounded-full bg-[#4A1513] text-white flex items-center justify-center text-xs font-bold shadow-xs">
-              A
-            </div>
-            <div className="hidden sm:flex flex-col text-left">
-              <span className="text-xs font-bold text-stone-900 leading-tight">Admin</span>
-              <span className="text-[10px] text-stone-500 leading-tight">admin@femazon.com</span>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Top Admin Navbar */}
+      <AdminNavbar
+        currentSection="Products & Inventory"
+        stats={{ productsCount: products.length }}
+        onToggleMobileSidebar={() => setIsSidebarOpen(prev => !prev)}
+      />
 
       {/* Main Layout Body */}
       <div className="flex-1 flex relative">
@@ -360,30 +336,49 @@ export function AdminProductsClient({ initialProducts }: { initialProducts: any[
           }`}
         >
           <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-            {navMenuItems.map((item, idx) => (
-              <Link
-                key={idx}
-                href={item.href}
-                onClick={() => setIsSidebarOpen(false)}
-                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors ${
-                  item.active
-                    ? 'bg-[#4A1513] text-white shadow-xs'
-                    : 'text-stone-600 hover:bg-stone-100 hover:text-stone-900'
-                }`}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </Link>
-            ))}
+            {navMenuItems.map((item, idx) => {
+              const isTargetLoading = navigatingHref === item.href;
+              return (
+                <Link
+                  key={idx}
+                  href={item.href}
+                  onClick={() => {
+                    if (item.href !== '/admin/products') {
+                      setNavigatingHref(item.href);
+                    }
+                    setIsSidebarOpen(false);
+                  }}
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors ${
+                    item.active
+                      ? 'bg-[#4A1513] text-white shadow-xs'
+                      : 'text-stone-600 hover:bg-stone-100 hover:text-stone-900'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </div>
+                  {isTargetLoading && (
+                    <Loader2 size={13} className={`animate-spin ${item.active ? 'text-white' : 'text-[#4A1513]'}`} />
+                  )}
+                </Link>
+              );
+            })}
           </nav>
 
           <div className="p-3 border-t border-stone-200">
             <Link
               href="/api/auth/logout"
-              className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition"
+              onClick={() => setNavigatingHref('/api/auth/logout')}
+              className="flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition"
             >
-              <LogOut size={18} />
-              <span>Logout</span>
+              <div className="flex items-center gap-3">
+                <LogOut size={18} />
+                <span>Logout</span>
+              </div>
+              {navigatingHref === '/api/auth/logout' && (
+                <Loader2 size={13} className="animate-spin text-rose-600" />
+              )}
             </Link>
           </div>
         </aside>
@@ -724,7 +719,12 @@ export function AdminProductsClient({ initialProducts }: { initialProducts: any[
             </div>
 
             {/* Table */}
-            <div className="overflow-x-auto rounded-xl border border-stone-100">
+            <div className="overflow-x-auto rounded-xl border border-stone-100 relative min-h-[300px]">
+              {isPageLoading && (
+                <div className="absolute inset-0 bg-white/80 backdrop-blur-xs flex items-center justify-center z-10 animate-in fade-in duration-150">
+                  <div className="w-12 h-12 rounded-full border-3 border-[#4A1513]/20 border-t-[#4A1513] animate-spin" />
+                </div>
+              )}
               <table className="w-full text-left text-xs border-collapse">
                 <thead className="bg-stone-50 text-[11px] font-bold uppercase tracking-wider text-stone-500 border-b border-stone-200">
                   <tr>
@@ -851,9 +851,10 @@ export function AdminProductsClient({ initialProducts }: { initialProducts: any[
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                  disabled={currentPage === 1 || isPageLoading}
+                  onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
                   className="h-8 w-8 rounded-lg border border-stone-200 flex items-center justify-center disabled:opacity-40 hover:bg-stone-50 transition cursor-pointer"
+                  title="Previous page"
                 >
                   <ChevronLeft size={14} />
                 </button>
@@ -862,22 +863,28 @@ export function AdminProductsClient({ initialProducts }: { initialProducts: any[
                   <button
                     key={idx}
                     type="button"
-                    onClick={() => setCurrentPage(idx + 1)}
-                    className={`h-8 w-8 rounded-lg text-xs font-bold transition cursor-pointer ${
+                    disabled={isPageLoading}
+                    onClick={() => handlePageChange(idx + 1)}
+                    className={`h-8 w-8 rounded-lg text-xs font-bold transition cursor-pointer flex items-center justify-center ${
                       currentPage === idx + 1
                         ? 'bg-[#4A1513] text-white shadow-xs'
                         : 'border border-stone-200 hover:bg-stone-50 text-stone-700'
                     }`}
                   >
-                    {idx + 1}
+                    {isPageLoading && currentPage === idx + 1 ? (
+                      <Loader2 size={12} className="animate-spin text-white" />
+                    ) : (
+                      idx + 1
+                    )}
                   </button>
                 ))}
 
                 <button
                   type="button"
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+                  disabled={currentPage === totalPages || isPageLoading}
+                  onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
                   className="h-8 w-8 rounded-lg border border-stone-200 flex items-center justify-center disabled:opacity-40 hover:bg-stone-50 transition cursor-pointer"
+                  title="Next page"
                 >
                   <ChevronRight size={14} />
                 </button>

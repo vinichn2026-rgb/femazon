@@ -916,10 +916,15 @@ export function SiteLayout({
     }
   };
 
-  // Check if current route is dedicated auth page (/login or /register)
-  const isAuthPage = pathname === '/login' || pathname === '/register';
+  // Check if current route is dedicated portal or auth page
+  const isPortalOrAuthPage = 
+    pathname?.startsWith('/vendor') || 
+    pathname?.startsWith('/admin') || 
+    pathname?.startsWith('/seller') ||
+    pathname === '/login' || 
+    pathname === '/register';
 
-  if (isAuthPage) {
+  if (isPortalOrAuthPage) {
     return (
       <div className="min-h-screen bg-[#FAF7F5] text-stone-900 font-sans flex flex-col justify-between antialiased selection:bg-[#4A1513] selection:text-white">
         {children}

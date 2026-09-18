@@ -1,10 +1,41 @@
-export default function VendorProductsPage() {
-  return (
-    <main className="min-h-screen bg-zinc-50 p-8">
-      <div className="mx-auto max-w-6xl rounded-3xl bg-white p-8 shadow-sm">
-        <h1 className="text-3xl font-semibold text-primary">Vendor Products</h1>
-        <p className="mt-3 text-zinc-600">Create and manage your vendor product listings.</p>
-      </div>
-    </main>
-  );
+import { prisma } from '@/lib/prisma';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/authOptions';
+import { VendorProductsClient } from '@/components/vendor/VendorProductsClient';
+
+export const dynamic = 'force-dynamic';
+
+export const metadata = {
+  title: 'Ready-to-Ship Products & Color Variants | Femazon Partner Portal',
+  description: 'Manage luxury apparel listings with dedicated color galleries and size inventories.'
+};
+
+export default async function VendorProductsPage() {
+  const session = await getServerSession(authOptions);
+
+  let whereClause: any = {};
+  if (session?.user?.email) {
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    });
+    if (user && user.role === 'VENDOR') {
+      whereClause = { vendorId: user.id };
+    }
+  }
+
+  const products = await prisma.product.findMany({
+    where: whereClause,
+    include: {
+      colorVariants: {
+        include: {
+          images: { orderBy: { displayOrder: 'asc' } },
+          sizes: { orderBy: { size: 'asc' } }
+        }
+      }
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 50
+  });
+
+  return <VendorProductsClient initialProducts={products} />;
 }

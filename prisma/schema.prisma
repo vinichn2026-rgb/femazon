@@ -54,8 +54,12 @@ model Product {
   sizes         String?     // Store as JSON or comma-separated string for SQLite compatibility
   colors        String?     // Store as JSON or comma-separated string for SQLite compatibility
   approvalStatus String     @default("APPROVED") // Auto-approved for backward compatibility
-  readyToShip    Boolean    @default(false)
+  readyToShip    Boolean    @default(true)
   deliveryDays   Int?
+  brandName      String?    @default("Femazon Luxe")
+  fabricCare     String?
+  packageContains String?
+  dispatchTimeline String   @default("Dispatched within 24-48 Hours")
   vendorId      Int?
   vendor        User?       @relation(fields: [vendorId], references: [id])
   createdAt     DateTime    @default(now())
@@ -64,6 +68,7 @@ model Product {
   cartItems     CartItem[]
   wishlistItems WishlistItem[]
   reviews       Review[]
+  colorVariants ColorVariant[]
 }
 
 model Order {
@@ -288,4 +293,43 @@ model Review {
   product     Product?  @relation(fields: [productId], references: [id], onDelete: Cascade)
   service     Service?  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   provider    Provider? @relation(fields: [providerId], references: [id], onDelete: Cascade)
+}
+
+model ColorVariant {
+  id           String          @id @default(cuid())
+  productId    Int
+  product      Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  colorName    String          // e.g., "Wine Red", "Emerald Green"
+  colorHexCode String?         // e.g., "#722F37", "#046307" (for color swatch picker circle)
+  images       VariantImage[]  // Dedicated gallery for this color
+  sizes        SizeInventory[] // Physical stock by size for this color
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([productId])
+}
+
+model VariantImage {
+  id             String       @id @default(cuid())
+  colorVariantId String
+  colorVariant   ColorVariant @relation(fields: [colorVariantId], references: [id], onDelete: Cascade)
+  imageUrl       String       // Uploaded image path/URL
+  isThumbnail    Boolean      @default(false)
+  displayOrder   Int          @default(1)
+  createdAt      DateTime     @default(now())
+
+  @@index([colorVariantId])
+}
+
+model SizeInventory {
+  id             String       @id @default(cuid())
+  colorVariantId String
+  colorVariant   ColorVariant @relation(fields: [colorVariantId], references: [id], onDelete: Cascade)
+  size           String       // "XS", "S", "M", "L", "XL", "XXL", "Free Size"
+  stockQty       Int          @default(0) // Physical in-stock count
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([colorVariantId, size])
+  @@index([colorVariantId])
 }

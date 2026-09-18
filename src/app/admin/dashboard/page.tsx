@@ -74,6 +74,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <AdminClient 
+      user={user}
       users={users} 
       vendors={vendors} 
       products={products} 

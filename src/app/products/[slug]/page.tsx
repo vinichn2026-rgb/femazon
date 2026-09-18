@@ -17,6 +17,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         ...(isNaN(numId) ? [] : [{ id: numId }])
       ],
       approvalStatus: 'APPROVED'
+    },
+    include: {
+      colorVariants: {
+        include: {
+          images: { orderBy: { displayOrder: 'asc' } },
+          sizes: { orderBy: { size: 'asc' } }
+        }
+      }
     }
   });
 

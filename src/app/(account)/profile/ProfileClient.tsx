@@ -12,7 +12,8 @@ import {
   Heart, 
   CalendarDays,
   ShieldCheck,
-  CheckCircle2
+  CheckCircle2,
+  LogOut
 } from "lucide-react";
 import { useFemazonStore } from "@/context/FemazonStoreContext";
 
@@ -44,7 +45,7 @@ type ProfileClientProps = {
 };
 
 export default function ProfileClient({ user: initialUser }: ProfileClientProps) {
-  const { user: storeUser, setUser: setStoreUser } = useFemazonStore();
+  const { user: storeUser, setUser: setStoreUser, requestLogout } = useFemazonStore();
 
   const [isEditing, setIsEditing] = useState(false);
   const [firstName, setFirstName] = useState(storeUser?.firstName || initialUser.firstName || "Priya");
@@ -164,6 +165,22 @@ export default function ProfileClient({ user: initialUser }: ProfileClientProps)
                   <span className="text-stone-500">Account Created</span>
                   <span className="font-medium text-stone-700">{initialUser.joinDate}</span>
                 </div>
+              </div>
+
+              {/* Sign Out Action Card */}
+              <div className="pt-4 border-t border-stone-100 flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-semibold text-stone-800">Account Session</span>
+                  <p className="text-[11.5px] text-stone-400">Signed in securely as {email}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={requestLogout}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-xs font-bold uppercase tracking-wider hover:bg-rose-100 transition cursor-pointer"
+                >
+                  <LogOut size={14} />
+                  <span>Sign Out</span>
+                </button>
               </div>
             </div>
           ) : (

@@ -17,7 +17,20 @@ export async function POST(request: Request) {
       );
     }
 
-    const verification = verifyOtpCode(identifier, otp);
+    const cookieHeader = request.headers.get('cookie') || '';
+    const match = cookieHeader.match(/femazon_otp_challenge=([^;]+)/);
+    const challenge = match ? decodeURIComponent(match[1]) : undefined;
+
+    let verification = verifyOtpCode(identifier, otp, challenge);
+
+    // If not verified and both phone and email were sent, check other identifier
+    if (!verification.success && phone && email) {
+      const altId = identifier === phone ? email : phone;
+      const altVerification = verifyOtpCode(altId, otp, challenge);
+      if (altVerification.success) {
+        verification = altVerification;
+      }
+    }
 
     if (!verification.success) {
       return NextResponse.json(

@@ -61,6 +61,21 @@ function LoginForm() {
     }
   }, [otpCountdown]);
 
+  // Auto-fill identifier and OTP from email direct verification link
+  useEffect(() => {
+    const paramEmail = searchParams.get('email') || searchParams.get('identifier');
+    const paramOtp = searchParams.get('otp');
+    if (paramEmail) {
+      setIdentifier(paramEmail);
+      setLoginMode('otp');
+    }
+    if (paramOtp) {
+      setOtpCode(paramOtp);
+      setIsOtpSent(true);
+      setSuccessMessage('Verification code pre-filled from your email link. Click Verify below.');
+    }
+  }, [searchParams]);
+
   // Handle Send OTP
   const handleSendOtp = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();

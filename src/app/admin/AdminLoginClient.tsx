@@ -12,7 +12,8 @@ import {
   Sparkles, 
   ArrowRight,
   ShieldCheck,
-  ChevronLeft
+  ChevronLeft,
+  Loader2
 } from "lucide-react";
 import { BrandLogo } from "@/components/common/BrandLogo";
 
@@ -105,21 +106,17 @@ export default function AdminLoginClient() {
         <div className="w-full max-w-[440px]">
           
           {isSuccessTransition ? (
-            <div className="bg-white rounded-3xl p-8 sm:p-12 border border-stone-200/90 shadow-[0_12px_40px_rgba(74,21,19,0.06)] text-center animate-in fade-in zoom-in-95 duration-300">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-50 border border-emerald-200 mb-6 text-emerald-600 shadow-2xs">
-                <ShieldCheck size={32} />
+            <div className="bg-[#4A1513] rounded-3xl p-10 sm:p-14 text-center text-white shadow-2xl border border-white/10 animate-in fade-in zoom-in-95 duration-200">
+              <div className="relative w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                <div className="w-20 h-20 rounded-full border-4 border-white/20 border-t-white animate-spin" />
+                <div className="absolute w-12 h-12 rounded-full border-2 border-white/10 border-b-white animate-spin [animation-direction:reverse] [animation-duration:1.2s]" />
               </div>
-              <h2 className="font-serif text-2xl sm:text-3xl text-stone-900 mb-2 font-normal">
-                Administrator Verified ✓
+              <h2 className="font-serif text-3xl text-white mb-2 font-light tracking-[0.25em]">
+                FEMAZON
               </h2>
-              <p className="text-stone-500 text-[13.5px] font-normal mb-8">
-                Opening Admin Control Center...
+              <p className="text-xs uppercase tracking-[0.35em] text-white/80 font-medium">
+                ADMIN CONSOLE
               </p>
-              <div className="flex justify-center items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-[#4A1513] animate-bounce [animation-delay:-0.3s]" />
-                <div className="w-2.5 h-2.5 rounded-full bg-[#4A1513] animate-bounce [animation-delay:-0.15s]" />
-                <div className="w-2.5 h-2.5 rounded-full bg-[#4A1513] animate-bounce" />
-              </div>
             </div>
           ) : (
             <div className="bg-white rounded-3xl p-7 sm:p-10 border border-stone-200/90 shadow-[0_12px_40px_rgba(74,21,19,0.06)] relative overflow-hidden transition-all duration-300">
@@ -215,13 +212,13 @@ export default function AdminLoginClient() {
                 {/* Submit CTA Button */}
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isLoading || isSuccessTransition}
                   className="w-full mt-2 py-4 px-6 rounded-xl bg-[#4A1513] hover:bg-[#350B0A] text-white text-xs font-bold uppercase tracking-[0.16em] shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer active:scale-98 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  {isLoading ? (
+                  {isLoading || isSuccessTransition ? (
                     <>
-                      <Sparkles size={16} className="animate-spin" />
-                      <span>Verifying Credentials...</span>
+                      <Loader2 size={18} className="animate-spin text-white" />
+                      <span>Entering Console...</span>
                     </>
                   ) : (
                     <>

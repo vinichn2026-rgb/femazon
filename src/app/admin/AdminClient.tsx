@@ -2,12 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Sparkles, Users, Store, Package, Grid, CalendarDays, ShoppingCart, CheckCircle, XCircle, Trash2, Plus, LogOut, ArrowLeft } from "lucide-react";
+import { Sparkles, Users, Store, Package, Grid, CalendarDays, ShoppingCart, CheckCircle, XCircle, Trash2, Plus, LogOut, ArrowLeft, Loader2, Truck } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export default function AdminClient({ users, vendors, products, categories, orders, bookings, services }: any) {
+import { AdminNavbar } from "@/components/admin/AdminNavbar";
+
+export default function AdminClient({ user, users, vendors, products, categories, orders, bookings, services }: any) {
   const [activeTab, setActiveTab] = useState("overview");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [navigatingHref, setNavigatingHref] = useState<string | null>(null);
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -30,12 +33,12 @@ export default function AdminClient({ users, vendors, products, categories, orde
     const res = await fetch("/api/admin/action", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, payload })
+      body: JSON.stringify({ action, ...payload })
     });
     
-    if (!res.ok) {
-      const err = await res.json().catch(()=>({}));
-      alert(err.error || "Action failed");
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.success) {
+      alert(data.error || "Action failed. Please try again.");
       return;
     }
     
@@ -53,83 +56,106 @@ export default function AdminClient({ users, vendors, products, categories, orde
     setNewCatName("");
   };
 
+  const navMenuItems = [
+    { id: 'overview', icon: <Grid size={18}/>, label: 'Overview' },
+    { id: 'products', icon: <Package size={18}/>, label: 'Products (New UI)', href: '/admin/products' },
+    { id: 'ready-to-ship', icon: <Truck size={18}/>, label: 'Ready to Ship (Variants)', href: '/vendor/products' },
+    { id: 'users', icon: <Users size={18}/>, label: 'Users' },
+    { id: 'vendors', icon: <Store size={18}/>, label: 'Vendors' },
+    { id: 'categories', icon: <Grid size={18}/>, label: 'Categories' },
+    { id: 'services', icon: <Sparkles size={18}/>, label: 'Services' },
+    { id: 'orders', icon: <ShoppingCart size={18}/>, label: 'Orders' },
+    { id: 'bookings', icon: <CalendarDays size={18}/>, label: 'Bookings' },
+  ];
+
   return (
-    <div className="min-h-screen bg-surface flex">
-      {/* Sidebar */}
-      <aside className="w-64 bg-[#4A1513] text-white min-h-screen sticky top-0 hidden md:flex flex-col justify-between self-start z-30">
-        <div>
-          <div className="p-6 border-b border-white/10 flex items-center justify-between">
-            <h2 className="font-serif text-2xl font-bold tracking-wide">Admin Portal</h2>
-          </div>
-          <nav className="p-4 space-y-1">
-            {[
-              { id: 'overview', icon: <Grid size={18}/>, label: 'Overview' },
-              { id: 'products', icon: <Package size={18}/>, label: 'Products (New UI)', href: '/admin/products' },
-              { id: 'users', icon: <Users size={18}/>, label: 'Users' },
-              { id: 'vendors', icon: <Store size={18}/>, label: 'Vendors' },
-              { id: 'categories', icon: <Grid size={18}/>, label: 'Categories' },
-              { id: 'services', icon: <Sparkles size={18}/>, label: 'Services' },
-              { id: 'orders', icon: <ShoppingCart size={18}/>, label: 'Orders' },
-              { id: 'bookings', icon: <CalendarDays size={18}/>, label: 'Bookings' },
-            ].map(tab => (
-              tab.href ? (
-                <Link
-                  key={tab.id}
-                  href={tab.href}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition text-stone-300 hover:bg-white/10 hover:text-white"
+    <div className="min-h-screen bg-[#FAF7F5] flex flex-col font-sans text-stone-900">
+      
+      {/* Top Sticky Admin Navbar */}
+      <AdminNavbar
+        currentSection="Platform Operations"
+        adminName={user?.name || "Super Admin"}
+        adminEmail={user?.email || "admin@femazon.com"}
+        stats={{
+          productsCount: products?.length,
+          ordersCount: orders?.length,
+          vendorsCount: vendors?.length,
+          usersCount: users?.length,
+          bookingsCount: bookings?.length,
+        }}
+        activeTab={activeTab}
+        onTabChange={(tabId) => setActiveTab(tabId)}
+        navMenuItems={navMenuItems}
+      />
+
+      {/* Main Layout Body */}
+      <div className="flex-1 flex max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 gap-6">
+        
+        {/* Left Sidebar Nav */}
+        <aside className="w-56 shrink-0 hidden md:block">
+          <div className="bg-white rounded-2xl border border-stone-200/90 p-3 shadow-2xs sticky top-24 space-y-1">
+            <div className="px-3 py-3 border-b border-stone-100 mb-2">
+              <p className="text-xs font-bold text-[#4A1513] uppercase tracking-wider">
+                Management Modules
+              </p>
+              <div className="flex items-center gap-1 mt-1 text-[11px] text-emerald-600 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <span>Super Admin Privileges</span>
+              </div>
+            </div>
+
+            {navMenuItems.map((item) => {
+              if (item.href) {
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    onClick={() => setNavigatingHref(item.href || null)}
+                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition ${
+                      navigatingHref === item.href
+                        ? 'bg-[#4A1513] text-white shadow-xs'
+                        : 'text-stone-600 hover:bg-[#FAF7F5] hover:text-[#4A1513]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      {navigatingHref === item.href ? (
+                        <Loader2 size={16} className="animate-spin text-white" />
+                      ) : (
+                        item.icon
+                      )}
+                      <span>{item.label}</span>
+                    </div>
+                  </Link>
+                );
+              }
+
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition cursor-pointer ${
+                    isActive
+                      ? 'bg-[#4A1513] text-white shadow-xs'
+                      : 'text-stone-600 hover:bg-[#FAF7F5] hover:text-[#4A1513]'
+                  }`}
                 >
-                  {tab.icon} {tab.label}
-                </Link>
-              ) : (
-                <button 
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition cursor-pointer ${activeTab === tab.id ? 'bg-white/20 text-white font-bold' : 'text-stone-300 hover:bg-white/10 hover:text-white'}`}
-                >
-                  {tab.icon} {tab.label}
+                  {item.icon}
+                  <span>{item.label}</span>
                 </button>
-              )
-            ))}
-          </nav>
-        </div>
-
-        {/* Sidebar Footer with Logout */}
-        <div className="p-4 border-t border-white/10 space-y-2">
-          <Link
-            href="/shop"
-            className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-stone-300 hover:bg-white/10 transition"
-          >
-            <ArrowLeft size={15} />
-            <span>Return to Store</span>
-          </Link>
-          <button
-            type="button"
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-            className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-rose-300 hover:bg-rose-950/40 transition cursor-pointer"
-          >
-            <LogOut size={15} />
-            <span>{isLoggingOut ? "Signing out..." : "Admin Logout"}</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 p-6 md:p-10">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="font-serif text-3xl font-bold text-[#4A1513] mb-1 capitalize">{activeTab}</h1>
-            <p className="text-sm text-zinc-500">Manage {activeTab} across the platform.</p>
+              );
+            })}
           </div>
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="md:hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold uppercase tracking-wider"
-          >
-            <LogOut size={13} />
-            <span>Logout</span>
-          </button>
-        </div>
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 min-w-0">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#4A1513] mb-1 capitalize">{activeTab}</h1>
+              <p className="text-xs sm:text-sm text-stone-500">Manage {activeTab} across the platform.</p>
+            </div>
+          </div>
 
         {/* OVERVIEW */}
         {activeTab === 'overview' && (
@@ -471,6 +497,7 @@ export default function AdminClient({ users, vendors, products, categories, orde
         )}
 
       </main>
+      </div>
     </div>
   );
 }

@@ -86,8 +86,69 @@ export function ProductDetailClient({
     }
   } catch (e) {}
 
-  const [selectedSize, setSelectedSize] = useState("M");
-  const [selectedColor, setSelectedColor] = useState(colors[0] || "Slate Gray");
+  // Ready-to-Ship Color Variants logic
+  const colorVariants = useMemo(() => {
+    return Array.isArray(product.colorVariants) ? product.colorVariants : [];
+  }, [product.colorVariants]);
+
+  const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
+
+  const activeVariant = useMemo(() => {
+    if (colorVariants.length > 0 && colorVariants[selectedVariantIndex]) {
+      return colorVariants[selectedVariantIndex];
+    }
+    return null;
+  }, [colorVariants, selectedVariantIndex]);
+
+  const hasColorVariants = Boolean(activeVariant);
+
+  // Dynamic gallery images based on active color variant
+  const galleryImages = useMemo(() => {
+    if (activeVariant && Array.isArray(activeVariant.images) && activeVariant.images.length > 0) {
+      const sorted = [...activeVariant.images].sort((a: any, b: any) => {
+        if (a.isThumbnail) return -1;
+        if (b.isThumbnail) return 1;
+        return (a.displayOrder || 1) - (b.displayOrder || 1);
+      });
+      return sorted.map((img: any) => (typeof img === 'string' ? img : img.imageUrl));
+    }
+    return images;
+  }, [activeVariant, images]);
+
+  // Dynamic physical stock map for the active color
+  const sizeStockMap = useMemo<Record<string, number>>(() => {
+    if (activeVariant && Array.isArray(activeVariant.sizes)) {
+      const map: Record<string, number> = {};
+      for (const sz of activeVariant.sizes) {
+        map[sz.size] = Number(sz.stockQty) || 0;
+      }
+      return map;
+    }
+    return {};
+  }, [activeVariant]);
+
+  const availableSizes = useMemo(() => {
+    if (hasColorVariants && activeVariant && Array.isArray(activeVariant.sizes) && activeVariant.sizes.length > 0) {
+      return activeVariant.sizes.map((s: any) => s.size);
+    }
+    return sizes;
+  }, [hasColorVariants, activeVariant, sizes]);
+
+  const [selectedSize, setSelectedSize] = useState(() => {
+    if (colorVariants.length > 0 && colorVariants[0]?.sizes?.length > 0) {
+      const firstInStock = colorVariants[0].sizes.find((s: any) => (Number(s.stockQty) || 0) > 0);
+      return firstInStock ? firstInStock.size : colorVariants[0].sizes[0].size;
+    }
+    return "M";
+  });
+
+  const [selectedColor, setSelectedColor] = useState(() => {
+    if (colorVariants.length > 0) {
+      return colorVariants[0].colorName;
+    }
+    return colors[0] || "Slate Gray";
+  });
+
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(initialWishlisted);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
@@ -175,13 +236,13 @@ export function ProductDetailClient({
   const isPaulmiHarsh = product.name?.toLowerCase().includes('paulmi') || product.slug?.includes('paulmi');
   const isSheetalBatra = product.name?.toLowerCase().includes('sheetal batra') || product.slug?.includes('sheetal-batra');
   
-  const designerName = isSurkhSyahi
+  const designerName = product.brandName || (isSurkhSyahi
     ? "Surkh Syahi"
     : isPaulmiHarsh 
     ? "Paulmi and Harsh" 
     : isSheetalBatra 
     ? "Sheetal Batra" 
-    : (product.brand || product.name?.split('-')[0]?.trim() || "Femazon Atelier");
+    : (product.brand || product.name?.split('-')[0]?.trim() || "Femazon Luxe"));
 
   const displayTitle = isSurkhSyahi
     ? "Aaina Mirrors V-neck Anarkali Set in Gray Chinon"
@@ -189,7 +250,7 @@ export function ProductDetailClient({
     ? "Laverna Floral Printed & Embroidered Chanderi Silk Kurta and Pant Set"
     : isSheetalBatra
     ? "Orange Chanderi Silk Umaira Embroidered Flared Anarkali Salwar Set"
-    : (product.name?.split('-')[1]?.trim() || product.name);
+    : (product.name?.split('-')[1]?.trim() || product.name || "Luxury Designer Couture Set");
 
   // Filter similar items based on active tab
   const filteredSimilarItems = useMemo(() => {
@@ -236,7 +297,7 @@ export function ProductDetailClient({
           {/* ========================================================================= */}
           <div className="lg:col-span-7">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              {images.map((imgUrl, idx) => (
+              {galleryImages.map((imgUrl, idx) => (
                 <div
                   key={idx}
                   className="relative group bg-[#FAF7F4] overflow-hidden cursor-zoom-in rounded-xl border border-stone-100/80 shadow-2xs"
@@ -371,25 +432,75 @@ export function ProductDetailClient({
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-stone-800">
-                  Color: <span className="font-normal text-stone-600">{selectedColor}</span>
+                  Color: <span className="font-semibold text-[#4A1513]">{activeVariant?.colorName || selectedColor}</span>
                 </span>
+                {colorVariants.length > 0 && (
+                  <span className="text-[11px] text-stone-500 font-medium">
+                    {colorVariants.length} Colorways Available
+                  </span>
+                )}
               </div>
-              <div className="flex flex-wrap gap-2">
-                {colors.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setSelectedColor(c)}
-                    className={`px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider transition cursor-pointer border rounded-md ${
-                      selectedColor === c
-                        ? 'border-[#4A1513] bg-[#4A1513] text-white shadow-xs'
-                        : 'border-stone-200 bg-white text-stone-700 hover:border-[#4A1513]'
-                    }`}
-                  >
-                    {c}
-                  </button>
-                ))}
-              </div>
+
+              {colorVariants.length > 0 ? (
+                <div className="flex flex-wrap items-center gap-2.5">
+                  {colorVariants.map((v: any, vIdx: number) => {
+                    const isActive = selectedVariantIndex === vIdx;
+                    return (
+                      <button
+                        key={v.id || vIdx}
+                        type="button"
+                        onClick={() => {
+                          setSelectedVariantIndex(vIdx);
+                          setSelectedColor(v.colorName);
+                          // Auto-select first in-stock size if current selected size is out of stock in this new color
+                          if (Array.isArray(v.sizes)) {
+                            const curStock = v.sizes.find((s: any) => s.size === selectedSize)?.stockQty || 0;
+                            if (curStock <= 0) {
+                              const firstInStock = v.sizes.find((s: any) => (Number(s.stockQty) || 0) > 0);
+                              if (firstInStock) {
+                                setSelectedSize(firstInStock.size);
+                              }
+                            }
+                          }
+                        }}
+                        className={`group relative flex items-center gap-2 px-3 py-1.5 rounded-full border transition cursor-pointer ${
+                          isActive
+                            ? 'border-[#4A1513] bg-[#FAF7F5] shadow-xs ring-1 ring-[#4A1513]'
+                            : 'border-stone-200 bg-white hover:border-stone-400'
+                        }`}
+                        title={`Select ${v.colorName}`}
+                      >
+                        <span
+                          className={`w-4 h-4 rounded-full border border-black/15 shadow-2xs transition-transform ${
+                            isActive ? 'scale-110' : 'group-hover:scale-105'
+                          }`}
+                          style={{ backgroundColor: v.colorHexCode || '#722F37' }}
+                        />
+                        <span className={`text-xs font-semibold ${isActive ? 'text-[#4A1513]' : 'text-stone-700'}`}>
+                          {v.colorName}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {colors.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setSelectedColor(c)}
+                      className={`px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider transition cursor-pointer border rounded-md ${
+                        selectedColor === c
+                          ? 'border-[#4A1513] bg-[#4A1513] text-white shadow-xs'
+                          : 'border-stone-200 bg-white text-stone-700 hover:border-[#4A1513]'
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* ========================================================================= */}
@@ -425,24 +536,49 @@ export function ProductDetailClient({
             <div className="space-y-2 pt-1">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-bold uppercase tracking-wider text-stone-800">Select Size</span>
+                {hasColorVariants && selectedSize && (
+                  <span className="text-[11px] font-semibold">
+                    {(sizeStockMap[selectedSize] ?? 0) > 0 ? (
+                      <span className="text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                        {(sizeStockMap[selectedSize] ?? 0) <= 3
+                          ? `Only ${sizeStockMap[selectedSize]} left in stock!`
+                          : `In Stock (${sizeStockMap[selectedSize]} pcs)`}
+                      </span>
+                    ) : (
+                      <span className="text-rose-600 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md">
+                        Sold Out in {selectedSize}
+                      </span>
+                    )}
+                  </span>
+                )}
               </div>
 
               {/* Size Buttons Grid */}
-              <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5">
-                {sizes.map((sz) => (
-                  <button
-                    key={sz}
-                    type="button"
-                    onClick={() => setSelectedSize(sz)}
-                    className={`h-9 text-xs font-bold uppercase transition cursor-pointer border rounded-md flex items-center justify-center ${
-                      selectedSize === sz
-                        ? 'border-[#4A1513] bg-[#4A1513] text-white shadow-xs'
-                        : 'border-stone-200 bg-white text-stone-700 hover:border-[#4A1513] hover:bg-stone-50'
-                    }`}
-                  >
-                    {sz}
-                  </button>
-                ))}
+              <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5">
+                {availableSizes.map((sz: string) => {
+                  const stock = hasColorVariants ? (sizeStockMap[sz] ?? 0) : 99;
+                  const isSoldOut = hasColorVariants && stock <= 0;
+                  const isSelected = selectedSize === sz;
+
+                  return (
+                    <button
+                      key={sz}
+                      type="button"
+                      disabled={isSoldOut}
+                      onClick={() => !isSoldOut && setSelectedSize(sz)}
+                      className={`h-9 text-xs font-bold uppercase transition border rounded-md flex flex-col items-center justify-center relative ${
+                        isSoldOut
+                          ? 'border-stone-200 bg-stone-100 text-stone-300 line-through cursor-not-allowed opacity-50'
+                          : isSelected
+                          ? 'border-[#4A1513] bg-[#4A1513] text-white shadow-xs cursor-pointer'
+                          : 'border-stone-200 bg-white text-stone-700 hover:border-[#4A1513] hover:bg-stone-50 cursor-pointer'
+                      }`}
+                      title={isSoldOut ? `${sz} is Sold Out in this color` : `${sz} - ${stock} in stock`}
+                    >
+                      <span>{sz}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -570,9 +706,9 @@ export function ProductDetailClient({
                   <div className="px-4 pb-4 text-xs text-stone-600 space-y-2.5 border-t border-stone-100 pt-3 leading-relaxed">
                     <p>{product.description}</p>
                     <div className="grid grid-cols-2 gap-y-2 text-[11px] pt-2 border-t border-stone-100 text-stone-600">
-                      <div><strong className="text-stone-900">Set Includes:</strong> {isSurkhSyahi ? "Anarkali, Trousers & Dupatta" : "Kurta & Silk Pants"}</div>
-                      <div><strong className="text-stone-900">Fabric:</strong> {isSurkhSyahi ? "Pure Chinon Silk & Organza" : "Pure Chanderi Silk & Organza"}</div>
-                      <div><strong className="text-stone-900">Craft:</strong> {isSurkhSyahi ? "Mirror Work & Resham Embroidery" : "Botanical Print & Zardozi"}</div>
+                      <div><strong className="text-stone-900">Set Includes:</strong> {product.packageContains || (isSurkhSyahi ? "Anarkali, Trousers & Dupatta" : "Kurta & Silk Pants")}</div>
+                      <div><strong className="text-stone-900">Fabric &amp; Care:</strong> {product.fabricCare || "Pure Silk - Dry Clean Only"}</div>
+                      <div><strong className="text-stone-900">Dispatch:</strong> {product.dispatchTimeline || "Within 24-48 Hours"}</div>
                       <div><strong className="text-stone-900">Care:</strong> Dry Clean Only</div>
                     </div>
                   </div>
@@ -955,8 +1091,8 @@ export function ProductDetailClient({
         onClose={() => setIsTryOnModalOpen(false)}
         product={{
           ...product,
-          images: images,
-          image: images[0] || product.image || "https://images.unsplash.com/photo-1583391733958-65e2be10c3fb?auto=format&fit=crop&q=85&w=800"
+          images: galleryImages,
+          image: galleryImages[0] || product.image || "https://images.unsplash.com/photo-1583391733958-65e2be10c3fb?auto=format&fit=crop&q=85&w=800"
         }}
         selectedSize={selectedSize}
         onAddToCart={(size) => {
@@ -976,11 +1112,11 @@ export function ProductDetailClient({
           price: currentPrice,
           originalPrice: originalPrice,
           discountPrice: product.discountPrice ? currentPrice : undefined,
-          image: images[0] || product.image || "https://images.unsplash.com/photo-1583391733958-65e2be10c3fb?auto=format&fit=crop&q=85&w=800",
-          sizes: sizes,
+          image: galleryImages[0] || product.image || "https://images.unsplash.com/photo-1583391733958-65e2be10c3fb?auto=format&fit=crop&q=85&w=800",
+          sizes: availableSizes,
           category: product.category
         }}
-        selectedSize={selectedSize || sizes[0] || 'M'}
+        selectedSize={selectedSize || availableSizes[0] || 'M'}
         onSelectSize={(sz) => setSelectedSize(sz)}
         initialMode={checkoutDrawerMode}
       />
