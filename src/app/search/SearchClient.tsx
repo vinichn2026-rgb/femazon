@@ -11,6 +11,7 @@ import { ProductCard, ProductCardSkeleton } from '@/components/shop/ProductCard'
 import { LuxuryPromoBanner } from '@/components/shop/LuxuryPromoBanner';
 
 const initialFilterState: FilterState = {
+  silhouettes: [],
   subcategories: [],
   priceRange: null,
   sizes: [],

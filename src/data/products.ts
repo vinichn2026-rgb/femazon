@@ -17,10 +17,37 @@ export interface ProductType {
   inStock: boolean;
   readyToShip?: boolean;
   deliveryDays?: number;
+  silhouette?: string;
+  flaggedForReview?: boolean;
   createdAt: string; // ISO String
 }
 
+import { NAGLA_SHOP_PRODUCTS } from './naglaFashionShop';
+
+export const NAGLA_PRODUCTS: ProductType[] = NAGLA_SHOP_PRODUCTS.map(p => ({
+  id: p.id,
+  name: p.name,
+  brand: p.brand,
+  category: p.category,
+  subCategory: p.subcategory,
+  silhouette: p.silhouette,
+  flaggedForReview: p.flaggedForReview || false,
+  price: p.discountPrice,
+  originalPrice: p.price,
+  discount: Math.round(((p.price - p.discountPrice) / p.price) * 100),
+  images: p.images,
+  sizes: p.sizes,
+  colors: p.colors,
+  rating: p.rating,
+  reviewCount: p.reviewCount,
+  isNew: p.isNew,
+  isTrending: p.isTrending,
+  inStock: p.inStock,
+  createdAt: new Date().toISOString()
+}));
+
 export const PRODUCTS: ProductType[] = [
+  ...NAGLA_PRODUCTS,
   {
     id: "p1",
     name: "Embroidered Georgette Anarkali Kurta",
@@ -372,5 +399,140 @@ export const PRODUCTS: ProductType[] = [
     isTrending: true,
     inStock: true,
     createdAt: "2023-11-01T10:00:00Z"
+  },
+  {
+    id: "p-bag-1",
+    name: "Classic Quilted Leather Shoulder Bag",
+    brand: "Femazon Luxe",
+    category: "Handbags",
+    subCategory: "Shoulder Bags",
+    silhouette: "Handbag",
+    price: 3499,
+    originalPrice: 4999,
+    discount: 30,
+    images: [
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1591561954557-26941169b49e?q=80&w=800&auto=format&fit=crop"
+    ],
+    sizes: ["One Size"],
+    colors: ["Black", "Gold"],
+    rating: 4.9,
+    reviewCount: 164,
+    isNew: true,
+    isTrending: true,
+    inStock: true,
+    createdAt: "2024-03-25T10:00:00Z"
+  },
+  {
+    id: "p-bag-2",
+    name: "Structured Top-Handle Leather Tote",
+    brand: "Femazon Luxe",
+    category: "Handbags",
+    subCategory: "Totes",
+    silhouette: "Handbag",
+    price: 3999,
+    originalPrice: 5499,
+    discount: 27,
+    images: [
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=800&auto=format&fit=crop"
+    ],
+    sizes: ["One Size"],
+    colors: ["Tan Brown", "Black"],
+    rating: 4.8,
+    reviewCount: 88,
+    isNew: true,
+    isTrending: true,
+    inStock: true,
+    createdAt: "2024-03-25T10:00:00Z"
+  },
+  {
+    id: "p-potli-1",
+    name: "Artisanal Zari Embroidered Silk Potli",
+    brand: "Femazon Heritage",
+    category: "Potlis",
+    subCategory: "Bridal Potlis",
+    silhouette: "Potli",
+    price: 1799,
+    originalPrice: 2499,
+    discount: 28,
+    images: [
+      "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?q=80&w=800&auto=format&fit=crop",
+      "/categories/potlis.jpg"
+    ],
+    sizes: ["One Size"],
+    colors: ["Maroon", "Gold"],
+    rating: 4.9,
+    reviewCount: 92,
+    isNew: true,
+    isTrending: true,
+    inStock: true,
+    createdAt: "2024-03-25T10:00:00Z"
+  },
+  {
+    id: "p-clutch-1",
+    name: "Embellished Minaudière Evening Clutch",
+    brand: "Femazon Luxe",
+    category: "Handbags",
+    subCategory: "Clutches",
+    silhouette: "Handbag",
+    price: 2899,
+    originalPrice: 3899,
+    discount: 26,
+    images: [
+      "https://images.unsplash.com/photo-1566150902887-9679ec158ba6?q=80&w=800&auto=format&fit=crop"
+    ],
+    sizes: ["One Size"],
+    colors: ["Champagne Gold", "Silver"],
+    rating: 4.7,
+    reviewCount: 54,
+    isNew: true,
+    isTrending: true,
+    inStock: true,
+    createdAt: "2024-03-25T10:00:00Z"
+  },
+  {
+    id: "p-footwear-1",
+    name: "Handcrafted Zardozi Embroidered Bridal Juttis",
+    brand: "Femazon Heritage",
+    category: "Footwear",
+    subCategory: "Juttis",
+    silhouette: "Footwear",
+    price: 1799,
+    originalPrice: 2499,
+    discount: 28,
+    images: [
+      "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=800&auto=format&fit=crop"
+    ],
+    sizes: ["36", "37", "38", "39", "40"],
+    colors: ["Gold", "Champagne"],
+    rating: 4.9,
+    reviewCount: 142,
+    isNew: true,
+    isTrending: true,
+    inStock: true,
+    createdAt: "2024-03-25T10:00:00Z"
+  },
+  {
+    id: "p-shawl-1",
+    name: "Hand-Embroidered Zari Raw Silk Shawl",
+    brand: "Femazon Heritage",
+    category: "Shawls",
+    subCategory: "Silk Shawls",
+    silhouette: "Shawl",
+    price: 2499,
+    originalPrice: 3499,
+    discount: 29,
+    images: [
+      "https://images.unsplash.com/photo-1601924994987-69e26d50dc26?q=80&w=800&auto=format&fit=crop"
+    ],
+    sizes: ["Free Size"],
+    colors: ["Maroon", "Black"],
+    rating: 4.8,
+    reviewCount: 77,
+    isNew: true,
+    isTrending: true,
+    inStock: true,
+    createdAt: "2024-03-25T10:00:00Z"
   }
 ];

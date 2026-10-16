@@ -49,7 +49,7 @@ const CURATED_STORIES: CuratedStory[] = [
     badge: "WEDDING EDIT",
     image: "https://images.unsplash.com/photo-1599746146388-a7ec2004b67a?q=80&w=800&h=1200&auto=format&fit=crop&crop=top",
     buttonText: "Shop Now",
-    link: "/collections/wedding-edit",
+    link: "/shop?category=Ethnic&occasion=Wedding",
   },
   {
     id: "5",

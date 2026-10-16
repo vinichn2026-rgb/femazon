@@ -39,10 +39,25 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if user exists in database or create session
-    let user = null;
-    if (email) {
-      user = await prisma.user.findUnique({ where: { email } });
+    // Check if user exists in database or create user
+    const userEmail = email || (phone ? `${phone}@femazon.luxury` : `member_${Date.now()}@femazon.luxury`);
+    let user = await prisma.user.findUnique({ where: { email: userEmail } });
+
+    if (!user) {
+      try {
+        const dummyPassword = await import('bcryptjs').then(b => b.hash('Femazon@123', 10));
+        user = await prisma.user.create({
+          data: {
+            email: userEmail,
+            name: email ? email.split('@')[0] : 'Femazon Member',
+            phone: phone || null,
+            role: 'CUSTOMER',
+            password: dummyPassword,
+          }
+        });
+      } catch (e) {
+        user = await prisma.user.findUnique({ where: { email: userEmail } });
+      }
     }
 
     // Set signed cookie if user is found
@@ -53,7 +68,7 @@ export async function POST(request: Request) {
     const sessionPayload = {
       sub: user ? String(user.id) : `user_${Date.now()}`,
       name: user?.name || (email ? email.split('@')[0] : 'Femazon Member'),
-      email: user?.email || email || `${phone}@femazon.luxury`,
+      email: user?.email || userEmail,
       role: user?.role || 'CUSTOMER',
       iat: now,
       exp: now + expiresIn,

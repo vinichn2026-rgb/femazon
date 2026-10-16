@@ -8,6 +8,18 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'images.unsplash.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'static3.azafashions.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'static.azafashions.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.azafashions.com',
+      },
     ],
   },
   async redirects() {

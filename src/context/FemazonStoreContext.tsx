@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 export interface CartItem {
@@ -31,16 +31,22 @@ export interface WishlistItem {
 
 export interface BookingItem {
   id: number | string;
+  serviceId?: number;
   serviceName: string;
   providerName: string;
+  supporterName?: string | null;
+  customerName?: string | null;
+  customerPhone?: string | null;
+  notes?: string | null;
   providerImage?: string;
   date: string;
   time: string;
   location?: string;
   total: number;
-  status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+  status: 'REQUEST_RECEIVED' | 'UNDER_REVIEW' | 'SUPPORTER_ASSIGNED' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'PENDING';
   duration?: number;
   serviceImage?: string;
+  createdAt?: string;
 }
 
 export interface UserProfile {
@@ -99,7 +105,7 @@ interface FemazonStoreContextType {
   requestLogout: () => void;
   confirmLogout: () => Promise<void>;
   cancelLogout: () => void;
-  refreshAuth: () => Promise<void>;
+  refreshAuth: () => Promise<boolean>;
 
   // Auth Modal (Aza Fashions style)
   isAuthModalOpen: boolean;
@@ -202,76 +208,112 @@ export function FemazonStoreProvider({
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
+  // In-flight request deduplication refs to prevent duplicate calls in React StrictMode
+  const authPromiseRef = useRef<Promise<boolean> | null>(null);
+  const bookingsPromiseRef = useRef<Promise<void> | null>(null);
+
   // Refresh user auth strictly from server session (/api/auth/me)
   const refreshAuth = useCallback(async () => {
-    try {
-      const res = await fetch('/api/auth/me');
-      if (res.ok) {
-        const data = await res.json();
-        if (data?.success && data?.user) {
-          const nameParts = (data.user.name || '').trim().split(' ');
-          const firstName = nameParts[0] || 'Member';
-          const lastName = nameParts.slice(1).join(' ') || '';
-          const activeUser: UserProfile = {
-            id: String(data.user.id),
-            name: data.user.name || firstName,
-            firstName,
-            lastName,
-            email: data.user.email,
-            phone: data.user.phone || '',
-            role: data.user.role || 'CUSTOMER',
-            avatar: data.user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200'
-          };
-          setUser(activeUser);
-          try {
-            localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(activeUser));
-          } catch (e) {}
-          return;
+    if (authPromiseRef.current) return authPromiseRef.current;
+
+    const promise = (async () => {
+      try {
+        const res = await fetch('/api/auth/me');
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.success && data?.user) {
+            const nameParts = (data.user.name || '').trim().split(' ');
+            const firstName = nameParts[0] || 'Member';
+            const lastName = nameParts.slice(1).join(' ') || '';
+            const activeUser: UserProfile = {
+              id: String(data.user.id),
+              name: data.user.name || firstName,
+              firstName,
+              lastName,
+              email: data.user.email,
+              phone: data.user.phone || '',
+              role: data.user.role || 'CUSTOMER',
+              avatar: data.user.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200'
+            };
+            setUser(activeUser);
+            try {
+              localStorage.setItem(LOCAL_STORAGE_USER_KEY, JSON.stringify(activeUser));
+            } catch (e) {}
+            return true;
+          }
         }
+        
+        // If server returns 401 or invalid user, strictly log out
+        setUser(null);
+        try {
+          localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
+        } catch (e) {}
+        return false;
+      } catch (e) {
+        setUser(null);
+        try {
+          localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
+        } catch (err) {}
+        return false;
+      } finally {
+        authPromiseRef.current = null;
       }
-      
-      // If server returns 401 or invalid user, strictly log out
-      setUser(null);
-      try {
-        localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
-      } catch (e) {}
-    } catch (e) {
-      // In case of error, do not assume logged in
-      setUser(null);
-      try {
-        localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
-      } catch (err) {}
-    }
+    })();
+
+    authPromiseRef.current = promise;
+    return promise;
   }, []);
 
+  const lastBookingsFetchRef = useRef<number>(0);
+
   // Fetch / Refresh Bookings
-  const refreshBookings = useCallback(async () => {
-    try {
-      const res = await fetch('/api/bookings');
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          const mapped: BookingItem[] = data.map((b: any) => ({
-            id: b.id,
-            serviceName: b.service?.name || b.serviceName || 'Fashion Service',
-            providerName: b.provider?.name || b.providerName || 'Femazon Specialist',
-            providerImage: b.provider?.image || b.providerImage,
-            serviceImage: b.service?.image || b.serviceImage,
-            date: b.date || new Date().toISOString().split('T')[0],
-            time: b.time || '10:00 AM',
-            location: b.location || 'At-Home Service',
-            total: b.total || 3500,
-            status: b.status || 'CONFIRMED',
-            duration: b.duration || 1
-          }));
-          setBookings(mapped);
-          return;
-        }
-      }
-      setBookings([]);
-    } catch (e) {
-      setBookings([]);
+  const refreshBookings = useCallback(async (force = false) => {
+    const now = Date.now();
+    if (!force && (now - lastBookingsFetchRef.current < 60_000)) {
+      return;
     }
+    if (bookingsPromiseRef.current) return bookingsPromiseRef.current;
+
+    const promise = (async () => {
+      try {
+        lastBookingsFetchRef.current = Date.now();
+        const res = await fetch('/api/bookings');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            const mapped: BookingItem[] = data.map((b: any) => ({
+              id: b.id,
+              serviceId: b.serviceId,
+              serviceName: b.service?.name || b.serviceName || 'Fashion Service',
+              providerName: b.provider?.name || b.providerName || 'Femazon Specialist',
+              supporterName: b.supporterName,
+              customerName: b.customerName,
+              customerPhone: b.customerPhone,
+              notes: b.notes,
+              providerImage: b.provider?.image || b.providerImage,
+              serviceImage: b.service?.image || b.serviceImage,
+              date: b.date || new Date().toISOString().split('T')[0],
+              time: b.time || '10:00 AM',
+              location: b.location || 'At-Home Service',
+              total: b.total || 0,
+              status: b.status || 'REQUEST_RECEIVED',
+              duration: b.duration || 1,
+              createdAt: b.createdAt
+            }));
+            setBookings(mapped);
+            return;
+          }
+        }
+        setBookings([]);
+      } catch (e) {
+        setBookings([]);
+      } finally {
+        bookingsPromiseRef.current = null;
+      }
+    })();
+
+    bookingsPromiseRef.current = promise;
+    return promise;
   }, []);
 
   // Hydrate and validate session
@@ -283,14 +325,16 @@ export function FemazonStoreProvider({
 
       const savedWishlist = localStorage.getItem(LOCAL_STORAGE_WISHLIST_KEY);
       if (savedWishlist) setWishlist(JSON.parse(savedWishlist));
+
+      const savedBookings = localStorage.getItem(LOCAL_STORAGE_BOOKINGS_KEY);
+      if (savedBookings) setBookings(JSON.parse(savedBookings));
     } catch (e) {
       console.warn("Could not load stored state", e);
     }
 
-    // Always validate session against server
+    // Validate session on mount
     refreshAuth();
-    refreshBookings();
-  }, [refreshAuth, refreshBookings]);
+  }, [refreshAuth]);
 
   // Sync Cart to LocalStorage
   useEffect(() => {

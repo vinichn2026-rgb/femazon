@@ -10,6 +10,7 @@ import { ActiveFilterChips } from '@/components/shop/ActiveFilterChips';
 import { ProductCard, ProductCardSkeleton } from '@/components/shop/ProductCard';
 
 const initialFilterState: FilterState = {
+  silhouettes: [],
   subcategories: [],
   priceRange: null,
   sizes: [],

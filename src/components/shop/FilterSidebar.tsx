@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { X, ChevronDown, Check, Search } from 'lucide-react';
 
 export interface FilterState {
+  silhouettes?: string[];
   subcategories: string[];
   priceRange: string | null;
   sizes: string[];
@@ -13,6 +14,25 @@ export interface FilterState {
   onSale: boolean;
   readyToShip: boolean;
 }
+
+export const SILHOUETTE_OPTIONS = [
+  { label: "Straight Kurta / Cut", value: "Straight" },
+  { label: "Anarkali (Flared)", value: "Anarkali" },
+  { label: "A-Line", value: "A-Line" },
+  { label: "Maxi Dress", value: "Maxi" },
+  { label: "Midi Dress", value: "Midi" },
+  { label: "Mini Dress", value: "Mini" },
+  { label: "Bodycon", value: "Bodycon" },
+  { label: "Fit and Flare", value: "Fit and Flare" },
+  { label: "Wrap Dress", value: "Wrap" },
+  { label: "Shirt Dress", value: "Shirt Dress" },
+  { label: "Slip Dress", value: "Slip Dress" },
+  { label: "Evening Gown", value: "Gown" },
+  { label: "Lehenga Set", value: "Lehenga" },
+  { label: "Palazzo Set", value: "Palazzo" },
+  { label: "Sharara Set", value: "Sharara" },
+  { label: "Peplum Set", value: "Peplum" }
+];
 
 interface FilterSidebarProps {
   categories: string[];
@@ -258,6 +278,7 @@ export function FilterSidebar({ categories, selectedCategory, onSelectCategory, 
   }, [isOpen]);
 
   const hasActiveFilters = 
+    (filters.silhouettes && filters.silhouettes.length > 0) ||
     filters.subcategories.length > 0 || 
     filters.priceRange !== null || 
     filters.sizes.length > 0 || 
@@ -382,6 +403,31 @@ export function FilterSidebar({ categories, selectedCategory, onSelectCategory, 
             })}
           </ul>
         </div>
+
+        {/* DRESS SILHOUETTE ACCORDION */}
+        <Accordion title="Dress Silhouette" defaultOpen={true}>
+          <div className="space-y-2 max-h-[220px] overflow-y-auto hide-scrollbar pt-1">
+            {SILHOUETTE_OPTIONS.map((sil) => {
+              const isChecked = filters.silhouettes?.includes(sil.value);
+              return (
+                <label key={sil.value} className="flex items-center gap-2.5 group cursor-pointer py-0.5">
+                  <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-colors ${isChecked ? 'bg-[#4A1513] border-[#4A1513] text-white' : 'border-stone-300 bg-white group-hover:border-[#4A1513]'}`}>
+                    {isChecked && <Check size={10} strokeWidth={3} />}
+                  </div>
+                  <span className={`text-[12.5px] transition-colors ${isChecked ? 'font-bold text-[#4A1513]' : 'text-stone-600 group-hover:text-stone-900'}`}>
+                    {sil.label}
+                  </span>
+                  <input
+                    type="checkbox"
+                    className="hidden"
+                    checked={isChecked}
+                    onChange={() => handleCheckboxToggle('silhouettes', sil.value, filters.silhouettes || [])}
+                  />
+                </label>
+              );
+            })}
+          </div>
+        </Accordion>
 
         {/* Clear Filters (Only show if active) */}
         {hasActiveFilters && (

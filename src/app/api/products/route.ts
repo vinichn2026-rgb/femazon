@@ -7,10 +7,19 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
+    const silhouette = searchParams.get('silhouette');
     
-    const where: any = { approvalStatus: 'APPROVED' };
-    if (category) {
+    const where: any = { 
+      approvalStatus: 'APPROVED',
+      flaggedForReview: false
+    };
+    
+    if (category && category !== 'All') {
       where.category = { equals: category };
+    }
+    
+    if (silhouette && silhouette !== 'All') {
+      where.silhouette = { equals: silhouette };
     }
     
     const products = await prisma.product.findMany({

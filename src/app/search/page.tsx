@@ -5,8 +5,10 @@ import { authOptions } from "@/lib/authOptions";
 
 export const dynamic = "force-dynamic";
 
-export default async function SearchPage({ searchParams }: { searchParams: { q?: string } }) {
-  const query = searchParams.q || "";
+export default async function SearchPage({ searchParams }: { searchParams: { q?: string; productId?: string } | Promise<{ q?: string; productId?: string }> }) {
+  const resolvedParams = await Promise.resolve(searchParams);
+  const query = resolvedParams.q || "";
+  const productId = resolvedParams.productId ? Number(resolvedParams.productId) : null;
 
   // Fetch session to get wishlist
   const session = await getServerSession(authOptions);
@@ -24,13 +26,68 @@ export default async function SearchPage({ searchParams }: { searchParams: { q?:
     }
   }
 
-  // Fetch products matching query (case-insensitive in sqlite can be tricky, so we'll fetch approved and filter here or use basic contains if supported)
+  // Fetch products matching query
   const dbProducts = await prisma.product.findMany({
     where: { 
       approvalStatus: 'APPROVED'
     },
     orderBy: { createdAt: 'desc' }
   });
+
+  // If specific productId requested from visual search, produce ONLY that exact product
+  if (productId) {
+    const exact = dbProducts.filter((p: any) => p.id === productId);
+    if (exact.length > 0) {
+      const formatted = exact.map((p: any) => {
+        const isSale = p.discountPrice && p.discountPrice < p.price;
+        const discountPercent = isSale && p.discountPrice ? Math.round(((p.price - p.discountPrice) / p.price) * 100) : 0;
+        let sizes = ["S", "M", "L"];
+        let colors = ["Black", "Red"];
+        try {
+          if (p.sizes) sizes = JSON.parse(p.sizes as string);
+          if (p.colors) colors = JSON.parse(p.colors as string);
+        } catch (e) {}
+        let images: string[] = [];
+        try {
+          images = typeof p.images === 'string' ? JSON.parse(p.images) : (p.images || []);
+        } catch (e) {
+          images = [p.image];
+        }
+        return {
+          id: p.id,
+          name: p.name,
+          slug: p.slug,
+          brand: p.brandName || "Femazon Luxe",
+          price: p.discountPrice || p.price,
+          originalPrice: p.price,
+          discount: discountPercent,
+          category: p.category || "Ethnic",
+          subCategory: p.subcategory || p.dressType || p.category || "Ethnic",
+          silhouette: p.silhouette || "Flared",
+          image: p.image || "/images/dress/placeholder.jpg",
+          hoverImage: images[1] || p.image,
+          images: images.length > 0 ? images : [p.image],
+          rating: 4.9,
+          reviewCount: 38,
+          isTrending: true,
+          isNew: true,
+          inStock: p.stock > 0,
+          readyToShip: p.readyToShip ?? true,
+          deliveryDays: p.deliveryDays || 3,
+          sizes,
+          colors,
+        };
+      });
+
+      return (
+        <SearchClient 
+          query={`Exact Match: ${exact[0].name}`} 
+          initialProducts={formatted} 
+          initialWishlistIds={wishlistIds} 
+        />
+      );
+    }
+  }
 
   // Smart fashion synonym & token mapper
   const lowerQuery = query.toLowerCase().trim();
@@ -45,7 +102,11 @@ export default async function SearchPage({ searchParams }: { searchParams: { q?:
       .replace(/dresses?|gowns?|frocks?/g, 'dress')
       .replace(/co[- ]?ords?|sets?|two[- ]piece/g, 'coord')
       .replace(/tops?|shirts?|blouses?/g, 'top')
-      .replace(/jewels?|jewelry|necklaces?|accessories/g, 'accessory')
+      .replace(/lady bags?|ladies bags?|handbags?|purses?|totes?|clutches?|shoulder bags?|bags?/g, 'handbag')
+      .replace(/potlis?|batwas?/g, 'potli')
+      .replace(/footwears?|shoes?|sandals?|juttis?|heels?|kolhapuris?/g, 'footwear')
+      .replace(/shawls?|stoles?|scarves?|scarfs?/g, 'shawl')
+      .replace(/jewels?|jewelry|necklaces?|chokers?|earrings?/g, 'jewellery')
       .replace(/anarkalis?/g, 'anarkali');
   };
 
@@ -62,7 +123,7 @@ export default async function SearchPage({ searchParams }: { searchParams: { q?:
       return true;
     }
 
-    // 2. Token match (e.g. "pink chudi" matches "chudi" / "chudidar")
+    // 2. Token match (e.g. "lady bag" -> matches "handbag")
     if (tokens.length > 0 && tokens.some(t => normCombined.includes(t) || combined.toLowerCase().includes(t))) {
       return true;
     }
@@ -70,24 +131,44 @@ export default async function SearchPage({ searchParams }: { searchParams: { q?:
     return false;
   });
 
-  // If specific visual search term yielded no matches, fallback to closest category or top approved products
+  // If specific visual search term yielded no matches, fallback to closest category
   if (matchedProducts.length === 0 && lowerQuery) {
-    if (normQuery.includes('chudi') || normQuery.includes('ethnic') || normQuery.includes('saree') || normQuery.includes('kurti')) {
+    if (normQuery.includes('handbag') || normQuery.includes('bag')) {
+      matchedProducts = dbProducts.filter((p: any) =>
+        (p.category && ['Handbags', 'Potlis', 'Accessories'].includes(p.category)) ||
+        p.name.toLowerCase().includes('bag') ||
+        p.name.toLowerCase().includes('tote') ||
+        p.name.toLowerCase().includes('clutch')
+      );
+    } else if (normQuery.includes('potli')) {
+      matchedProducts = dbProducts.filter((p: any) =>
+        p.category === 'Potlis' || p.name.toLowerCase().includes('potli')
+      );
+    } else if (normQuery.includes('footwear')) {
+      matchedProducts = dbProducts.filter((p: any) =>
+        p.category === 'Footwear' || p.name.toLowerCase().includes('jutti') || p.name.toLowerCase().includes('heel')
+      );
+    } else if (normQuery.includes('shawl')) {
+      matchedProducts = dbProducts.filter((p: any) =>
+        p.category === 'Shawls' || p.category === 'Stoles & Scarves' || p.name.toLowerCase().includes('shawl')
+      );
+    } else if (normQuery.includes('chudi') || normQuery.includes('ethnic') || normQuery.includes('saree') || normQuery.includes('kurti')) {
       matchedProducts = dbProducts.filter((p: any) => 
-        (p.category && ['Ethnic', 'Kurtis', 'Dresses'].includes(p.category)) ||
+        (p.category && ['Kurta Sets', 'Ethnic', 'Kurtis', 'Sarees', 'Lehengas'].includes(p.category)) ||
+        p.name.toLowerCase().includes('kurta') ||
         p.name.toLowerCase().includes('kurti') ||
         p.name.toLowerCase().includes('suit') ||
         p.name.toLowerCase().includes('saree')
       );
     } else if (normQuery.includes('dress') || normQuery.includes('gown')) {
       matchedProducts = dbProducts.filter((p: any) => 
-        (p.category && ['Dresses', 'Ethnic'].includes(p.category)) ||
+        (p.category && ['Dresses', 'Gowns'].includes(p.category)) ||
         p.name.toLowerCase().includes('dress') ||
         p.name.toLowerCase().includes('gown')
       );
     } else if (normQuery.includes('coord')) {
       matchedProducts = dbProducts.filter((p: any) => 
-        (p.category && ['Co-ords'].includes(p.category)) ||
+        (p.category && ['Co-ord Sets', 'Co-ords'].includes(p.category)) ||
         p.name.toLowerCase().includes('coord')
       );
     } else if (normQuery.includes('top')) {
@@ -98,8 +179,8 @@ export default async function SearchPage({ searchParams }: { searchParams: { q?:
     }
   }
 
-  // If still completely empty, show featured collection so real products always display
-  if (matchedProducts.length === 0) {
+  // If still completely empty and NO query was provided, show top approved products
+  if (matchedProducts.length === 0 && !lowerQuery) {
     matchedProducts = dbProducts.slice(0, 8);
   }
 

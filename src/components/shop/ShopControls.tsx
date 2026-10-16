@@ -123,16 +123,7 @@ export function ShopControls({
             <span>New</span>
           </button>
 
-          {/* 2. Virtual Try-On Pill */}
-          <Link
-            href="/wardrobe"
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap border border-stone-200 bg-white text-stone-700 hover:border-[#4A1513] hover:text-[#4A1513] transition cursor-pointer shadow-2xs"
-          >
-            <Camera size={12} className="text-[#4A1513]" />
-            <span>Virtual Try-On</span>
-          </Link>
-
-          {/* 3. On Sale Pill */}
+          {/* 2. On Sale Pill */}
           <button
             type="button"
             onClick={() => onFilterChange?.('onSale', !isOnSaleActive)}

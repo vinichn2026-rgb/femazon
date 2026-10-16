@@ -29,8 +29,11 @@ export default function WishlistPage() {
         setLoading(false);
         return;
       }
+      if (!res.ok) {
+        throw new Error("Failed to load wishlist");
+      }
       const data = await res.json();
-      setItems(data.items || []);
+      setItems(Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : []);
     } catch (err) {
       setError("Failed to load wishlist.");
     } finally {

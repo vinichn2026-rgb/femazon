@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import NotificationDropdown from './NotificationDropdown';
 import { SearchBar } from './SearchBar';
+import { HeaderSearchBar } from './HeaderSearchBar';
 import { useFemazonStore } from '@/context/FemazonStoreContext';
 import { GlobalCartDrawer } from '@/components/cart/GlobalCartDrawer';
 import { LogoutConfirmModal } from '@/components/auth/LogoutConfirmModal';
@@ -35,6 +36,7 @@ import { AuthModal } from '@/components/auth/AuthModal';
 import { WhatsAppFloatingButton } from '@/components/common/WhatsAppFloatingButton';
 import { FemazonAIChatDrawer } from '@/components/chat/FemazonAIChatDrawer';
 import { BrandLogo } from '@/components/common/BrandLogo';
+import { ImageSearchModal } from '@/components/shop/ImageSearchModal';
 
 type AuthSession = {
   id: string;
@@ -646,12 +648,12 @@ export const CATEGORY_MEGA_MENUS: Record<string, CategoryMenuData> = {
       {
         title: "LENGTH & SILHOUETTE",
         items: [
-          { label: "Midi Dresses", href: "/shop?category=Dresses&length=Midi" },
-          { label: "Maxi Dresses", href: "/shop?category=Dresses&length=Maxi" },
-          { label: "Mini & Short Dresses", href: "/shop?category=Dresses&length=Mini" },
-          { label: "Bodycon Silhouettes", href: "/shop?category=Dresses&style=Bodycon" },
-          { label: "A-Line & Flared", href: "/shop?category=Dresses&style=A-Line" },
-          { label: "Wrap & Shirt Dresses", href: "/shop?category=Dresses&style=Wrap" },
+          { label: "Midi Dresses", href: "/shop?category=Dresses&silhouette=Midi" },
+          { label: "Maxi Dresses", href: "/shop?category=Dresses&silhouette=Maxi" },
+          { label: "Mini & Short Dresses", href: "/shop?category=Dresses&silhouette=Mini" },
+          { label: "Bodycon Silhouettes", href: "/shop?category=Dresses&silhouette=Bodycon" },
+          { label: "A-Line & Flared", href: "/shop?category=Dresses&silhouette=A-Line" },
+          { label: "Wrap & Shirt Dresses", href: "/shop?category=Dresses&silhouette=Wrap" },
         ],
       },
       {
@@ -716,7 +718,7 @@ export const CATEGORY_MEGA_MENUS: Record<string, CategoryMenuData> = {
       {
         title: "DIGITAL INNOVATION",
         items: [
-          { label: "AI Virtual Try-On Fitting", href: "/virtual-try-on" },
+          { label: "Personal Couture Styling", href: "/services/styling" },
           { label: "AI Digital Wardrobe", href: "/wardrobe" },
           { label: "24/7 WhatsApp Stylist Concierge", href: "https://wa.me/919876543210" },
           { label: "Custom Measurements Fit", href: "/measurements" },
@@ -740,10 +742,10 @@ export const CATEGORY_MEGA_MENUS: Record<string, CategoryMenuData> = {
         href: "/services/styling",
       },
       {
-        title: "AI Virtual Try-On",
-        subtitle: "Preview on Yourself",
+        title: "Boutique Concierge",
+        subtitle: "Luxury Fashion Services",
         image: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&q=85&w=600",
-        href: "/virtual-try-on",
+        href: "/services",
       },
       {
         title: "Bridal Makeup",
@@ -831,7 +833,6 @@ export const SUB_NAV_ITEMS = [
   "Indo-Western",
   "Western Wear",
   "Dresses",
-  "Virtual Try On",
   "Femazon Services",
   "On Sale"
 ];
@@ -853,6 +854,7 @@ export function SiteLayout({
   // Search State
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isImageSearchModalOpen, setIsImageSearchModalOpen] = useState(false);
 
   // Profile Dropdown Controlled State
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -963,22 +965,9 @@ export function SiteLayout({
           {/* Left: Brand Logo */}
           <BrandLogo />
 
-          {/* Center: Search Bar */}
+          {/* Center: Search Bar with Aza Fashions Top Searches & Top Products Popover */}
           <div className="flex-1 max-w-2xl mx-auto hidden md:block">
-             <form onSubmit={handleSearchSubmit} className="group relative w-full border border-[#4A1513]/25 hover:border-[#4A1513]/50 rounded-sm h-[44px] flex items-center px-4 bg-[#4A1513]/[0.02] hover:bg-[#4A1513]/[0.04] transition-all duration-200 focus-within:bg-white focus-within:border-[#4A1513] focus-within:ring-2 focus-within:ring-[#4A1513]/15 shadow-[0_1px_4px_rgba(74,21,19,0.04)]">
-               <Search size={17} className="text-[#4A1513]/60 group-focus-within:text-[#4A1513] shrink-0 transition-colors" />
-               <input 
-                 type="text" 
-                 value={searchQuery}
-                 onChange={(e) => setSearchQuery(e.target.value)}
-                 placeholder="Search for products, brands, and styling services" 
-                 className="w-full bg-transparent border-none focus:outline-none text-[13.5px] text-[#4A1513] px-3 placeholder:text-stone-400 focus:placeholder:text-stone-300 font-normal"
-               />
-               <div className="h-5 w-[1px] bg-[#4A1513]/20 mx-3"></div>
-               <button type="button" onClick={() => router.push('/search')} className="flex items-center gap-2 text-[#4A1513]/80 hover:text-[#4A1513] hover:bg-[#4A1513]/10 px-2.5 py-1 rounded-sm transition-colors shrink-0 text-[12px] font-medium whitespace-nowrap cursor-pointer">
-                 <Camera size={16} className="text-[#4A1513]" /> Image Search
-               </button>
-             </form>
+            <HeaderSearchBar />
           </div>
 
           {/* Right: Actions (Store, Bookings, Wishlist, Cart, Profile) */}
@@ -1688,6 +1677,12 @@ export function SiteLayout({
 
       {/* Aza Fashions Inspired Auth Modal */}
       <AuthModal />
+
+      {/* Visual Image Search Modal */}
+      <ImageSearchModal 
+        isOpen={isImageSearchModalOpen} 
+        onClose={() => setIsImageSearchModalOpen(false)} 
+      />
 
       {/* Branded Pulse WhatsApp FAB */}
       <WhatsAppFloatingButton />

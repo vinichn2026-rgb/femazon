@@ -1,15 +1,10 @@
-import React from 'react';
-import { VirtualTryOnClient } from '@/components/vton/VirtualTryOnClient';
+import { redirect } from 'next/navigation';
 
 export const metadata = {
-  title: 'Virtual Try-On | Femazon',
-  description: 'Try on our premium collection virtually using AI.',
+  title: 'Shop Luxury Collections | Femazon',
+  description: 'Explore curated Indian couture and designer wear.',
 };
 
 export default function VirtualTryOnPage() {
-  return (
-    <div className="min-h-screen bg-white">
-      <VirtualTryOnClient />
-    </div>
-  );
+  redirect('/shop');
 }

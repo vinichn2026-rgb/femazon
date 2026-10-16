@@ -21,7 +21,7 @@ const FEMAZON_HERO_SLIDES: HeroSlide[] = [
     tag: "SPRING / FESTIVE '26",
     title: "The Royal Bridal Edit",
     tagline: "Handcrafted heritage couture for unforgettable celebrations.",
-    link: "/collections/wedding-edit",
+    link: "/shop",
     ctaText: "Shop Collection",
     image: "/banners/hero_bridal.jpg",
     align: "left", // Content on LEFT

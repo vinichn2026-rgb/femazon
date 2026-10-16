@@ -1,97 +1,72 @@
-import { prisma } from '@/lib/prisma';
 import { ShopClient } from '@/components/shop/ShopClient';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/authOptions';
+import { getFormattedShopProducts } from '@/lib/catalog';
 
 export const dynamic = 'force-dynamic';
 
-export default async function ShopPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
+interface ShopSearchParams {
+  category?: string;
+  silhouette?: string;
+  style?: string;
+  length?: string;
+  subcategory?: string;
+  occasion?: string;
+  sort?: string;
+}
+
+export default async function ShopPage({ searchParams }: { searchParams: Promise<ShopSearchParams> }) {
   const resolvedSearchParams = await searchParams;
-  
-  // Fetch session and wishlist
-  const session = await getServerSession(authOptions);
-  let wishlistIds: number[] = [];
-  
-  if (session?.user?.email) {
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      include: {
-        wishlist: { include: { items: true } }
-      }
-    });
-    if (user?.wishlist) {
-      wishlistIds = user.wishlist.items.map(item => item.productId);
-    }
+
+  // Instant pre-formatted catalog from memory cache (0ms)
+  const formattedProducts = await getFormattedShopProducts();
+
+  let initialCategory = resolvedSearchParams.category || "All";
+  const rawCatLower = initialCategory.toLowerCase().trim();
+  if (rawCatLower === "handbags" || rawCatLower === "handbag" || rawCatLower === "bags" || rawCatLower === "bag" || rawCatLower === "lady bag" || rawCatLower === "ladies bag") {
+    initialCategory = "Handbags";
+  } else if (rawCatLower === "potlis" || rawCatLower === "potli") {
+    initialCategory = "Potlis";
+  } else if (rawCatLower === "footwear" || rawCatLower === "shoes") {
+    initialCategory = "Footwear";
+  } else if (rawCatLower === "shawls" || rawCatLower === "shawl") {
+    initialCategory = "Shawls";
+  } else if (rawCatLower === "hair accessories" || rawCatLower === "hair-accessories") {
+    initialCategory = "Hair Accessories";
+  } else if (rawCatLower === "stoles & scarves" || rawCatLower === "stoles-scarves") {
+    initialCategory = "Stoles & Scarves";
+  } else if (rawCatLower === "belts" || rawCatLower === "belt") {
+    initialCategory = "Belts";
+  } else if (rawCatLower === "kurtis" || rawCatLower === "kurti" || rawCatLower === "ethnic") {
+    initialCategory = "Kurta Sets";
   }
-
-  const dbProducts = await prisma.product.findMany({
-    where: { approvalStatus: 'APPROVED' },
-    include: {
-      vendor: {
-        include: {
-          vendorProfile: true
-        }
-      }
-    },
-    orderBy: { createdAt: 'desc' }
-  });
-
-  // Map Database format to the format required by the Frontend ProductCard component
-  const formattedProducts = dbProducts.map(p => {
-    const isSale = p.discountPrice && p.discountPrice < p.price;
-    const discountPercent = isSale && p.discountPrice ? Math.round(((p.price - p.discountPrice) / p.price) * 100) : 0;
-    
-    // Attempt to parse sizes and colors if they were stored as JSON strings
-    let sizes = ["S", "M", "L"];
-    let colors = ["Black", "Red"];
-    try {
-      if (p.sizes) sizes = JSON.parse(p.sizes as string);
-      if (p.colors) colors = JSON.parse(p.colors as string);
-    } catch (e) {
-      // Ignore parse errors and use fallback
-    }
-
-    // Extract Vendor Name
-    const vendorName = p.vendor?.vendorProfile?.businessName || "Femazon Exclusive";
-
-    // Handle Image Array safely
-    let images: string[] = [];
-    try {
-      if (p.images) {
-        images = JSON.parse(p.images as string);
-      }
-    } catch (e) {}
-
-    return {
-      id: p.id.toString(),
-      slug: p.slug,
-      name: p.name,
-      brand: vendorName, 
-      vendorName: vendorName,
-      price: p.discountPrice ? p.discountPrice : p.price,
-      originalPrice: p.price,
-      discount: discountPercent,
-      category: p.category || "Dresses",
-      subCategory: p.subcategory || p.category || "Dresses",
-      image: p.image || (images.length > 0 ? images[0] : "https://via.placeholder.com/600x800"),
-      hoverImage: images.length > 1 ? images[1] : p.image,
-      images: images.length > 0 ? images : (p.image ? [p.image] : []),
-      rating: 4.5, 
-      reviewCount: Math.floor(Math.random() * 200) + 10,
-      isTrending: p.category === 'Co-ords' || p.category === 'Kurtis',
-      isNew: p.category === 'Tops' || p.category === 'Ethnic',
-      inStock: p.stock > 0,
-      readyToShip: p.readyToShip,
-      deliveryDays: p.deliveryDays,
-      sizes,
-      colors
-    };
-  });
-
-  const initialCategory = resolvedSearchParams.category || "All";
+  
+  // Normalize incoming silhouette/style/length param
+  let initialSilhouette = resolvedSearchParams.silhouette || resolvedSearchParams.style || resolvedSearchParams.length || "All";
+  // Handle common aliases: e.g. "Bodycon Silhouettes" -> "Bodycon"
+  if (initialSilhouette.toLowerCase().includes("bodycon")) initialSilhouette = "Bodycon";
+  else if (initialSilhouette.toLowerCase().includes("anarkali")) initialSilhouette = "Anarkali";
+  else if (initialSilhouette.toLowerCase().includes("straight")) initialSilhouette = "Straight";
+  else if (initialSilhouette.toLowerCase().includes("a-line")) initialSilhouette = "A-Line";
+  else if (initialSilhouette.toLowerCase().includes("palazzo")) initialSilhouette = "Palazzo";
+  else if (initialSilhouette.toLowerCase().includes("sharara")) initialSilhouette = "Sharara";
+  else if (initialSilhouette.toLowerCase().includes("peplum")) initialSilhouette = "Peplum";
+  else if (initialSilhouette.toLowerCase().includes("gown")) initialSilhouette = "Gown";
+  else if (initialSilhouette.toLowerCase().includes("maxi")) initialSilhouette = "Maxi";
+  else if (initialSilhouette.toLowerCase().includes("midi")) initialSilhouette = "Midi";
+  else if (initialSilhouette.toLowerCase().includes("mini")) initialSilhouette = "Mini";
+  else if (initialSilhouette.toLowerCase().includes("wrap")) initialSilhouette = "Wrap";
+  else if (initialSilhouette.toLowerCase().includes("shirt")) initialSilhouette = "Shirt Dress";
+  else if (initialSilhouette.toLowerCase().includes("slip")) initialSilhouette = "Slip Dress";
 
   // Simulate a Backend API fetching a dynamic banner
   const bannerImage = "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2000&auto=format&fit=crop";
 
-  return <ShopClient initialProducts={formattedProducts} initialCategory={initialCategory} initialWishlistIds={wishlistIds} bannerImage={bannerImage} />;
+  return (
+    <ShopClient 
+      initialProducts={formattedProducts} 
+      initialCategory={initialCategory} 
+      initialSilhouette={initialSilhouette}
+      initialWishlistIds={[]} 
+      bannerImage={bannerImage} 
+    />
+  );
 }

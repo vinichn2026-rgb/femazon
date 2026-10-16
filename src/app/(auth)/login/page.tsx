@@ -231,7 +231,7 @@ function LoginForm() {
     }, 700);
   };
 
-  const completeLogin = (userName: string, userData?: any) => {
+  const completeLogin = async (userName: string, userData?: any) => {
     const role = userData?.role || 'CUSTOMER';
     const firstName = userName.split(' ')[0] || 'Member';
     setAuthenticatedUserName(firstName);
@@ -243,7 +243,7 @@ function LoginForm() {
       targetUrl = '/vendor/dashboard';
     }
 
-    setUser({
+    const sessionUser = {
       id: String(userData?.id || Date.now()),
       name: userData?.name || userName,
       firstName,
@@ -252,7 +252,17 @@ function LoginForm() {
       phone: userData?.phone || '+91 98765 43210',
       role: role,
       avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200'
-    });
+    };
+
+    try {
+      await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sessionUser)
+      });
+    } catch (e) {}
+
+    setUser(sessionUser);
 
     setIsLoading(false);
     setIsSuccessTransition(true);

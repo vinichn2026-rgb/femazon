@@ -114,6 +114,18 @@ function VirtualTryOnContent() {
   const [processStage, setProcessStage] = useState<string>('Analyzing silhouette...');
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [isAddedToCart, setIsAddedToCart] = useState(false);
+  const [relatedPictures, setRelatedPictures] = useState<ProductType[]>(() => PRODUCTS.slice(1, 9));
+  const [isCustomPhotoUploaded, setIsCustomPhotoUploaded] = useState(false);
+
+  // Helper to dynamically filter related matching outfits
+  const updateRelatedPictures = (baseProd?: ProductType | null) => {
+    const target = baseProd || selectedProduct || PRODUCTS[0];
+    const cat = target?.category || 'Ethnic';
+    const related = PRODUCTS.filter(p => p.id !== target?.id)
+      .sort((a, b) => (a.category === cat ? -1 : 1))
+      .slice(0, 8);
+    setRelatedPictures(related);
+  };
 
   // Comparison slider position (0 to 100)
   const [sliderPosition, setSliderPosition] = useState(50);
@@ -130,6 +142,7 @@ function VirtualTryOnContent() {
       const prod = PRODUCTS.find(p => p.id === initialProductId);
       if (prod) {
         setSelectedProduct(prod);
+        updateRelatedPictures(prod);
       }
     }
   }, [initialProductId]);
@@ -141,8 +154,11 @@ function VirtualTryOnContent() {
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      setUserImage(event.target?.result as string);
+      const imgData = event.target?.result as string;
+      setUserImage(imgData);
       setResultImage(null); // Reset previous result
+      setIsCustomPhotoUploaded(true);
+      updateRelatedPictures(selectedProduct);
     };
     reader.readAsDataURL(file);
   };
@@ -157,11 +173,11 @@ function VirtualTryOnContent() {
     // Simulate multi-stage AI pipeline
     setProcessStage('1. Analyzing body contour & posture...');
     setTimeout(() => {
-      setProcessStage('2. Draping luxury fabric & texture mapping...');
-    }, 900);
+      setProcessStage('2. Matching couture fabrics & related styles...');
+    }, 700);
     setTimeout(() => {
       setProcessStage('3. Harmonizing lighting with chosen scene...');
-    }, 1800);
+    }, 1400);
 
     try {
       const prodImg = selectedProduct.images?.[0] || (selectedProduct as any).image;
@@ -179,6 +195,9 @@ function VirtualTryOnContent() {
       const data = await res.json();
       if (data.success) {
         setResultImage(data.resultImage);
+        if (Array.isArray(data.relatedPictures) && data.relatedPictures.length > 0) {
+          setRelatedPictures(data.relatedPictures);
+        }
       } else {
         setResultImage(prodImg);
       }
@@ -708,6 +727,47 @@ function VirtualTryOnContent() {
               </button>
             </div>
 
+            {/* Related Pictures / Matching Outfits Strip */}
+            <div className="pt-3 border-t border-stone-100 flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-stone-700 flex items-center gap-1.5">
+                  <Sparkles size={12} className="text-[#4A1513]" />
+                  <span>Related Pictures &amp; Styles</span>
+                </span>
+                <span className="text-[10px] text-stone-400 font-medium">Click to try on</span>
+              </div>
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                {relatedPictures.slice(0, 6).map((item) => {
+                  const img = item.images?.[0] || (item as any).image;
+                  const isSelected = item.id === selectedProduct?.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedProduct(item);
+                        setResultImage(null);
+                        updateRelatedPictures(item);
+                      }}
+                      className={`shrink-0 w-16 group flex flex-col text-left rounded-lg overflow-hidden border p-1 transition-all cursor-pointer ${
+                        isSelected
+                          ? 'border-[#4A1513] bg-[#FAF5F2] ring-1 ring-[#4A1513]'
+                          : 'border-stone-200 bg-white hover:border-[#4A1513]/50'
+                      }`}
+                      title={item.name}
+                    >
+                      <div className="relative w-full aspect-[3/4] rounded overflow-hidden bg-stone-100 mb-1">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={img} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition" />
+                      </div>
+                      <p className="text-[8.5px] font-medium text-stone-700 truncate">{item.name}</p>
+                      <p className="text-[8.5px] font-bold text-[#4A1513]">₹{item.price.toLocaleString('en-IN')}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
           </div>
 
         </div>
@@ -722,9 +782,11 @@ function VirtualTryOnContent() {
           
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
             <div>
-              <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#4A1513]">Virtual Try-On Enabled</span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#4A1513]">
+                {isCustomPhotoUploaded ? 'Matched to Your Uploaded Photo' : 'Virtual Try-On Enabled'}
+              </span>
               <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 mt-0.5">
-                Popular Outfits Ready to Try On
+                {isCustomPhotoUploaded ? 'Related Pictures & Matching Outfits' : 'Popular Outfits Ready to Try On'}
               </h2>
             </div>
             <Link
@@ -738,7 +800,7 @@ function VirtualTryOnContent() {
 
           {/* Outfits Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-            {PRODUCTS.slice(0, 4).map((prod) => {
+            {relatedPictures.slice(0, 8).map((prod) => {
               const img = prod.images?.[0] || (prod as any).image;
               return (
                 <div

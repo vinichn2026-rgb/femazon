@@ -10,6 +10,7 @@ import { ActiveFilterChips } from '@/components/shop/ActiveFilterChips';
 import { FilterSidebar, FilterState } from '@/components/shop/FilterSidebar';
 import { ProductCard, ProductCardSkeleton } from '@/components/shop/ProductCard';
 import { LuxuryPromoBanner } from '@/components/shop/LuxuryPromoBanner';
+import { useFemazonStore } from '@/context/FemazonStoreContext';
 
 const CATEGORIES = [
   "All",
@@ -19,6 +20,13 @@ const CATEGORIES = [
   "Wedding",
   "Dresses",
   "Gowns",
+  "Handbags",
+  "Potlis",
+  "Footwear",
+  "Shawls",
+  "Hair Accessories",
+  "Stoles & Scarves",
+  "Belts",
   "Indo-Western",
   "Western Wear",
   "Co-ord Sets",
@@ -30,6 +38,7 @@ const CATEGORIES = [
 ];
 
 const initialFilterState: FilterState = {
+  silhouettes: [],
   subcategories: [],
   priceRange: null,
   sizes: [],
@@ -43,19 +52,27 @@ const initialFilterState: FilterState = {
 interface ShopClientProps {
   initialProducts: any[];
   initialCategory: string;
+  initialSilhouette?: string;
   initialWishlistIds?: number[];
   bannerImage?: string;
 }
 
-export function ShopClient({ initialProducts, initialCategory, initialWishlistIds = [], bannerImage }: ShopClientProps) {
+export function ShopClient({ 
+  initialProducts, 
+  initialCategory, 
+  initialSilhouette = "All",
+  initialWishlistIds = [], 
+  bannerImage 
+}: ShopClientProps) {
   const router = useRouter();
+  const { isInWishlist, toggleWishlist, addToCart } = useFemazonStore();
   const [isMounted, setIsMounted] = useState(false);
-  const [wishlist, setWishlist] = useState<number[]>(initialWishlistIds);
   
-  // Try to match the incoming category case-insensitively with CATEGORIES
+  // Match incoming category case-insensitively
   const matchedCat = CATEGORIES.find(c => c.toLowerCase() === (initialCategory || "").toLowerCase()) || (initialCategory || "All");
   
   const [selectedCategory, setSelectedCategory] = useState(matchedCat);
+  const [selectedSilhouette, setSelectedSilhouette] = useState(initialSilhouette || "All");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSort, setSelectedSort] = useState("Recommended");
   
@@ -74,20 +91,31 @@ export function ShopClient({ initialProducts, initialCategory, initialWishlistId
     }
   }, [initialCategory]);
 
-  // Sync category state to URL when category changes
+  // Update selectedSilhouette whenever initialSilhouette prop changes
+  useEffect(() => {
+    if (initialSilhouette) {
+      setSelectedSilhouette(initialSilhouette);
+    }
+  }, [initialSilhouette]);
+
+  // Sync category and silhouette states to URL query params
   useEffect(() => {
     if (!isMounted) return;
     const url = new URL(window.location.href);
     if (selectedCategory !== "All") url.searchParams.set("category", selectedCategory);
     else url.searchParams.delete("category");
     
-    window.history.replaceState({}, '', url.toString());
-  }, [selectedCategory, isMounted]);
+    if (selectedSilhouette !== "All") url.searchParams.set("silhouette", selectedSilhouette);
+    else url.searchParams.delete("silhouette");
 
+    window.history.replaceState({}, '', url.toString());
+  }, [selectedCategory, selectedSilhouette, isMounted]);
 
   // Derived Active Filters Array for Chips
   const activeFilterChips = [
     ...(selectedCategory !== "All" ? [`Category: ${selectedCategory}`] : []),
+    ...(selectedSilhouette !== "All" ? [`Silhouette: ${selectedSilhouette}`] : []),
+    ...(filters.silhouettes || []).map(s => `Silhouette: ${s}`),
     ...filters.subcategories,
     ...(filters.priceRange ? [filters.priceRange] : []),
     ...filters.sizes.map(s => `Size: ${s}`),
@@ -105,6 +133,12 @@ export function ShopClient({ initialProducts, initialCategory, initialWishlistId
   const handleRemoveChip = (chipText: string) => {
     if (chipText.startsWith('Category: ')) {
       setSelectedCategory("All");
+      return;
+    }
+    if (chipText.startsWith('Silhouette: ')) {
+      const sil = chipText.replace('Silhouette: ', '');
+      if (selectedSilhouette === sil) setSelectedSilhouette("All");
+      handleFilterChange('silhouettes', (filters.silhouettes || []).filter(s => s !== sil));
       return;
     }
     if (chipText === filters.priceRange) {
@@ -135,89 +169,78 @@ export function ShopClient({ initialProducts, initialCategory, initialWishlistId
 
   const handleClearAllFilters = () => {
     setSelectedCategory("All");
+    setSelectedSilhouette("All");
     setFilters(initialFilterState);
     setSearchQuery("");
   };
 
-  const pCatIncludes = (p: any, term: string) => {
-    const t = term.toLowerCase();
-    return (p.category?.toLowerCase() || "").includes(t) || 
-           (p.subCategory?.toLowerCase() || "").includes(t) || 
-           (p.name?.toLowerCase() || "").includes(t);
-  };
-
-  // ---- DYNAMIC FILTERING LOGIC ----
+  // ---- STRICT DRESS CATEGORY & SILHOUETTE FILTERING LOGIC ----
   const filteredProducts = useMemo(() => {
     return initialProducts.filter(p => {
+      // 0. Safety Check: Exclude unapproved or flagged products
+      if (p.flaggedForReview) return false;
+
       // 1. Search Query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesName = p.name.toLowerCase().includes(q);
-        const matchesBrand = p.brand.toLowerCase().includes(q);
-        const matchesCat = p.category.toLowerCase().includes(q);
-        if (!matchesName && !matchesBrand && !matchesCat) return false;
+        const matchesBrand = p.brand?.toLowerCase().includes(q);
+        const matchesCat = p.category?.toLowerCase().includes(q);
+        const matchesSil = (p.silhouette || '').toLowerCase().includes(q);
+        if (!matchesName && !matchesBrand && !matchesCat && !matchesSil) return false;
       }
 
-      // 2. Category Filter
+      // 2. Strict Category Filter
       if (selectedCategory && selectedCategory !== "All") {
-        const sel = selectedCategory.toLowerCase();
-        let matchesCategory = false;
+        const selCat = selectedCategory.toLowerCase().trim();
+        const prodCat = (p.category || "").toLowerCase().trim();
 
-        if (sel === 'kurta sets' || sel === 'kurti' || sel === 'chudithar' || sel === 'anarkali') {
-          matchesCategory = pCatIncludes(p, 'kurt') || pCatIncludes(p, 'anarkali') || pCatIncludes(p, 'chudi') || pCatIncludes(p, 'suit') || pCatIncludes(p, 'set');
-        } else if (sel === 'lehengas') {
-          matchesCategory = pCatIncludes(p, 'lehenga');
-        } else if (sel === 'sarees' || sel === 'saree') {
-          matchesCategory = pCatIncludes(p, 'saree') || pCatIncludes(p, 'sari');
-        } else if (sel === 'wedding') {
-          matchesCategory = pCatIncludes(p, 'wedding') || pCatIncludes(p, 'bridal') || pCatIncludes(p, 'lehenga') || pCatIncludes(p, 'saree');
-        } else if (sel === 'dresses') {
-          matchesCategory = pCatIncludes(p, 'dress') || pCatIncludes(p, 'midi') || pCatIncludes(p, 'maxi') || pCatIncludes(p, 'gown');
-        } else if (sel === 'gowns') {
-          matchesCategory = pCatIncludes(p, 'gown') || pCatIncludes(p, 'dress');
-        } else if (sel === 'indo-western') {
-          matchesCategory = pCatIncludes(p, 'indo') || pCatIncludes(p, 'fusion') || pCatIncludes(p, 'coord') || pCatIncludes(p, 'cape') || pCatIncludes(p, 'jacket');
-        } else if (sel === 'western wear') {
-          matchesCategory = pCatIncludes(p, 'western') || pCatIncludes(p, 'dress') || pCatIncludes(p, 'top');
-        } else if (sel === 'co-ord sets' || sel === 'co-ords') {
-          matchesCategory = pCatIncludes(p, 'coord') || pCatIncludes(p, 'co-ord') || pCatIncludes(p, 'set');
-        } else if (sel === 'kaftans') {
-          matchesCategory = pCatIncludes(p, 'kaftan') || pCatIncludes(p, 'dress');
-        } else if (sel === 'tops') {
-          matchesCategory = pCatIncludes(p, 'top') || pCatIncludes(p, 'shirt') || pCatIncludes(p, 'blouse') || pCatIncludes(p, 'tunic');
-        } else if (sel === 'on sale') {
-          matchesCategory = p.discount > 0 || (p.originalPrice && p.originalPrice > p.price);
-        } else if (sel === 'femazon exclusive') {
-          matchesCategory = p.brand?.toLowerCase().includes('femazon') || true;
-        } else if (sel === 'new' || sel === 'new arrivals') {
-          matchesCategory = p.isNew || true;
+        if (selCat === "on sale") {
+          if (!(p.discount > 0 || (p.originalPrice && p.originalPrice > p.price))) return false;
+        } else if (selCat === "new arrivals" || selCat === "new") {
+          if (!p.isNew) return false;
+        } else if (selCat === "femazon exclusive") {
+          if (!p.brand?.toLowerCase().includes("femazon") && !p.brand?.toLowerCase().includes("nagla")) return false;
+        } else if (selCat === "wedding") {
+          const isWeddingOccasion = (p.occasion || "").toLowerCase() === "wedding";
+          if (!isWeddingOccasion && prodCat !== "lehengas" && prodCat !== "sarees") return false;
         } else {
-          matchesCategory = pCatIncludes(p, sel);
-        }
-
-        if (!matchesCategory) {
-          return false;
+          // Exact, strict category matching
+          if (prodCat !== selCat) {
+            return false;
+          }
         }
       }
 
-      // 3. Sub-categories
+      // 3. Strict Silhouette Filter (AND logic with Category)
+      const activeSilhouettes = [
+        ...(selectedSilhouette && selectedSilhouette !== "All" ? [selectedSilhouette] : []),
+        ...(filters.silhouettes || [])
+      ].map(s => s.toLowerCase().trim());
+
+      if (activeSilhouettes.length > 0) {
+        const prodSil = (p.silhouette || "").toLowerCase().trim();
+        const matchesSilhouette = activeSilhouettes.some(sil => prodSil === sil);
+        if (!matchesSilhouette) return false;
+      }
+
+      // 4. Sub-categories
       if (filters.subcategories.length > 0) {
         const matchesSub = filters.subcategories.some(sub => {
-          const s = sub.toLowerCase();
-          const pSub = (p.subCategory || "").toLowerCase();
-          const pName = (p.name || "").toLowerCase();
-          const pCat = (p.category || "").toLowerCase();
-          return pSub.includes(s) || pName.includes(s) || pCat.includes(s) || s.includes(pSub) || s.includes(pCat);
+          const s = sub.toLowerCase().trim();
+          const pSub = (p.subCategory || "").toLowerCase().trim();
+          const pSil = (p.silhouette || "").toLowerCase().trim();
+          return pSub === s || pSil === s || pSub.includes(s) || s.includes(pSub);
         });
         if (!matchesSub) return false;
       }
 
-      // 4. Brands
+      // 5. Brands / Designers
       if (filters.brands.length > 0 && !filters.brands.includes(p.brand)) {
         return false;
       }
 
-      // 5. Price Range
+      // 6. Price Range
       if (filters.priceRange) {
         const range = filters.priceRange;
         if (range === "Under ₹999" && p.price >= 999) return false;
@@ -226,26 +249,26 @@ export function ShopClient({ initialProducts, initialCategory, initialWishlistId
         if (range === "₹5,000+" && p.price < 5000) return false;
       }
 
-      // 6. Sizes
+      // 7. Sizes
       if (filters.sizes.length > 0) {
-        const hasSize = filters.sizes.some((s: string) => p.sizes.includes(s));
+        const hasSize = filters.sizes.some((s: string) => p.sizes?.includes(s));
         if (!hasSize) return false;
       }
 
-      // 7. Colors
+      // 8. Colors
       if (filters.colors.length > 0) {
-        const hasColor = filters.colors.some((c: string) => p.colors.includes(c));
+        const hasColor = filters.colors.some((c: string) => p.colors?.includes(c));
         if (!hasColor) return false;
       }
 
-      // 8. Toggles
+      // 9. Stock / Sale / Shipping Toggles
       if (filters.inStockOnly && !p.inStock) return false;
       if (filters.onSale && p.discount < 30) return false;
       if (filters.readyToShip && !p.readyToShip) return false;
 
       return true;
     });
-  }, [searchQuery, selectedCategory, filters, initialProducts]);
+  }, [searchQuery, selectedCategory, selectedSilhouette, filters, initialProducts]);
 
   // ---- SORTING LOGIC ----
   const sortedProducts = useMemo(() => {
@@ -271,74 +294,34 @@ export function ShopClient({ initialProducts, initialCategory, initialWishlistId
     }
   }, [filteredProducts, selectedSort]);
 
-  const handleToggleWishlist = async (productId: string, isCurrentlyWishlisted: boolean) => {
-    const numId = Number(productId);
-    
-    // Optimistic UI update
-    setWishlist(prev => 
-      isCurrentlyWishlisted 
-        ? prev.filter(id => id !== numId) 
-        : [...prev, numId]
-    );
-
-    try {
-      if (isCurrentlyWishlisted) {
-        // Since we don't have the wishlistItem ID here, we need an API change or we can do a POST that acts as a toggle, or pass productId to a DELETE
-        // Wait, DELETE /api/wishlist requires itemId.
-        // Let's use a simpler POST that acts as a toggle on the backend, or just let the backend handle it.
-        // Actually, the easiest is to just POST to add, but we need a way to DELETE by productId.
-        // For now, let's POST. Our POST API currently just returns 200 if it exists. 
-        // Let's update the handle to just alert for now, or implement a full toggle API.
-        const res = await fetch("/api/wishlist", {
-          method: "POST", // Let's assume we modify POST to act as a toggle or we create a specific delete-by-product route
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ productId: numId, action: 'toggle' })
-        });
-        if (res.status === 401) router.push('/login');
-      } else {
-        const res = await fetch("/api/wishlist", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ productId: numId })
-        });
-        if (res.status === 401) {
-          // Revert if unauthorized
-          setWishlist(prev => prev.filter(id => id !== numId));
-          router.push('/login');
-        }
-      }
-    } catch (err) {
-      console.error(err);
+  const handleToggleWishlist = (productId: string) => {
+    const target = initialProducts.find(p => String(p.id) === String(productId));
+    if (target) {
+      toggleWishlist({
+        id: target.id,
+        name: target.name,
+        brand: target.brand,
+        price: target.price,
+        originalPrice: target.originalPrice,
+        image: target.image,
+        category: target.category,
+      });
     }
   };
 
-  const handleQuickAdd = async (product: any) => {
-    try {
-      const res = await fetch("/api/cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productId: product.id,
-          quantity: 1,
-          size: product.sizes?.[0] || null, // Default to first size if available
-          color: product.colors?.[0] || null // Default to first color if available
-        })
-      });
-
-      if (res.status === 401) {
-        alert("Please log in to add items to your cart.");
-        router.push("/login");
-        return;
-      }
-      
-      if (res.ok) {
-        alert(`${product.name} added to cart!`);
-      } else {
-        alert("Failed to add to cart.");
-      }
-    } catch (err) {
-      alert("Error adding to cart.");
-    }
+  const handleQuickAdd = (product: any) => {
+    addToCart({
+      productId: product.id,
+      name: product.name,
+      brand: product.brand,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      image: product.image,
+      size: product.sizes?.[0] || 'M',
+      color: product.colors?.[0] || 'Standard',
+      quantity: 1,
+      category: product.category,
+    }, true);
   };
 
   const totalItems = sortedProducts.length;
@@ -395,7 +378,7 @@ export function ShopClient({ initialProducts, initialCategory, initialWishlistId
                   <ProductCard 
                     key={product.id} 
                     product={product} 
-                    isWishlisted={wishlist.includes(Number(product.id))}
+                    isWishlisted={isInWishlist(product.id)}
                     onQuickAdd={handleQuickAdd}
                     onToggleWishlist={handleToggleWishlist}
                   />

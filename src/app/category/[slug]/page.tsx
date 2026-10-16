@@ -43,12 +43,36 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
     }
   }
 
-  // Fetch products (for demo, just fetch all approved if it's a mock category, else filter by name)
+  // Map category slug to matching product category names
+  const categoryFilters: Record<string, string[]> = {
+    'sarees': ['Sarees'],
+    'lehengas': ['Lehengas'],
+    'kurta-sets': ['Kurta Sets'],
+    'dresses': ['Dresses'],
+    'gowns': ['Gowns'],
+    'co-ord-sets': ['Co-ord Sets'],
+    'indo-western': ['Indo-Western'],
+    'tops': ['Tops', 'Tops & Tunics'],
+    'jewellery': ['Jewellery'],
+    'handbags': ['Handbags'],
+    'potlis': ['Potlis'],
+    'footwear': ['Footwear'],
+    'shawls': ['Shawls'],
+    'accessories': ['Accessories', 'Belts', 'Hair Accessories', 'Stoles & Scarves'],
+  };
+
+  const matchingCategories = categoryFilters[slug.toLowerCase()] || (category?.name ? [category.name] : []);
+
+  const whereClause: any = {
+    approvalStatus: 'APPROVED',
+  };
+  if (matchingCategories.length > 0) {
+    whereClause.category = { in: matchingCategories };
+  }
+
+  // Fetch products matching the selected category
   const dbProducts = await prisma.product.findMany({
-    where: { 
-      approvalStatus: 'APPROVED',
-      // If it's a real category, you might filter by: category: category.name
-    },
+    where: whereClause,
     orderBy: { createdAt: 'desc' }
   });
 

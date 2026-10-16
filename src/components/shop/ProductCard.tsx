@@ -34,6 +34,29 @@ export function ProductCard({ product, isWishlisted = false, onQuickAdd, onToggl
 
   const images = product.images || ((product as any).image ? [(product as any).image] : ['https://via.placeholder.com/400x500?text=No+Image']);
   const hasSecondaryImage = images.length > 1;
+  // Safely resolve product sizes without arbitrarily forcing XL/XXL on accessories
+  let parsedSizes: string[] = [];
+  if (Array.isArray(product.sizes) && product.sizes.length > 0) {
+    parsedSizes = product.sizes;
+  } else if (typeof product.sizes === 'string') {
+    try {
+      const parsed = JSON.parse(product.sizes);
+      if (Array.isArray(parsed) && parsed.length > 0) parsedSizes = parsed;
+    } catch {
+      parsedSizes = (product.sizes as string).split(',').map(s => s.trim()).filter(Boolean);
+    }
+  }
+
+  // Detect non-apparel items (belts, bags, shawls, stoles, jewelry)
+  const categoryLower = (product.category || '').toLowerCase();
+  const nameLower = (product.name || '').toLowerCase();
+  const isAccessory = ['handbag', 'bag', 'potli', 'shawl', 'stole', 'scarf', 'belt', 'jewel', 'jewellery', 'accessory', 'accessories', 'backpack'].some(c =>
+    categoryLower.includes(c) || nameLower.includes(c)
+  );
+
+  const displaySizes: string[] = parsedSizes.length > 0 
+    ? parsedSizes 
+    : (isAccessory ? ['Free Size'] : ['XS', 'S', 'M', 'L', 'XL']);
 
   return (
     <Link href={`/products/${(product as any).slug || product.id}`} className="group flex flex-col cursor-pointer h-full">
@@ -68,21 +91,26 @@ export function ProductCard({ product, isWishlisted = false, onQuickAdd, onToggl
             className={`transition-all duration-300 drop-shadow-sm ${isWishlisted ? 'fill-[#E53E3E] text-[#E53E3E]' : 'fill-white/30 hover:fill-white group-hover/btn:scale-110'}`} 
           />
         </button>
-        {/* Size Selection Overlay on Hover (Including XL, XXL) */}
-        <div className="absolute bottom-0 left-0 right-0 p-2.5 translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20 bg-white/95 backdrop-blur-xs border-t border-stone-200 shadow-lg">
-          <p className="text-[9.5px] uppercase font-bold tracking-widest text-[#4A1513] mb-1.5 text-center">Select Size</p>
-          <div className="flex flex-wrap justify-center gap-1.5">
-            {Array.from(new Set([...(product.sizes || ["XS", "S", "M", "L"]), "XL", "XXL"])).map((size) => (
+
+        {/* Sleek Aza-Style Quick Add Size Overlay on Hover */}
+        <div className="absolute bottom-0 left-0 right-0 py-2.5 px-2 translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20 bg-white/95 backdrop-blur-xs border-t border-stone-200/90 shadow-[0_-4px_16px_rgba(0,0,0,0.08)]">
+          <p className="text-[9px] uppercase font-bold tracking-[0.2em] text-[#4A1513] mb-2 text-center">
+            {isAccessory ? 'Available Size' : 'Quick Add · Select Size'}
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
+            {displaySizes.map((size) => (
               <button 
                 key={size}
+                type="button"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   if (onQuickAdd) onQuickAdd({...product, sizes: [size]});
                 }}
-                className="w-7 h-7 rounded-full border border-stone-300 bg-white flex items-center justify-center text-[9.5px] font-bold text-stone-800 hover:border-[#4A1513] hover:bg-[#4A1513] hover:text-white transition-colors cursor-pointer"
+                className="h-7 min-w-[32px] px-2.5 rounded-full border border-stone-300 bg-white flex items-center justify-center text-[10px] font-bold text-stone-800 tracking-wide hover:border-[#4A1513] hover:bg-[#4A1513] hover:text-white transition-all duration-200 cursor-pointer shadow-2xs whitespace-nowrap active:scale-95"
+                title={`Select ${size}`}
               >
-                {size}
+                <span>{size}</span>
               </button>
             ))}
           </div>

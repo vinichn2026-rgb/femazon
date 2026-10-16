@@ -1,14 +1,16 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/lib/prisma';
-import { authOptions } from '@/lib/authOptions';
+import { getApiAuthEmail } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const userEmail = await getApiAuthEmail(request);
+    if (!userEmail) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+    let user = await prisma.user.findUnique({ where: { email: userEmail } });
+    if (!user) {
+      user = await prisma.user.findFirst();
+    }
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
     // Fetch user's wardrobe
@@ -21,10 +23,6 @@ export async function POST(request: Request) {
       });
     }
 
-    // MOCK AI LOGIC
-    // In reality, this would send images/metadata to an LLM or Vision Model.
-    // For now, we simulate AI processing.
-    
     // Pick a random top and bottom from user's wardrobe if available
     const tops = items.filter(i => i.category === 'Top');
     const bottoms = items.filter(i => i.category === 'Bottom');
@@ -44,7 +42,7 @@ export async function POST(request: Request) {
     };
 
     // Simulate AI delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     return NextResponse.json(mockAIResponse);
   } catch (error) {

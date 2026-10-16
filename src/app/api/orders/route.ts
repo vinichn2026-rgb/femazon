@@ -1,18 +1,17 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/lib/prisma';
-import { authOptions } from '@/lib/authOptions';
+import { getApiAuthEmail } from '@/lib/auth';
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const userEmail = await getApiAuthEmail(request);
 
-    if (!session?.user?.email) {
+    if (!userEmail) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
-    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    const user = await prisma.user.findUnique({ where: { email: userEmail } });
+    if (!user) return NextResponse.json([]);
 
     const orders = await prisma.order.findMany({
       where: { userId: user.id },
@@ -35,13 +34,13 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const userEmail = await getApiAuthEmail(request);
 
-    if (!session?.user?.email) {
+    if (!userEmail) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+    const user = await prisma.user.findUnique({ where: { email: userEmail } });
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
     const body = await request.json().catch(() => ({}));

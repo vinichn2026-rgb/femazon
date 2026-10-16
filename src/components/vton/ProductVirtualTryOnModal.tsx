@@ -4,8 +4,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   X, ArrowLeft, UploadCloud, Camera, Sparkles, Wand2, 
   Download, Heart, ShoppingBag, RefreshCw, CheckCircle2, 
-  ShieldCheck, AlertCircle, Eye, SlidersHorizontal, ChevronUp, ChevronDown
+  ShieldCheck, AlertCircle, Eye, SlidersHorizontal, ChevronUp, ChevronDown,
+  Bookmark
 } from 'lucide-react';
+import { PRODUCTS, ProductType } from '@/data/products';
 
 const OCCASIONS = [
   'Brunch / Day Event',
@@ -30,6 +32,7 @@ interface ProductVirtualTryOnModalProps {
     price: number;
     discountPrice?: number;
     brand?: string;
+    category?: string;
   };
   selectedSize?: string;
   onAddToCart?: (size?: string) => void;
@@ -53,6 +56,31 @@ export function ProductVirtualTryOnModal({
   const [selectedOccasion, setSelectedOccasion] = useState<string>('Select Occasion');
   const [isOccasionDropdownOpen, setIsOccasionDropdownOpen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [showSimilar, setShowSimilar] = useState(false);
+  const [viewMode, setViewMode] = useState<'aza-single' | 'compare'>('aza-single');
+
+  // Active outfit being draped (defaults to clicked product, updates on related picture tap)
+  const [currentProduct, setCurrentProduct] = useState<any>(product);
+
+  useEffect(() => {
+    setCurrentProduct(product);
+  }, [product]);
+
+  // Related matching pictures & companion looks
+  const [relatedPictures, setRelatedPictures] = useState<any[]>(() => {
+    const curCat = (product as any)?.category || 'Ethnic';
+    return PRODUCTS.filter(p => String(p.id) !== String(product.id))
+      .sort((a, b) => (a.category === curCat ? -1 : 1))
+      .slice(0, 8);
+  });
+
+  useEffect(() => {
+    const curCat = (currentProduct as any)?.category || 'Ethnic';
+    const related = PRODUCTS.filter(p => String(p.id) !== String(currentProduct.id))
+      .sort((a, b) => (a.category === curCat ? -1 : 1))
+      .slice(0, 8);
+    setRelatedPictures(related);
+  }, [currentProduct]);
   
   // Camera Stream
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -63,15 +91,15 @@ export function ProductVirtualTryOnModal({
   // Resolve Product Image Safely
   let parsedImages: string[] = [];
   try {
-    if (product.images) {
-      parsedImages = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
+    if (currentProduct.images) {
+      parsedImages = typeof currentProduct.images === 'string' ? JSON.parse(currentProduct.images) : currentProduct.images;
     }
   } catch (e) {}
   if (!Array.isArray(parsedImages)) parsedImages = [];
 
   const primaryProductImage = 
     (parsedImages.length > 0 && typeof parsedImages[0] === 'string' && parsedImages[0].length > 8 ? parsedImages[0] : null) || 
-    (typeof product.image === 'string' && product.image.length > 8 ? product.image : null) || 
+    (typeof currentProduct.image === 'string' && currentProduct.image.length > 8 ? currentProduct.image : null) || 
     "https://images.unsplash.com/photo-1583391733958-65e2be10c3fb?auto=format&fit=crop&q=85&w=800";
 
   // Cleanup camera when modal closes or step changes
@@ -187,7 +215,7 @@ export function ProductVirtualTryOnModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userImage,
-          productId: product.id,
+          productId: currentProduct.id,
           productImage: primaryProductImage
         })
       });
@@ -195,6 +223,9 @@ export function ProductVirtualTryOnModal({
       const data = await res.json();
       if (data.success && data.resultImage) {
         setResultImage(data.resultImage);
+        if (Array.isArray(data.relatedPictures) && data.relatedPictures.length > 0) {
+          setRelatedPictures(data.relatedPictures);
+        }
       } else {
         setResultImage(primaryProductImage);
       }
@@ -271,13 +302,13 @@ export function ProductVirtualTryOnModal({
         {/* ========================================================================= */}
         {/* MODAL BODY (DYNAMIC FLOW BASED ON CURRENT STEP) */}
         {/* ========================================================================= */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 flex flex-col justify-center">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 flex flex-col">
           
           {/* --------------------------------------------------------------------- */}
           {/* STEP 1: CHOOSE PHOTO (Aza Framing Example + Unified Drop Zone Box) */}
           {/* --------------------------------------------------------------------- */}
           {currentStep === 'choose-photo' && (
-            <div className="w-full max-w-sm mx-auto flex flex-col">
+            <div className="w-full max-w-sm mx-auto flex flex-col my-auto">
               
               {/* Framing Example Container */}
               <div className="bg-[#FAF7F4] rounded-2xl p-4 border border-stone-200/70 mb-4 text-center">
@@ -448,11 +479,11 @@ export function ProductVirtualTryOnModal({
                   <div className="flex items-center gap-1.5 overflow-hidden">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#4A1513] shrink-0" />
                     <span className="text-[10.5px] font-bold text-stone-800 truncate">
-                      {product.name}
+                      {currentProduct.name}
                     </span>
                   </div>
                   <span className="text-[10.5px] font-bold text-[#4A1513] shrink-0">
-                    ₹{product.price.toLocaleString('en-IN')}
+                    ₹{currentProduct.price.toLocaleString('en-IN')}
                   </span>
                 </div>
 
@@ -518,6 +549,51 @@ export function ProductVirtualTryOnModal({
 
               </div>
 
+              {/* Related Pictures & Matching Looks Strip */}
+              <div className="w-full mt-4 pt-3 border-t border-stone-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-stone-700 flex items-center gap-1.5">
+                    <Sparkles size={12} className="text-[#4A1513]" />
+                    <span>Related Pictures &amp; Styles</span>
+                  </span>
+                  <span className="text-[10px] text-stone-400 font-medium">Tap to switch outfit</span>
+                </div>
+                <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
+                  {relatedPictures.map((rel) => {
+                    const relImg = rel.images?.[0] || (rel as any).image;
+                    const isSelected = String(rel.id) === String(currentProduct.id);
+                    return (
+                      <button
+                        key={rel.id}
+                        type="button"
+                        onClick={() => {
+                          setCurrentProduct(rel);
+                          setResultImage(null);
+                        }}
+                        className={`shrink-0 w-20 flex flex-col text-left group transition-all rounded-xl overflow-hidden border p-1 cursor-pointer ${
+                          isSelected
+                            ? 'border-[#4A1513] bg-[#FAF5F2] ring-2 ring-[#4A1513]/30 shadow-xs'
+                            : 'border-stone-200 bg-white hover:border-stone-400'
+                        }`}
+                        title={rel.name}
+                      >
+                        <div className="relative w-full aspect-[3/4] rounded-lg overflow-hidden bg-stone-100 mb-1">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={relImg} alt={rel.name} className="w-full h-full object-cover group-hover:scale-105 transition" />
+                          {isSelected && (
+                            <span className="absolute top-1 right-1 bg-[#4A1513] text-white p-0.5 rounded-full shadow-xs">
+                              <CheckCircle2 size={10} />
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[9.5px] font-semibold text-stone-800 truncate leading-tight">{rel.name}</p>
+                        <p className="text-[9px] font-bold text-[#4A1513]">₹{rel.price.toLocaleString('en-IN')}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
             </div>
           )}
 
@@ -554,111 +630,198 @@ export function ProductVirtualTryOnModal({
           )}
 
           {/* --------------------------------------------------------------------- */}
-          {/* STEP 4: RESULT (Comparison & Actions) */}
+          {/* STEP 4: RESULT (Matches Aza Virtual Try-On Drawer Screenshot) */}
           {/* --------------------------------------------------------------------- */}
           {currentStep === 'result' && resultImage && (
-            <div className="max-w-3xl mx-auto flex flex-col items-center">
+            <div className="w-full max-w-sm mx-auto flex flex-col items-center">
               
-              <div className="text-center mb-6">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10.5px] font-bold uppercase tracking-wider mb-2">
-                  <CheckCircle2 size={13} />
-                  <span>Drape Complete</span>
+              {/* Optional View Mode Switcher (Single View vs Compare) */}
+              <div className="w-full flex items-center justify-between mb-3 px-1">
+                <span className="text-[11px] font-bold text-stone-500 uppercase tracking-wider">
+                  Draped Couture Result
+                </span>
+                <div className="flex items-center gap-1 bg-stone-100 p-0.5 rounded-lg text-[10px] font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('aza-single')}
+                    className={`px-2.5 py-1 rounded transition cursor-pointer ${
+                      viewMode === 'aza-single' ? 'bg-white text-stone-900 shadow-2xs font-bold' : 'text-stone-500'
+                    }`}
+                  >
+                    Standard
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('compare')}
+                    className={`px-2.5 py-1 rounded transition cursor-pointer ${
+                      viewMode === 'compare' ? 'bg-white text-stone-900 shadow-2xs font-bold' : 'text-stone-500'
+                    }`}
+                  >
+                    Compare
+                  </button>
                 </div>
-                <h3 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900">
-                  Your Virtual Look is Ready ✨
-                </h3>
               </div>
 
-              {/* Side-by-Side Result Display */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full mb-6">
-                
-                {/* Left: Original User Photo */}
-                <div className="flex flex-col">
-                  <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-stone-100 border border-stone-200 shadow-sm">
+              {/* View Mode: Aza Fashions Single Full Card */}
+              {viewMode === 'aza-single' ? (
+                <div className="relative w-full aspect-[3/4.6] rounded-2xl overflow-hidden bg-stone-100 border border-stone-200/90 shadow-xl">
+                  
+                  {/* Styled Image */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={resultImage || primaryProductImage}
+                    alt="Virtual Try-On Look"
+                    className="w-full h-full object-cover object-top"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = primaryProductImage;
+                    }}
+                  />
+
+                  {/* Top-Right "Try Similar" Pill Button (Matches Aza Screenshot) */}
+                  <button
+                    type="button"
+                    onClick={() => setShowSimilar(!showSimilar)}
+                    className="absolute top-3 right-3 bg-white/95 hover:bg-white text-stone-800 text-[10.5px] font-semibold px-2.5 py-1 rounded-md shadow-md border border-stone-200/80 flex items-center gap-1 z-20 cursor-pointer active:scale-95 transition"
+                  >
+                    <Sparkles size={11} className="text-[#A04535]" />
+                    <span>Try Similar</span>
+                  </button>
+
+                  {/* Femazon subtle branding watermark in bottom center */}
+                  <div className="absolute inset-x-0 bottom-20 text-center pointer-events-none select-none">
+                    <span className="text-white/45 text-xs font-serif tracking-widest uppercase drop-shadow-xs font-semibold">
+                      femazon.in
+                    </span>
+                  </div>
+
+                  {/* Bottom Floating Action Bar (Reset, Refresh, Save my look) */}
+                  <div className="absolute inset-x-0 bottom-4 flex items-center justify-center gap-2 z-20 px-3">
+                    
+                    {/* Reset Button */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setResultImage(null);
+                        setCurrentStep('choose-photo');
+                      }}
+                      className="px-4 py-2 bg-white/95 hover:bg-white text-stone-800 text-xs font-semibold rounded-lg shadow-md border border-stone-200 transition cursor-pointer active:scale-95"
+                    >
+                      Reset
+                    </button>
+
+                    {/* Refresh Button */}
+                    <button
+                      type="button"
+                      onClick={handleGenerateLook}
+                      className="p-2 bg-white/95 hover:bg-white text-stone-800 rounded-lg shadow-md border border-stone-200 transition cursor-pointer active:scale-95 flex items-center justify-center"
+                      title="Regenerate look"
+                    >
+                      <RefreshCw size={15} />
+                    </button>
+
+                    {/* Save my look Button (Matches Aza Coral/Orange Styling) */}
+                    <button
+                      type="button"
+                      onClick={() => setIsSaved(!isSaved)}
+                      className="px-4 py-2 bg-[#A04535] hover:bg-[#8D3A2C] text-white text-xs font-semibold rounded-lg shadow-md transition flex items-center gap-1.5 cursor-pointer active:scale-95"
+                    >
+                      <span>{isSaved ? 'Look Saved' : 'Save my look'}</span>
+                      <Bookmark size={14} fill={isSaved ? 'white' : 'none'} />
+                    </button>
+
+                  </div>
+
+                </div>
+              ) : (
+                /* View Mode: Compare Side by Side */
+                <div className="grid grid-cols-2 gap-3 w-full mb-3">
+                  <div className="relative aspect-[3/4.2] rounded-xl overflow-hidden bg-stone-100 border border-stone-200 shadow-sm">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={userImage || ''}
                       alt="Original Silhouette"
                       className="w-full h-full object-cover object-top"
                     />
-                    <span className="absolute top-3 left-3 bg-black/60 backdrop-blur-xs text-white text-[9px] font-bold uppercase px-2.5 py-1 rounded-md">
-                      Original Photo
+                    <span className="absolute top-2 left-2 bg-black/60 text-white text-[8.5px] font-bold uppercase px-2 py-0.5 rounded">
+                      Before
                     </span>
                   </div>
-                </div>
-
-                {/* Right: AI Styled Result */}
-                <div className="flex flex-col">
-                  <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-[#FAF7F4] border-2 border-[#4A1513] shadow-xl ring-4 ring-[#4A1513]/15">
+                  <div className="relative aspect-[3/4.2] rounded-xl overflow-hidden bg-[#FAF7F4] border-2 border-[#4A1513] shadow-md">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={resultImage || primaryProductImage}
-                      alt="AI Styled Look"
+                      alt="Virtual Try On Look"
                       className="w-full h-full object-cover object-top"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1583391733958-65e2be10c3fb?auto=format&fit=crop&q=85&w=800";
-                      }}
                     />
-                    <span className="absolute top-3 left-3 bg-[#4A1513] text-white text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm flex items-center gap-1">
-                      <Sparkles size={10} />
-                      <span>AI Styled Look</span>
+                    <span className="absolute top-2 left-2 bg-[#4A1513] text-white text-[8.5px] font-bold uppercase px-2 py-0.5 rounded flex items-center gap-1">
+                      <Sparkles size={9} />
+                      <span>AI Drape</span>
                     </span>
                   </div>
                 </div>
+              )}
 
-              </div>
-
-              {/* Action Buttons Row */}
-              <div className="flex flex-wrap items-center justify-center gap-2.5 w-full mb-4">
-                
-                <button
-                  type="button"
-                  onClick={() => setCurrentStep('choose-photo')}
-                  className="px-4 py-2.5 rounded-xl bg-white border border-stone-300 hover:border-[#4A1513] text-stone-700 text-xs font-bold uppercase tracking-wider transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                >
-                  <RefreshCw size={13} />
-                  <span>Try Another Photo</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => alert("High-resolution look downloaded to your device!")}
-                  className="px-4 py-2.5 rounded-xl bg-white border border-stone-300 hover:border-[#4A1513] text-stone-700 text-xs font-bold uppercase tracking-wider transition flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                >
-                  <Download size={13} />
-                  <span>Download Look</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setIsSaved(!isSaved)}
-                  className={`px-4 py-2.5 rounded-xl border text-xs font-bold uppercase tracking-wider transition flex items-center gap-1.5 cursor-pointer shadow-2xs ${
-                    isSaved 
-                      ? 'border-[#4A1513] bg-[#FAF5F2] text-[#4A1513]' 
-                      : 'border-stone-300 bg-white text-stone-700 hover:border-[#4A1513]'
-                  }`}
-                >
-                  <Heart size={13} fill={isSaved ? '#4A1513' : 'none'} />
-                  <span>{isSaved ? 'Look Saved' : 'Save Look'}</span>
-                </button>
-
+              {/* Try Similar / Related Pictures Strip */}
+              <div className="w-full mt-4 pt-3 border-t border-stone-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-stone-700 flex items-center gap-1.5">
+                    <Sparkles size={12} className="text-[#A04535]" />
+                    <span>Try Similar &amp; Matching Outfits</span>
+                  </span>
+                  <span className="text-[10px] text-stone-400 font-medium">Click to try on</span>
+                </div>
+                <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
+                  {relatedPictures.map((rel) => {
+                    const relImg = rel.images?.[0] || (rel as any).image;
+                    const isSelected = String(rel.id) === String(currentProduct.id);
+                    return (
+                      <button
+                        key={rel.id}
+                        type="button"
+                        onClick={() => {
+                          setCurrentProduct(rel);
+                          setResultImage(null);
+                          setCurrentStep('preview');
+                        }}
+                        className={`shrink-0 w-20 flex flex-col text-left group transition-all rounded-xl overflow-hidden border p-1 cursor-pointer ${
+                          isSelected
+                            ? 'border-[#A04535] bg-[#FAF5F2] ring-2 ring-[#A04535]/30 shadow-xs'
+                            : 'border-stone-200 bg-white hover:border-stone-400'
+                        }`}
+                        title={rel.name}
+                      >
+                        <div className="relative w-full aspect-[3/4] rounded-lg overflow-hidden bg-stone-100 mb-1">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={relImg} alt={rel.name} className="w-full h-full object-cover group-hover:scale-105 transition" />
+                          {isSelected && (
+                            <span className="absolute top-1 right-1 bg-[#A04535] text-white p-0.5 rounded-full shadow-xs">
+                              <CheckCircle2 size={10} />
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[9.5px] font-semibold text-stone-800 truncate leading-tight">{rel.name}</p>
+                        <p className="text-[9px] font-bold text-[#A04535]">₹{rel.price.toLocaleString('en-IN')}</p>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Primary Shopping CTA: ADD THIS LOOK TO BAG */}
-              <div className="w-full max-w-md pt-2">
+              <div className="w-full pt-2 pb-1">
                 <button
                   type="button"
                   onClick={handleAddLookToBag}
-                  className="w-full py-4 px-8 rounded-2xl bg-[#4A1513] hover:bg-[#350B0A] text-white font-bold text-xs uppercase tracking-[0.2em] shadow-xl hover:shadow-2xl active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-3.5 px-6 rounded-xl bg-[#4A1513] hover:bg-[#350B0A] text-white font-bold text-xs uppercase tracking-[0.16em] shadow-lg hover:shadow-xl active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {isAddedToBag ? (
                     <>
-                      <CheckCircle2 size={16} />
+                      <CheckCircle2 size={15} />
                       <span>ADDED TO YOUR BAG!</span>
                     </>
                   ) : (
                     <>
-                      <ShoppingBag size={16} />
+                      <ShoppingBag size={15} />
                       <span>ADD THIS LOOK TO BAG ({selectedSize})</span>
                     </>
                   )}

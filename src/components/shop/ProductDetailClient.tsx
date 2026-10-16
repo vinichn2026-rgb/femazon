@@ -23,7 +23,6 @@ import {
   Check
 } from 'lucide-react';
 
-import { ProductVirtualTryOnModal } from '@/components/vton/ProductVirtualTryOnModal';
 import { ProductCheckoutDrawer } from '@/components/shop/ProductCheckoutDrawer';
 import { generateWhatsAppLink } from '@/lib/whatsapp';
 
@@ -41,7 +40,6 @@ export function ProductDetailClient({
   isWishlisted: initialWishlisted = false
 }: ProductDetailClientProps) {
   const router = useRouter();
-  const [isTryOnModalOpen, setIsTryOnModalOpen] = useState(false);
   const [isCheckoutDrawerOpen, setIsCheckoutDrawerOpen] = useState(false);
   const [checkoutDrawerMode, setCheckoutDrawerMode] = useState<'bag' | 'checkout'>('bag');
 
@@ -68,8 +66,15 @@ export function ProductDetailClient({
     ];
   }
 
+  // Detect non-apparel items (belts, bags, shawls, stoles, jewelry)
+  const categoryLower = (product.category || '').toLowerCase();
+  const nameLower = (product.name || '').toLowerCase();
+  const isAccessory = ['handbag', 'bag', 'potli', 'shawl', 'stole', 'scarf', 'belt', 'jewel', 'jewellery', 'accessory', 'accessories', 'backpack'].some(c =>
+    categoryLower.includes(c) || nameLower.includes(c)
+  );
+
   // Parse sizes safely (Matching Aza Fashions)
-  let sizes: string[] = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "Custom Fit"];
+  let sizes: string[] = isAccessory ? ["Free Size"] : ["XS", "S", "M", "L", "XL", "XXL", "Custom Fit"];
   try {
     if (product.sizes) {
       const parsed = typeof product.sizes === 'string' ? JSON.parse(product.sizes) : product.sizes;
@@ -503,35 +508,6 @@ export function ProductDetailClient({
               )}
             </div>
 
-            {/* ========================================================================= */}
-            {/* LUXURY VIRTUAL TRY-ON CALLOUT (Direct in-page modal trigger) */}
-            {/* ========================================================================= */}
-            {product.category !== 'Accessories' && (
-              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-[#FAF5F2] via-[#FFF9F6] to-[#FAF5F2] border border-[#4A1513]/25 shadow-2xs flex items-center justify-between gap-3 group hover:border-[#4A1513]/50 transition-all duration-300">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-white border border-[#4A1513]/20 flex items-center justify-center text-[#4A1513] shadow-2xs group-hover:scale-105 transition-transform shrink-0">
-                    <Sparkles size={18} className="animate-pulse text-[#4A1513]" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#4A1513]">Virtual Try On</span>
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#4A1513] animate-ping" />
-                    </div>
-                    <p className="text-[11.5px] text-stone-600 font-medium leading-tight">See how this outfit looks on you.</p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setIsTryOnModalOpen(true)}
-                  className="px-4 py-2 bg-[#4A1513] hover:bg-[#350B0A] text-white text-[10.5px] font-bold uppercase tracking-wider rounded-xl shadow-xs hover:shadow-md active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
-                >
-                  <Sparkles size={12} />
-                  <span>TRY THIS LOOK</span>
-                </button>
-              </div>
-            )}
-
             {/* Size Selector */}
             <div className="space-y-2 pt-1">
               <div className="flex items-center justify-between text-xs">
@@ -554,7 +530,7 @@ export function ProductDetailClient({
               </div>
 
               {/* Size Buttons Grid */}
-              <div className="grid grid-cols-4 sm:grid-cols-7 gap-1.5">
+              <div className="flex flex-wrap gap-2">
                 {availableSizes.map((sz: string) => {
                   const stock = hasColorVariants ? (sizeStockMap[sz] ?? 0) : 99;
                   const isSoldOut = hasColorVariants && stock <= 0;
@@ -566,7 +542,7 @@ export function ProductDetailClient({
                       type="button"
                       disabled={isSoldOut}
                       onClick={() => !isSoldOut && setSelectedSize(sz)}
-                      className={`h-9 text-xs font-bold uppercase transition border rounded-md flex flex-col items-center justify-center relative ${
+                      className={`h-9 min-w-[42px] px-3 text-xs font-bold uppercase transition border rounded-md flex items-center justify-center whitespace-nowrap relative ${
                         isSoldOut
                           ? 'border-stone-200 bg-stone-100 text-stone-300 line-through cursor-not-allowed opacity-50'
                           : isSelected
@@ -831,8 +807,8 @@ export function ProductDetailClient({
                 }
               } catch (e) {}
 
-              const itemDesigner = item.name?.split('-')[0]?.trim() || "Femazon Atelier";
-              const cleanItemName = item.name?.split('-')[1]?.trim() || item.name;
+              const itemDesigner = item.brand || (item.name?.includes('-') ? item.name.split('-')[0].trim() : "Femazon Atelier");
+              const cleanItemName = item.name?.includes('-') ? item.name.split('-')[1].trim() : item.name;
 
               return (
                 <Link
@@ -865,13 +841,6 @@ export function ProductDetailClient({
                   {/* Aza-style Pills below Image */}
                   <div className="flex flex-col gap-1 mb-1.5">
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[3px] bg-[#FAF3EC] text-[#2A2522] text-[11px] font-normal">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4A1513" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-                          <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
-                          <circle cx="12" cy="13" r="3" />
-                        </svg>
-                        <span>Virtual Try-On</span>
-                      </span>
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[3px] bg-[#FAF3EC] text-[#2A2522] text-[11px] font-normal">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#4A1513" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
                           <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
@@ -945,8 +914,8 @@ export function ProductDetailClient({
                 }
               } catch (e) {}
 
-              const brandName = item.name?.split('-')[0]?.trim() || "Nazaakat";
-              const jewelryName = item.name?.split('-')[1]?.trim() || item.name;
+              const brandName = item.brand || (item.name?.includes('-') ? item.name.split('-')[0].trim() : "Nazaakat");
+              const jewelryName = item.name?.includes('-') ? item.name.split('-')[1].trim() : item.name;
 
               return (
                 <Link
@@ -1084,22 +1053,6 @@ export function ProductDetailClient({
           </div>
         </div>
       )}
-
-      {/* In-Page AI Virtual Try-On Modal */}
-      <ProductVirtualTryOnModal
-        isOpen={isTryOnModalOpen}
-        onClose={() => setIsTryOnModalOpen(false)}
-        product={{
-          ...product,
-          images: galleryImages,
-          image: galleryImages[0] || product.image || "https://images.unsplash.com/photo-1583391733958-65e2be10c3fb?auto=format&fit=crop&q=85&w=800"
-        }}
-        selectedSize={selectedSize}
-        onAddToCart={(size) => {
-          if (size) setSelectedSize(size);
-          handleAddToCart();
-        }}
-      />
 
       {/* Side Panel Bag & Instant Checkout Drawer */}
       <ProductCheckoutDrawer

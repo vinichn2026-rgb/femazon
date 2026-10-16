@@ -7,7 +7,7 @@ import { CuratedTrendingSection } from "@/components/home/CuratedTrendingSection
 import { ServiceCarousel } from "@/components/home/ServiceCarousel";
 import { HomeReviewsSection } from "@/components/home/HomeReviewsSection";
 import { InstagramFeed } from "@/components/home/InstagramFeed";
-import { prisma } from "@/lib/prisma";
+import { getApprovedProducts } from "@/lib/catalog";
 
 export default async function Home() {
 
@@ -19,12 +19,9 @@ export default async function Home() {
     { title: 'Festive Edit', desc: 'Vibrant colors for every celebration.', img: 'https://images.unsplash.com/photo-1610047614301-13c63f00c032?q=80&w=800&h=1000&auto=format&fit=crop&crop=top' },
   ];
 
-  // 4. Trending Products (Carousel Products) - Fetched from Database
-  const dbProducts = await prisma.product.findMany({
-    where: { approvalStatus: 'APPROVED' },
-    take: 10,
-    orderBy: { createdAt: 'desc' },
-  });
+  // 4. Trending Products (Carousel Products) - Instantly fetched from Catalog Cache
+  const allApproved = await getApprovedProducts();
+  const dbProducts = allApproved.slice(0, 10);
 
   const trendingProducts = dbProducts.length > 0 ? dbProducts.map(p => ({
     name: p.name,
@@ -83,7 +80,7 @@ export default async function Home() {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5 md:gap-7">
             {weddingCollection.map((item, idx) => (
-              <Link key={idx} href={`/collections/${item.title.toLowerCase().replace(' ', '-')}`} className="group flex flex-col items-center">
+              <Link key={idx} href={`/shop?category=Ethnic&occasion=${encodeURIComponent(item.title.replace(' Edit', ''))}`} className="group flex flex-col items-center">
                 <div className="aspect-[3/4] w-full overflow-hidden bg-accent/5 mb-2.5 sm:mb-4 rounded-xl sm:rounded-2xl shadow-sm relative border border-stone-200/60">
                   <img 
                     src={item.img} 
@@ -104,8 +101,8 @@ export default async function Home() {
                 <p className="text-center text-[10.5px] sm:text-xs text-text-muted mb-1.5 sm:mb-2 px-1 font-sans line-clamp-2">
                   {item.desc}
                 </p>
-                <div className="mt-0.5 opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                  <span className="inline-flex items-center gap-1 sm:gap-1.5 px-3 sm:px-3.5 py-0.5 sm:py-1 rounded-full border border-[#4A1513]/30 text-[#4A1513] group-hover:bg-[#4A1513] group-hover:text-white font-sans text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.18em] transition-all">
+                <div className="mt-1">
+                  <span className="inline-flex items-center gap-1 sm:gap-1.5 px-3.5 sm:px-4 py-1 sm:py-1.5 rounded-full border border-[#4A1513]/40 text-[#4A1513] group-hover:bg-[#4A1513] group-hover:text-white font-sans text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.18em] transition-all duration-300 shadow-xs">
                     <span>Explore</span>
                     <ArrowRight size={10} className="transition-transform duration-300 group-hover:translate-x-1" />
                   </span>
