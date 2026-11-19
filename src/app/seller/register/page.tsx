@@ -234,6 +234,14 @@ export default function SellerRegistrationPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [submittedData, setSubmittedData] = useState<{
+    ownerName: string;
+    businessName: string;
+    phone: string;
+    selectedPlan: string;
+    status: string;
+    applicationId?: string | number;
+  } | null>(null);
   // First FAQ open by default like Yuukke frame 00:03
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
@@ -361,6 +369,15 @@ export default function SellerRegistrationPage() {
         throw new Error(data.error || "Unable to submit your registration. Please check your details.");
       }
 
+      setSubmittedData({
+        ownerName: formData.ownerName,
+        businessName: formData.businessName,
+        phone: formData.phone,
+        selectedPlan: selectedPlan,
+        status: data.profile?.status === "PENDING" ? "Pending Curation Review" : (data.profile?.status || "Pending Curation Review"),
+        applicationId: data.applicationId,
+      });
+
       setSuccess(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err: any) {
@@ -371,6 +388,12 @@ export default function SellerRegistrationPage() {
   };
 
   if (success) {
+    const owner = submittedData?.ownerName || formData.ownerName || "Partner";
+    const shop = submittedData?.businessName || formData.businessName || "Your Boutique";
+    const plan = submittedData?.selectedPlan || selectedPlan || "verified";
+    const status = submittedData?.status || "Pending Curation Review";
+    const phone = submittedData?.phone || formData.phone || "your phone";
+
     return (
       <main className="min-h-screen bg-[#FAF7F5] py-20 px-4 sm:px-6">
         <div className="max-w-xl mx-auto bg-white rounded-3xl p-8 sm:p-12 shadow-sm border border-stone-200 text-center">
@@ -387,17 +410,23 @@ export default function SellerRegistrationPage() {
           </h1>
 
           <p className="text-stone-600 text-sm leading-relaxed mb-6">
-            Thank you, <strong className="text-stone-900">{formData.ownerName}</strong>! Your application to register <strong className="text-stone-900">{formData.businessName}</strong> under the <strong className="text-[#4A1513] uppercase">{selectedPlan} Plan</strong> has been submitted.
+            Thank you, <strong className="text-stone-900">{owner}</strong>! Your application to register <strong className="text-stone-900">{shop}</strong> under the <strong className="text-[#4A1513] uppercase">{plan} Plan</strong> has been submitted.
           </p>
 
           <div className="bg-[#FAF7F5] border border-stone-200/80 rounded-2xl p-5 mb-8 text-left space-y-3 text-xs sm:text-[13px] text-stone-700">
             <div className="flex items-start gap-2.5">
               <ShieldCheck size={18} className="text-[#4A1513] shrink-0 mt-0.5" />
-              <span><strong>Status:</strong> Pending Curation Review</span>
+              <span><strong>Status:</strong> {status}</span>
             </div>
+            {submittedData?.applicationId && (
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 size={18} className="text-[#4A1513] shrink-0 mt-0.5" />
+                <span><strong>Application Reference:</strong> #{submittedData.applicationId}</span>
+              </div>
+            )}
             <div className="flex items-start gap-2.5">
               <HeartHandshake size={18} className="text-[#4A1513] shrink-0 mt-0.5" />
-              <span><strong>Next Step:</strong> Our seller onboarding manager will reach out to you via WhatsApp / Phone at <strong>{formData.phone}</strong> within 24 to 48 hours to complete your catalogue upload.</span>
+              <span><strong>Next Step:</strong> Our seller onboarding manager will reach out to you via WhatsApp / Phone at <strong>{phone}</strong> within 24 to 48 hours to complete your catalogue upload.</span>
             </div>
           </div>
 
@@ -409,10 +438,10 @@ export default function SellerRegistrationPage() {
               Explore Femazon
             </button>
             <Link
-              href="/womens-wear"
+              href="/vendor/login"
               className="flex-1 bg-white border border-stone-300 text-stone-800 font-medium text-xs uppercase tracking-widest py-3.5 rounded-full hover:bg-stone-50 transition text-center"
             >
-              Discover Boutiques
+              Vendor Portal
             </Link>
           </div>
         </div>

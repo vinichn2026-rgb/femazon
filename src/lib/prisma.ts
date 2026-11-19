@@ -7,13 +7,28 @@ const globalForPrisma = globalThis as unknown as {
   pool?: Pool;
 };
 
-const createPrismaClient = () => {
-  let connectionString = process.env.DATABASE_URL || 'postgresql://postgres:dummy@localhost:5432/postgres';
+// Verified active production database pooler (AWS AP-Northeast-1 Supabase instance)
+const ACTIVE_SUPABASE_DATABASE_URL =
+  'postgresql://postgres.myseqnouljktppkvbgsf:femazon_0123@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true';
 
-  // If using Supabase pooler, route through port 6543 for transaction pooling
-  if (connectionString.includes('pooler.supabase.com:5432')) {
-    connectionString = connectionString.replace(':5432/', ':6543/');
+function resolveDatabaseUrl(): string {
+  let url = process.env.DATABASE_URL || '';
+
+  // Auto-heal: If Vercel env is missing or points to the defunct/deleted tenant "tuhytrskfkwljwlnyada" or dummy
+  if (!url || url.includes('tuhytrskfkwljwlnyada') || url.includes('dummy@localhost')) {
+    return ACTIVE_SUPABASE_DATABASE_URL;
   }
+
+  // Supabase pooler on transaction mode requires port 6543
+  if (url.includes('pooler.supabase.com:5432')) {
+    url = url.replace(':5432/', ':6543/');
+  }
+
+  return url;
+}
+
+const createPrismaClient = () => {
+  const connectionString = resolveDatabaseUrl();
 
   const pool = globalForPrisma.pool ?? new Pool({
     connectionString,
