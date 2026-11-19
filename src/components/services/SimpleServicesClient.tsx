@@ -267,7 +267,7 @@ export function SimpleServicesClient({ dbServices }: { dbServices?: any[] }) {
       </div>
 
       {/* 2. Reassurance Banner */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 -mt-6">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 -mt-6">
         <div className="bg-white rounded-2xl border border-[#E8DFD5] p-5 sm:p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-5">
           <div className="flex items-start sm:items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-[#F4ECE1] text-[#4A1513] flex items-center justify-center shrink-0">
@@ -295,7 +295,7 @@ export function SimpleServicesClient({ dbServices }: { dbServices?: any[] }) {
       </div>
 
       {/* 3. Simple Services Grid */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 mt-12">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 mt-12">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-3">
           <div>
             <h2 className="font-serif text-2xl sm:text-3xl text-[#2B1810]">
@@ -387,8 +387,8 @@ export function SimpleServicesClient({ dbServices }: { dbServices?: any[] }) {
       </div>
 
       {/* 4. Trust & Support Help Section */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 mt-16 text-center">
-        <div className="bg-[#FAF6F0] rounded-3xl p-8 border border-[#E8DFD5]">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 mt-16 text-center">
+        <div className="bg-[#FAF6F0] rounded-3xl p-8 border border-[#E8DFD5] max-w-4xl mx-auto">
           <h3 className="font-serif text-2xl text-[#2B1810] mb-2">
             Prefer to talk to someone first?
           </h3>

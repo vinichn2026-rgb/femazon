@@ -97,31 +97,39 @@ export function CheckoutSummary() {
   };
 
   if (loading) {
-    return <div className="p-8 text-center text-zinc-500">Loading checkout details...</div>;
+    return (
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-12">
+        <div className="p-8 text-center text-zinc-500">Loading checkout details...</div>
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div className="rounded-[2rem] border border-zinc-200 bg-white p-8 shadow-sm text-center">
-        <p className="text-zinc-600 mb-4">{error}</p>
-        <Link href="/login" className="rounded-full bg-primary px-6 py-2 text-sm font-bold tracking-widest uppercase text-white">
-          Login
-        </Link>
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-12">
+        <div className="rounded-[2rem] border border-zinc-200 bg-white p-8 shadow-sm text-center">
+          <p className="text-zinc-600 mb-4">{error}</p>
+          <Link href="/login" className="rounded-full bg-primary px-6 py-2 text-sm font-bold tracking-widest uppercase text-white">
+            Login
+          </Link>
+        </div>
       </div>
     );
   }
 
   if (orderId) {
     return (
-      <div className="rounded-[2rem] border border-zinc-200 bg-white p-10 shadow-sm text-center">
-        <CheckCircle2 size={64} className="mx-auto text-emerald-500 mb-6" strokeWidth={1.5} />
-        <h1 className="text-3xl font-serif text-text-main mb-2">Order Confirmed!</h1>
-        <p className="text-zinc-500 mb-8 max-w-md mx-auto">
-          Thank you for your purchase. Your order <strong className="text-text-main">#FMZ10{orderId}</strong> has been successfully placed. We'll send you an email with your shipping details shortly.
-        </p>
-        <Link href="/orders" className="rounded-full bg-text-main px-8 py-3.5 text-[12px] font-bold tracking-widest uppercase text-white hover:bg-primary transition shadow-md">
-          View My Orders
-        </Link>
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-12">
+        <div className="rounded-[2rem] border border-zinc-200 bg-white p-10 shadow-sm text-center">
+          <CheckCircle2 size={64} className="mx-auto text-emerald-500 mb-6" strokeWidth={1.5} />
+          <h1 className="text-3xl font-serif text-text-main mb-2">Order Confirmed!</h1>
+          <p className="text-zinc-500 mb-8 max-w-md mx-auto">
+            Thank you for your purchase. Your order <strong className="text-text-main">#FMZ10{orderId}</strong> has been successfully placed. We'll send you an email with your shipping details shortly.
+          </p>
+          <Link href="/orders" className="rounded-full bg-text-main px-8 py-3.5 text-[12px] font-bold tracking-widest uppercase text-white hover:bg-primary transition shadow-md">
+            View My Orders
+          </Link>
+        </div>
       </div>
     );
   }
@@ -137,7 +145,7 @@ export function CheckoutSummary() {
   const total = subtotal + delivery - discount;
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8">
       <Link href="/cart" className="inline-flex items-center text-xs font-bold uppercase tracking-widest text-text-muted hover:text-primary transition mb-8">
         <ChevronLeft size={14} className="mr-1" /> Back to Cart
       </Link>

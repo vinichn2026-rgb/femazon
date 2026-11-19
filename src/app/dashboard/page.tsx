@@ -14,8 +14,8 @@ export default async function DashboardPage() {
   const isVendor = ['VENDOR', 'ADMIN'].includes(session.user.role);
 
   return (
-    <main className="min-h-screen bg-zinc-50 p-8">
-      <div className="mx-auto max-w-6xl space-y-8">
+    <main className="min-h-screen bg-zinc-50 py-8">
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 space-y-8">
         <div className="rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-amber-600">Vendor portal</p>
           <h1 className="mt-3 text-3xl font-semibold">Welcome, {session.user.name || session.user.email}</h1>

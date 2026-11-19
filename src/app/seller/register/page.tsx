@@ -73,9 +73,10 @@ export default function SellerRegistrationPage() {
   }
 
   return (
-    <main className="min-h-screen bg-surface py-16 px-4">
-      <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-10">
+    <main className="min-h-screen bg-surface py-16">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-10">
           <h1 className="font-serif text-4xl md:text-5xl text-text-main mb-4">Become a Seller</h1>
           <p className="text-lg text-text-muted">Start selling your premium fashion products on Femazon to millions of customers.</p>
         </div>
@@ -201,6 +202,7 @@ export default function SellerRegistrationPage() {
               {loading ? "Submitting Application..." : "Apply to Sell"}
             </button>
           </form>
+        </div>
         </div>
       </div>
     </main>

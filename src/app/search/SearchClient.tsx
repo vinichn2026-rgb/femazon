@@ -8,7 +8,6 @@ import { FilterSidebar, FilterState } from '@/components/shop/FilterSidebar';
 import { ShopControls } from '@/components/shop/ShopControls';
 import { ActiveFilterChips } from '@/components/shop/ActiveFilterChips';
 import { ProductCard, ProductCardSkeleton } from '@/components/shop/ProductCard';
-import { LuxuryPromoBanner } from '@/components/shop/LuxuryPromoBanner';
 
 const initialFilterState: FilterState = {
   silhouettes: [],
@@ -159,32 +158,31 @@ export default function SearchClient({ query, initialProducts, initialWishlistId
 
   return (
     <div className="bg-surface min-h-screen text-text-main font-sans pb-24">
-      {/* Luxury Burgundy & Gold Promo Banner */}
-      <LuxuryPromoBanner />
-
       {initialProducts.length === 0 ? (
         // Empty State
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 py-20 text-center">
-          <div className="w-24 h-24 bg-white rounded-full shadow-md flex items-center justify-center mx-auto mb-8 text-accent">
-            <SearchX size={48} strokeWidth={1} />
-          </div>
-          <h2 className="font-serif text-3xl md:text-4xl text-text-main mb-4">No products found</h2>
-          <p className="text-zinc-500 mb-10 max-w-md mx-auto">
-            We couldn't find any matches for "{query}". Try checking your spelling or searching for a broader term.
-          </p>
-          
-          <div className="bg-white p-8 rounded-[2rem] border border-zinc-100 shadow-sm text-left">
-            <h3 className="font-bold text-sm uppercase tracking-widest text-text-main mb-6">Popular Searches</h3>
-            <div className="flex flex-wrap gap-3">
-              {['Dresses', 'Kurtis', 'Tops', 'Floral', 'Summer Collection', 'Handbags'].map(term => (
-                <Link 
-                  key={term}
-                  href={`/search?q=${term}`}
-                  className="px-6 py-2.5 rounded-full bg-zinc-50 border border-zinc-200 text-sm font-medium hover:border-primary hover:text-primary transition"
-                >
-                  {term}
-                </Link>
-              ))}
+        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-20">
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="w-24 h-24 bg-white rounded-full shadow-md flex items-center justify-center mx-auto mb-8 text-accent">
+              <SearchX size={48} strokeWidth={1} />
+            </div>
+            <h2 className="font-serif text-3xl md:text-4xl text-text-main mb-4">No products found</h2>
+            <p className="text-zinc-500 mb-10 max-w-md mx-auto">
+              We couldn't find any matches for "{query}". Try checking your spelling or searching for a broader term.
+            </p>
+            
+            <div className="bg-white p-8 rounded-[2rem] border border-zinc-100 shadow-sm text-left">
+              <h3 className="font-bold text-sm uppercase tracking-widest text-text-main mb-6">Popular Searches</h3>
+              <div className="flex flex-wrap gap-3">
+                {['Dresses', 'Kurtis', 'Tops', 'Floral', 'Summer Collection', 'Handbags'].map(term => (
+                  <Link 
+                    key={term}
+                    href={`/search?q=${term}`}
+                    className="px-6 py-2.5 rounded-full bg-zinc-50 border border-zinc-200 text-sm font-medium hover:border-primary hover:text-primary transition"
+                  >
+                    {term}
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
         </div>

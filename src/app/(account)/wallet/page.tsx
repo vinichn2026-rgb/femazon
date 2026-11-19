@@ -96,7 +96,7 @@ export default function WalletPage() {
   };
 
   return (
-    <div className="space-y-8 max-w-5xl">
+    <div className="space-y-8 w-full">
       
       {/* Page Header */}
       <div className="pb-6 border-b border-stone-200">

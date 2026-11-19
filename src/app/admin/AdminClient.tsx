@@ -89,7 +89,7 @@ export default function AdminClient({ user, users, vendors, products, categories
       />
 
       {/* Main Layout Body */}
-      <div className="flex-1 flex max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 gap-6">
+      <div className="flex-1 flex max-w-[1400px] w-full mx-auto px-4 sm:px-6 py-6 md:py-8 gap-6">
         
         {/* Left Sidebar Nav */}
         <aside className="w-56 shrink-0 hidden md:block">

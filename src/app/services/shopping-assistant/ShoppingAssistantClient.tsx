@@ -61,7 +61,7 @@ export default function ShoppingAssistantClient({ service }: { service: any }) {
     <div className="min-h-screen bg-zinc-50 pb-20">
       
       {/* Hero Section */}
-      <section className="mx-auto max-w-7xl px-4 pt-4 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-[1400px] px-4 pt-4 sm:px-6">
         <div className="relative flex min-h-[400px] w-full items-center overflow-hidden rounded-3xl bg-gradient-to-br from-pink-100 to-rose-50 shadow-sm">
           <div className="absolute right-0 top-0 hidden h-full w-1/2 bg-[url('https://images.unsplash.com/photo-1607083206968-13611e3d76db?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-70 mix-blend-multiply lg:block" />
           <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/80 to-transparent lg:w-2/3" />
@@ -93,7 +93,7 @@ export default function ShoppingAssistantClient({ service }: { service: any }) {
       </section>
 
       {/* Booking Form UI & Trust Section */}
-      <section id="booking-section" className="mx-auto mt-20 max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section id="booking-section" className="mx-auto mt-20 max-w-[1400px] px-4 sm:px-6">
         <div className="grid gap-12 lg:grid-cols-3">
           
           {/* Booking UI */}

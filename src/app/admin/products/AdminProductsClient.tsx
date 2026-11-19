@@ -384,7 +384,7 @@ export function AdminProductsClient({ initialProducts }: { initialProducts: any[
         </aside>
 
         {/* Content Area */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-6">
+        <main className="flex-1 px-4 sm:px-6 py-6 md:py-8 max-w-[1400px] mx-auto w-full space-y-6">
           {/* Success Banner */}
           {successMessage && (
             <div className="flex items-center gap-2 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold animate-in fade-in">

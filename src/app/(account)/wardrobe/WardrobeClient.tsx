@@ -59,28 +59,28 @@ export default function WardrobeClient() {
   };
 
   return (
-    <main className="min-h-screen bg-surface pb-20">
+    <div className="space-y-8">
       
       {/* Header Banner */}
-      <div className="bg-primary text-white pt-24 pb-16 px-6">
-        <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row justify-between items-end gap-6">
+      <div className="bg-[#4A1513] text-white rounded-3xl p-6 sm:p-8 shadow-sm">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-xs font-bold uppercase tracking-widest text-primary mb-4 border border-white/10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-xs font-bold uppercase tracking-widest text-[#E5C3A6] mb-3 border border-white/10">
               <Sparkles size={14} /> AI Powered
             </div>
-            <h1 className="font-serif text-4xl md:text-5xl mb-4">My Virtual Wardrobe</h1>
-            <p className="text-zinc-400 max-w-xl text-lg">Digitize your closet. Let our AI Stylist understand your style, build outfits, and find the perfect missing pieces.</p>
+            <h1 className="font-serif text-3xl md:text-4xl mb-2">My Virtual Wardrobe</h1>
+            <p className="text-stone-300 max-w-xl text-sm leading-relaxed">Digitize your closet. Let our AI Stylist understand your style, build outfits, and find the perfect missing pieces.</p>
           </div>
           <button 
             onClick={() => setShowUploadModal(true)}
-            className="bg-white text-primary px-8 py-4 rounded-full font-bold text-sm uppercase tracking-widest hover:bg-primary hover:text-white transition shadow-xl flex items-center gap-2"
+            className="bg-white text-[#4A1513] px-6 py-3 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-stone-100 transition shadow-md flex items-center gap-2 shrink-0 cursor-pointer"
           >
-            <Plus size={18} /> Upload Clothes
+            <Plus size={16} /> Upload Clothes
           </button>
         </div>
       </div>
 
-      <div className="max-w-[1400px] mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-12 gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Left: AI Stylist Section */}
         <div className="lg:col-span-4 order-2 lg:order-1">
@@ -238,6 +238,6 @@ export default function WardrobeClient() {
         </div>
       )}
 
-    </main>
+    </div>
   );
 }

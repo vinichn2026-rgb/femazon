@@ -942,7 +942,7 @@ export function SiteLayout({
     <div className="min-h-screen bg-background text-text-main font-sans overflow-x-hidden">
       
       {/* 1. Top Announcement Banner */}
-      <div className="w-full bg-[#4A1513] py-2 px-6">
+      <div className="w-full bg-[#4A1513] py-2 px-4 sm:px-6">
         <div className="mx-auto flex max-w-[1400px] items-center justify-center text-[11px] font-bold uppercase tracking-widest text-white/90">
           Prepaid orders get priority shipping 🚚
         </div>
@@ -1314,7 +1314,7 @@ export function SiteLayout({
 
         {/* Tier 2: Category Navigation Menu */}
         <div className="w-full border-t border-stone-100 bg-white hidden md:block">
-          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 flex items-center justify-between h-[46px] relative">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 flex items-center justify-between h-[46px] relative">
             {SUB_NAV_ITEMS.map((item) => {
               const menuData = CATEGORY_MEGA_MENUS[item];
               const isSale = item === 'On Sale';
@@ -1345,7 +1345,7 @@ export function SiteLayout({
                   {/* Mega Menu Dropdown */}
                   {menuData && (
                     <div className="absolute left-0 right-0 top-full z-50 invisible opacity-0 translate-y-1 bg-white shadow-xl border-t border-stone-200/90 transition-all duration-300 ease-out group-hover:visible group-hover:opacity-100 group-hover:translate-y-0">
-                      <div className="max-w-[1440px] mx-auto px-6 lg:px-8 py-5 flex gap-8 items-stretch bg-white">
+                      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-5 flex gap-8 items-stretch bg-white">
                         
                         {/* Left Subcategory Columns */}
                         <div className="w-[44%] grid grid-cols-3 gap-6 py-1">
@@ -1596,7 +1596,7 @@ export function SiteLayout({
 
       {/* 5-Column Luxury Footer */}
       <footer className="bg-white border-t border-stone-200 pt-16 pb-8 text-stone-900">
-        <div className="mx-auto max-w-[1400px] px-6">
+        <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
             
             <div className="flex flex-col items-center gap-4 text-center md:items-start md:text-left">

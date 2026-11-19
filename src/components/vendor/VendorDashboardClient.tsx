@@ -251,44 +251,46 @@ export default function VendorDashboardClient({ vendorProfile, user }: VendorDas
     <div className="min-h-screen bg-[#FAF7F5] flex flex-col font-sans text-stone-900">
       
       {/* Top Header Bar */}
-      <header className="sticky top-0 z-40 bg-white border-b border-stone-200 shadow-2xs px-4 sm:px-8 py-3.5 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <BrandLogo />
-          <div className="h-5 w-[1px] bg-stone-300 hidden md:block" />
-          <div className="hidden md:flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#4A1513] bg-[#FAF7F5] px-3 py-1 rounded-full border border-stone-200">
-              Vendor Dashboard
-            </span>
-            <span className="text-xs text-stone-500 font-medium">
-              {vendorProfile?.businessName || user.name || "Femazon Boutique Partner"}
-            </span>
+      <header className="sticky top-0 z-40 bg-white border-b border-stone-200 shadow-2xs">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <BrandLogo />
+            <div className="h-5 w-[1px] bg-stone-300 hidden md:block" />
+            <div className="hidden md:flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-widest text-[#4A1513] bg-[#FAF7F5] px-3 py-1 rounded-full border border-stone-200">
+                Vendor Dashboard
+              </span>
+              <span className="text-xs text-stone-500 font-medium">
+                {vendorProfile?.businessName || user.name || "Femazon Boutique Partner"}
+              </span>
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-3 sm:gap-4">
-          <Link
-            href="/shop"
-            target="_blank"
-            className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-[#4A1513] transition py-2 px-3 rounded-lg hover:bg-stone-50"
-          >
-            <span>Live Store</span>
-            <ExternalLink size={13} />
-          </Link>
+          <div className="flex items-center gap-3 sm:gap-4">
+            <Link
+              href="/shop"
+              target="_blank"
+              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-[#4A1513] transition py-2 px-3 rounded-lg hover:bg-stone-50"
+            >
+              <span>Live Store</span>
+              <ExternalLink size={13} />
+            </Link>
 
-          {/* VENDOR LOGOUT BUTTON */}
-          <button
-            type="button"
-            onClick={() => setShowLogoutConfirm(true)}
-            className="inline-flex items-center gap-2 py-2 px-4 rounded-full bg-stone-100 hover:bg-rose-50 text-stone-700 hover:text-rose-600 text-xs font-bold uppercase tracking-wider transition-all border border-stone-200 hover:border-rose-200 cursor-pointer"
-          >
-            <LogOut size={14} />
-            <span>Vendor Logout</span>
-          </button>
+            {/* VENDOR LOGOUT BUTTON */}
+            <button
+              type="button"
+              onClick={() => setShowLogoutConfirm(true)}
+              className="inline-flex items-center gap-2 py-2 px-4 rounded-full bg-stone-100 hover:bg-rose-50 text-stone-700 hover:text-rose-600 text-xs font-bold uppercase tracking-wider transition-all border border-stone-200 hover:border-rose-200 cursor-pointer"
+            >
+              <LogOut size={14} />
+              <span>Vendor Logout</span>
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Main Layout Body */}
-      <div className="flex-1 flex max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 gap-6">
+      <div className="flex-1 flex max-w-[1400px] w-full mx-auto px-4 sm:px-6 py-6 md:py-8 gap-6">
         
         {/* Sidebar Nav */}
         <aside className="w-56 shrink-0 hidden md:block">

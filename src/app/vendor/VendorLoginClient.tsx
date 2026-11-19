@@ -82,8 +82,8 @@ export default function VendorLoginClient() {
     <div className="min-h-screen bg-[#FAF7F5] flex flex-col justify-between selection:bg-[#4A1513] selection:text-white font-sans">
       
       {/* Top Header */}
-      <header className="w-full bg-white border-b border-stone-200/80 py-4 px-6 sm:px-10">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
+      <header className="w-full bg-white border-b border-stone-200/80 py-4">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <BrandLogo />
             <div className="h-5 w-[1px] bg-stone-300 hidden sm:block" />

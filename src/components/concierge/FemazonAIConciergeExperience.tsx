@@ -340,7 +340,7 @@ export function FemazonAIConciergeExperience() {
   // =========================================================================
   if (!hasStarted) {
     return (
-      <div className="min-h-[85vh] bg-[#FAF7F4] flex flex-col items-center justify-center px-4 py-12 text-center font-sans">
+      <div className="min-h-[85vh] bg-[#FAF7F4] flex flex-col items-center justify-center max-w-[1400px] mx-auto px-4 sm:px-6 py-12 text-center font-sans">
         <div className="max-w-3xl mx-auto space-y-6">
           
           {/* Sparkle Badge */}
@@ -412,8 +412,8 @@ export function FemazonAIConciergeExperience() {
     <div className="min-h-screen bg-[#FAF7F4] font-sans pb-16">
       
       {/* Top Persistent Context Bar */}
-      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200 px-4 sm:px-6 py-2.5">
-        <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-4">
+      <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-200 py-2.5">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 flex items-center justify-between gap-4">
           
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
             <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#4A1513] shrink-0">

@@ -22,8 +22,8 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
   });
 
   return (
-    <main className="min-h-screen bg-zinc-50 px-6 py-16 text-primary">
-      <div className="mx-auto flex max-w-6xl flex-col gap-8">
+    <main className="min-h-screen bg-zinc-50 py-16 text-primary">
+      <div className="mx-auto flex max-w-[1400px] px-4 sm:px-6 flex-col gap-8">
         <section className="rounded-[2rem] border border-zinc-200 bg-white p-8 shadow-sm">
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-amber-600">Marketplace</p>
           <h1 className="mt-3 text-3xl font-semibold">Browse products</h1>

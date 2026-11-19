@@ -176,7 +176,7 @@ export default function FullCartPage() {
 
   return (
     <div className="min-h-screen bg-[#FAF7F5] py-8 sm:py-12 text-stone-900 font-sans selection:bg-[#4A1513] selection:text-white">
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
         
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center gap-2 text-[12px] font-medium text-stone-400 mb-6 uppercase tracking-wider">

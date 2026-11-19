@@ -274,8 +274,8 @@ export function ProductDetailClient({
     <div className="min-h-screen bg-white text-stone-900 font-sans pb-28">
       
       {/* Top Breadcrumb Navigation */}
-      <div className="border-b border-stone-100 bg-white py-3 px-4 sm:px-8">
-        <div className="mx-auto max-w-[1440px] flex items-center justify-between text-xs text-stone-500 font-medium">
+      <div className="border-b border-stone-100 bg-white py-3">
+        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 flex items-center justify-between text-xs text-stone-500 font-medium">
           <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar">
             <Link href="/" className="hover:text-[#4A1513] transition">Home</Link>
             <ChevronRight size={12} className="text-stone-300 shrink-0" />
@@ -294,7 +294,7 @@ export function ProductDetailClient({
       </div>
 
       {/* Main Product Presentation */}
-      <main className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8 pt-5 sm:pt-8">
+      <main className="mx-auto max-w-[1400px] px-4 sm:px-6 pt-5 sm:pt-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-start">
           
           {/* ========================================================================= */}

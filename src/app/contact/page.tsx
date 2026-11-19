@@ -10,7 +10,7 @@ export const metadata = {
 export default function ContactPage() {
   return (
     <main className="min-h-screen bg-surface py-12 md:py-20">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
         
         {/* Header Section */}
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">

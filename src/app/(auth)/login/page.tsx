@@ -599,7 +599,7 @@ export default function LoginPage() {
       
       {/* 1. Minimal Header */}
       <header className="w-full bg-white/80 backdrop-blur-md border-b border-stone-200/70 sticky top-0 z-40">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 h-18 sm:h-20 flex items-center justify-between">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 h-18 sm:h-20 flex items-center justify-between">
           
           {/* Brand Logo */}
           <Link href="/" className="flex items-center group select-none">
@@ -643,8 +643,8 @@ export default function LoginPage() {
       </main>
 
       {/* 3. Minimal Luxury Footer */}
-      <footer className="w-full border-t border-stone-200/70 bg-white/50 backdrop-blur-xs py-5 px-4 sm:px-8">
-        <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-[11.5px] text-stone-500 font-medium">
+      <footer className="w-full border-t border-stone-200/70 bg-white/50 backdrop-blur-xs py-5">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11.5px] text-stone-500 font-medium">
           <p>© {new Date().getFullYear()} Femazon. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <Link href="/privacy" className="hover:text-[#4A1513] transition-colors">

@@ -102,7 +102,7 @@ export function DressesShopClient({ initialProducts, displayTitle, displaySubtit
   return (
     <>
       {/* Page Header */}
-      <div className="pt-24 pb-8 px-4 max-w-7xl mx-auto text-center border-b border-neutral-100">
+      <div className="pt-24 pb-8 max-w-[1400px] mx-auto px-4 sm:px-6 text-center border-b border-neutral-100">
         <h1 className="text-3xl md:text-5xl font-bold uppercase tracking-widest mb-4">
           {displayTitle}
         </h1>
@@ -115,7 +115,7 @@ export function DressesShopClient({ initialProducts, displayTitle, displaySubtit
       </div>
 
       {/* Controls: Filters & Sort */}
-      <div className="py-4 px-4 max-w-7xl mx-auto flex items-center justify-between border-b border-neutral-100 mb-8 relative">
+      <div className="py-4 max-w-[1400px] mx-auto px-4 sm:px-6 flex items-center justify-between border-b border-neutral-100 mb-8 relative">
         <button 
           onClick={() => setIsFilterOpen(true)}
           className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider hover:text-neutral-600 transition-colors"
@@ -150,7 +150,7 @@ export function DressesShopClient({ initialProducts, displayTitle, displaySubtit
       </div>
 
       {/* Product Grid */}
-      <div className="px-4 max-w-7xl mx-auto pb-24">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 pb-24">
         {displayProducts.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10 md:gap-x-6 md:gap-y-12">
             {displayProducts.map(product => (

@@ -9,34 +9,36 @@ export default function AboutClient() {
     <div className="bg-surface text-text-main font-sans overflow-hidden">
       
       {/* 1. HERO SECTION */}
-      <section className="relative h-[80vh] min-h-[600px] w-full flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-primary">
-          <img 
-            src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop" 
-            alt="Femazon Editorial" 
-            className="w-full h-full object-cover opacity-60"
-          />
-        </div>
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto mt-20">
-          <h2 className="text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] text-white/80 mb-6">
-            The Ultimate Destination
-          </h2>
-          <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl text-white mb-8 tracking-tight drop-shadow-lg leading-tight">
-            More than a store.<br />A lifestyle.
-          </h1>
-          <p className="text-sm md:text-lg text-zinc-100 max-w-2xl mx-auto font-light drop-shadow-md mb-10 leading-relaxed">
-            Femazon is the first unified platform seamlessly blending premium fashion, beauty, home services, and AI-powered styling into one gorgeous ecosystem built exclusively for the modern woman.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/shop" className="bg-white text-text-main font-bold text-xs uppercase tracking-widest px-10 py-4 rounded-full hover:bg-zinc-100 transition shadow-xl">
-              Shop The Collection
-            </Link>
-            <Link href="/services" className="bg-transparent border border-white text-white font-bold text-xs uppercase tracking-widest px-10 py-4 rounded-full hover:bg-white/10 transition">
-              Explore Services
-            </Link>
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 pt-4 pb-2">
+        <section className="relative h-[70vh] min-h-[520px] w-full flex items-center justify-center overflow-hidden rounded-2xl shadow-sm">
+          <div className="absolute inset-0 bg-primary">
+            <img 
+              src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop" 
+              alt="Femazon Editorial" 
+              className="w-full h-full object-cover opacity-60"
+            />
           </div>
-        </div>
-      </section>
+          <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+            <h2 className="text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] text-white/80 mb-6">
+              The Ultimate Destination
+            </h2>
+            <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl text-white mb-8 tracking-tight drop-shadow-lg leading-tight">
+              More than a store.<br />A lifestyle.
+            </h1>
+            <p className="text-sm md:text-lg text-zinc-100 max-w-2xl mx-auto font-light drop-shadow-md mb-10 leading-relaxed">
+              Femazon is the first unified platform seamlessly blending premium fashion, beauty, home services, and AI-powered styling into one gorgeous ecosystem built exclusively for the modern woman.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link href="/shop" className="bg-white text-text-main font-bold text-xs uppercase tracking-widest px-10 py-4 rounded-full hover:bg-zinc-100 transition shadow-xl">
+                Shop The Collection
+              </Link>
+              <Link href="/services" className="bg-transparent border border-white text-white font-bold text-xs uppercase tracking-widest px-10 py-4 rounded-full hover:bg-white/10 transition">
+                Explore Services
+              </Link>
+            </div>
+          </div>
+        </section>
+      </div>
 
       {/* 2. THE VISION */}
       <section className="py-24 md:py-32 bg-white text-center px-4">
@@ -53,7 +55,7 @@ export default function AboutClient() {
 
       {/* 3. CORE PILLARS */}
       <section className="py-12 bg-[#fbf9f6]">
-        <div className="max-w-[1400px] mx-auto px-6">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
           
           {/* Pillar 1: Fashion */}
           <div className="flex flex-col md:flex-row items-center gap-12 lg:gap-24 py-16 md:py-24 border-b border-accent/10">
@@ -191,20 +193,22 @@ export default function AboutClient() {
       </section>
 
       {/* 4. CTA */}
-      <section className="bg-primary py-32 px-4 text-center">
-        <h2 className="font-serif text-4xl md:text-6xl text-white mb-6">Join the Movement</h2>
-        <p className="text-zinc-400 max-w-xl mx-auto mb-10 text-lg font-light">
-          Whether you're here to discover the latest trends, book a pampering session, or revolutionize your closet, Femazon is ready for you.
-        </p>
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <Link href="/register" className="bg-white text-primary font-bold text-xs uppercase tracking-widest px-10 py-4 rounded-full hover:bg-zinc-100 transition shadow-xl">
-            Create an Account
-          </Link>
-          <Link href="/vendor/register" className="bg-transparent border border-white/20 text-white font-bold text-xs uppercase tracking-widest px-10 py-4 rounded-full hover:bg-white/10 transition">
-            Become a Partner
-          </Link>
-        </div>
-      </section>
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-12">
+        <section className="bg-primary py-24 md:py-32 px-4 text-center rounded-2xl shadow-sm">
+          <h2 className="font-serif text-4xl md:text-6xl text-white mb-6">Join the Movement</h2>
+          <p className="text-zinc-400 max-w-xl mx-auto mb-10 text-lg font-light">
+            Whether you're here to discover the latest trends, book a pampering session, or revolutionize your closet, Femazon is ready for you.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link href="/register" className="bg-white text-primary font-bold text-xs uppercase tracking-widest px-10 py-4 rounded-full hover:bg-zinc-100 transition shadow-xl">
+              Create an Account
+            </Link>
+            <Link href="/vendor/register" className="bg-transparent border border-white/20 text-white font-bold text-xs uppercase tracking-widest px-10 py-4 rounded-full hover:bg-white/10 transition">
+              Become a Partner
+            </Link>
+          </div>
+        </section>
+      </div>
       
     </div>
   );

@@ -176,28 +176,30 @@ export default function CategoryClient({ category, initialProducts, initialWishl
     <div className="bg-surface min-h-screen text-text-main font-sans pb-24">
       
       {/* 1. Category Hero Banner */}
-      <div className="relative h-[40vh] md:h-[50vh] bg-primary w-full overflow-hidden">
-        <img 
-          src={category.image} 
-          alt={category.name} 
-          className="w-full h-full object-cover opacity-60"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/80 via-transparent to-zinc-900/40"></div>
-        
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-          <nav className="flex items-center text-[10px] md:text-xs font-bold uppercase tracking-widest text-white/70 mb-4 md:mb-6">
-            <Link href="/" className="hover:text-white transition">Home</Link>
-            <ChevronRight size={14} className="mx-2" />
-            <Link href="/shop" className="hover:text-white transition">Categories</Link>
-            <ChevronRight size={14} className="mx-2" />
-            <span className="text-white">{category.name}</span>
-          </nav>
-          <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl text-white mb-4 tracking-tight drop-shadow-md">
-            {category.name}
-          </h1>
-          <p className="text-sm md:text-base text-zinc-200 max-w-xl mx-auto drop-shadow-sm">
-            {category.description}
-          </p>
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 pt-4 pb-2">
+        <div className="relative h-[38vh] md:h-[46vh] bg-primary w-full overflow-hidden rounded-2xl shadow-sm">
+          <img 
+            src={category.image} 
+            alt={category.name} 
+            className="w-full h-full object-cover opacity-60"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/80 via-transparent to-zinc-900/40"></div>
+          
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+            <nav className="flex items-center text-[10px] md:text-xs font-bold uppercase tracking-widest text-white/70 mb-4 md:mb-6">
+              <Link href="/" className="hover:text-white transition">Home</Link>
+              <ChevronRight size={14} className="mx-2" />
+              <Link href="/shop" className="hover:text-white transition">Categories</Link>
+              <ChevronRight size={14} className="mx-2" />
+              <span className="text-white">{category.name}</span>
+            </nav>
+            <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl text-white mb-4 tracking-tight drop-shadow-md">
+              {category.name}
+            </h1>
+            <p className="text-sm md:text-base text-zinc-200 max-w-xl mx-auto drop-shadow-sm">
+              {category.description}
+            </p>
+          </div>
         </div>
       </div>
 

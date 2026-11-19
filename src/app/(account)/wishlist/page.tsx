@@ -82,50 +82,47 @@ export default function WishlistPage() {
   };
 
   if (loading) {
-    return <div className="min-h-screen bg-surface p-8 flex justify-center items-center text-zinc-500">Loading wishlist...</div>;
+    return <div className="p-8 text-center text-zinc-500">Loading wishlist...</div>;
   }
 
   if (error) {
     return (
-      <main className="min-h-screen bg-surface p-8 flex justify-center items-center">
-        <div className="rounded-[2rem] border border-accent/20 bg-white p-12 shadow-sm text-center">
-          <Heart size={48} className="mx-auto text-zinc-300 mb-6" />
-          <h2 className="font-serif text-2xl text-text-main mb-2">Sign in to sync your wishlist</h2>
-          <p className="text-zinc-500 mb-8 max-w-sm">Save your favorite items across all your devices and never lose track of what you love.</p>
-          <Link href="/login" className="rounded-full bg-text-main px-8 py-3.5 text-xs font-bold tracking-widest uppercase text-white hover:bg-primary transition-colors">
-            Login
-          </Link>
-        </div>
-      </main>
+      <div className="rounded-[2rem] border border-accent/20 bg-white p-12 shadow-sm text-center">
+        <Heart size={48} className="mx-auto text-zinc-300 mb-6" />
+        <h2 className="font-serif text-2xl text-text-main mb-2">Sign in to sync your wishlist</h2>
+        <p className="text-zinc-500 mb-8 max-w-sm mx-auto">Save your favorite items across all your devices and never lose track of what you love.</p>
+        <Link href="/login" className="rounded-full bg-text-main px-8 py-3.5 text-xs font-bold tracking-widest uppercase text-white hover:bg-primary transition-colors">
+          Login
+        </Link>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-surface py-12 px-4 sm:px-6">
-      <div className="mx-auto max-w-[1400px]">
-        <div className="mb-10 text-center">
-          <h1 className="font-serif text-4xl font-normal text-text-main mb-3">Your Wishlist</h1>
-          <p className="font-sans text-[15px] text-text-muted">
-            {items.length} {items.length === 1 ? 'item' : 'items'} saved
-          </p>
-        </div>
+    <div className="space-y-6">
+      <div className="mb-8">
+        <h1 className="font-serif text-3xl font-normal text-text-main mb-2">Your Wishlist</h1>
+        <p className="font-sans text-sm text-text-muted">
+          {items.length} {items.length === 1 ? 'item' : 'items'} saved
+        </p>
+      </div>
 
-        {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-[#fbf9f6] border border-accent/10 rounded-3xl mx-auto max-w-3xl">
-            <Heart size={48} className="text-zinc-300 mb-6" strokeWidth={1} />
-            <h3 className="font-serif text-2xl text-text-main mb-2">Nothing saved yet</h3>
-            <p className="text-text-muted max-w-[400px] mx-auto mb-8">
-              Click the heart icon on products you love to save them here for later.
-            </p>
-            <Link 
-              href="/shop"
-              className="bg-text-main text-white font-bold text-[12px] uppercase tracking-widest px-8 py-3.5 rounded-full shadow-md hover:bg-primary transition-colors"
-            >
-              Start Exploring
-            </Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-x-6 md:gap-y-10">
+      {items.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white border border-accent/10 rounded-3xl mx-auto">
+          <Heart size={48} className="text-zinc-300 mb-6" strokeWidth={1} />
+          <h3 className="font-serif text-2xl text-text-main mb-2">Nothing saved yet</h3>
+          <p className="text-text-muted max-w-[400px] mx-auto mb-8">
+            Click the heart icon on products you love to save them here for later.
+          </p>
+          <Link 
+            href="/shop"
+            className="bg-text-main text-white font-bold text-[12px] uppercase tracking-widest px-8 py-3.5 rounded-full shadow-md hover:bg-primary transition-colors"
+          >
+            Start Exploring
+          </Link>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-x-6 md:gap-y-10">
             {items.map((item) => {
               const currentPrice = item.product.discountPrice || item.product.price;
               
@@ -182,7 +179,6 @@ export default function WishlistPage() {
             })}
           </div>
         )}
-      </div>
-    </main>
+    </div>
   );
 }

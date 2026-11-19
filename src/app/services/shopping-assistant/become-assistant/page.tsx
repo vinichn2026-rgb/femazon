@@ -14,11 +14,11 @@ export default function BecomeAssistantPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 pb-20 pt-8">
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-        
-        <Link href="/services/shopping-assistant" className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-primary transition">
-          <ArrowLeft size={16} /> Back to Shopping Assistant
-        </Link>
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
+        <div className="max-w-3xl mx-auto">
+          <Link href="/services/shopping-assistant" className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-primary transition">
+            <ArrowLeft size={16} /> Back to Shopping Assistant
+          </Link>
 
         {submitted ? (
           <div className="rounded-3xl bg-white p-10 text-center shadow-sm border border-zinc-200">
@@ -126,6 +126,7 @@ export default function BecomeAssistantPage() {
             </form>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

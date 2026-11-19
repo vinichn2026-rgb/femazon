@@ -231,7 +231,7 @@ function VirtualTryOnContent() {
       {/* 1. HERO HEADER (Aza "The Look. On You." Style) */}
       {/* ========================================================================= */}
       <section className="bg-[#FAF7F4] border-b border-stone-200/80 pt-8 pb-10">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
           
           <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
             
@@ -344,7 +344,7 @@ function VirtualTryOnContent() {
       {/* ========================================================================= */}
       {/* 2. THE VIRTUAL TRY-ON STUDIO (CORE EXPERIENCE) */}
       {/* ========================================================================= */}
-      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <section className="max-w-[1400px] mx-auto px-4 sm:px-6 py-10">
         
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
@@ -778,7 +778,7 @@ function VirtualTryOnContent() {
       {/* 3. CURATED TRY-ON COLLECTION (Aza Style Showcase Grid) */}
       {/* ========================================================================= */}
       <section className="bg-[#FAF7F4] py-14 border-t border-b border-stone-200/80">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
           
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
             <div>
@@ -849,7 +849,7 @@ function VirtualTryOnContent() {
       {/* ========================================================================= */}
       {/* 4. HOW IT WORKS (3 SIMPLE STEPS) */}
       {/* ========================================================================= */}
-      <section className="py-16 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-16 max-w-[1400px] mx-auto px-4 sm:px-6">
         <div className="text-center max-w-xl mx-auto mb-12">
           <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#4A1513]">Effortless Styling</span>
           <h2 className="font-serif text-3xl font-bold text-stone-900 mt-1">How Virtual Try-On Works</h2>
@@ -895,7 +895,7 @@ function VirtualTryOnContent() {
       {/* 5. REAL CUSTOMER TRANSFORMATIONS */}
       {/* ========================================================================= */}
       <section className="bg-[#FAF7F4] py-16 border-t border-stone-200/80">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
           
           <div className="text-center max-w-xl mx-auto mb-12">
             <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#4A1513]">Customer Transformations</span>
@@ -949,36 +949,38 @@ function VirtualTryOnContent() {
       {/* ========================================================================= */}
       {/* 6. FAQS */}
       {/* ========================================================================= */}
-      <section className="py-16 max-w-3xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-10">
-          <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#4A1513]">Got Questions?</span>
-          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 mt-1">Frequently Asked Questions</h2>
-        </div>
+      <section className="py-16 max-w-[1400px] mx-auto px-4 sm:px-6">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-10">
+            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#4A1513]">Got Questions?</span>
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 mt-1">Frequently Asked Questions</h2>
+          </div>
 
-        <div className="flex flex-col gap-3">
-          {FAQS.map((faq, idx) => {
-            const isOpen = openFaq === idx;
-            return (
-              <div
-                key={idx}
-                className="bg-white rounded-xl border border-stone-200 overflow-hidden shadow-2xs"
-              >
-                <button
-                  type="button"
-                  onClick={() => setOpenFaq(isOpen ? null : idx)}
-                  className="w-full p-4 text-left font-serif text-sm font-semibold text-stone-900 flex items-center justify-between gap-4 cursor-pointer hover:bg-stone-50 transition"
+          <div className="flex flex-col gap-3">
+            {FAQS.map((faq, idx) => {
+              const isOpen = openFaq === idx;
+              return (
+                <div
+                  key={idx}
+                  className="bg-white rounded-xl border border-stone-200 overflow-hidden shadow-2xs"
                 >
-                  <span>{faq.q}</span>
-                  {isOpen ? <ChevronUp size={16} className="text-[#4A1513]" /> : <ChevronDown size={16} className="text-stone-400" />}
-                </button>
-                {isOpen && (
-                  <div className="px-4 pb-4 text-xs text-stone-600 leading-relaxed border-t border-stone-100 pt-2">
-                    {faq.a}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaq(isOpen ? null : idx)}
+                    className="w-full p-4 text-left font-serif text-sm font-semibold text-stone-900 flex items-center justify-between gap-4 cursor-pointer hover:bg-stone-50 transition"
+                  >
+                    <span>{faq.q}</span>
+                    {isOpen ? <ChevronUp size={16} className="text-[#4A1513]" /> : <ChevronDown size={16} className="text-stone-400" />}
+                  </button>
+                  {isOpen && (
+                    <div className="px-4 pb-4 text-xs text-stone-600 leading-relaxed border-t border-stone-100 pt-2">
+                      {faq.a}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </section>
 

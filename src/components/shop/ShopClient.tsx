@@ -9,7 +9,6 @@ import { ShopControls } from '@/components/shop/ShopControls';
 import { ActiveFilterChips } from '@/components/shop/ActiveFilterChips';
 import { FilterSidebar, FilterState } from '@/components/shop/FilterSidebar';
 import { ProductCard, ProductCardSkeleton } from '@/components/shop/ProductCard';
-import { LuxuryPromoBanner } from '@/components/shop/LuxuryPromoBanner';
 import { useFemazonStore } from '@/context/FemazonStoreContext';
 
 const CATEGORIES = [
@@ -328,9 +327,6 @@ export function ShopClient({
 
   return (
     <div className="bg-surface min-h-screen text-text-main font-sans pb-24">
-      {/* Luxury Burgundy & Gold Promo Banner */}
-      <LuxuryPromoBanner />
-
       {/* 2. Main Layout Architecture */}
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 pt-4 md:pt-6 flex flex-col lg:flex-row gap-8 lg:gap-12 relative">
         

@@ -130,8 +130,8 @@ export default function AdminBookingsPage() {
   });
 
   return (
-    <main className="min-h-screen bg-stone-50 p-4 sm:p-8">
-      <div className="mx-auto max-w-7xl">
+    <main className="min-h-screen bg-stone-50 py-8">
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
         
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">

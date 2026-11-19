@@ -67,11 +67,12 @@ export default function BookingClient({ service, provider }: BookingClientProps)
   };
 
   return (
-    <main className="min-h-screen bg-surface py-12 px-4 sm:px-6">
-      <div className="max-w-4xl mx-auto">
-        <Link href={`/services/${service.slug}`} className="inline-flex items-center text-xs font-bold uppercase tracking-widest text-text-muted hover:text-primary transition mb-8">
-          <ChevronLeft size={14} className="mr-1" /> Back to Providers
-        </Link>
+    <main className="min-h-screen bg-surface py-12">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
+        <div className="max-w-4xl mx-auto">
+          <Link href={`/services/${service.slug}`} className="inline-flex items-center text-xs font-bold uppercase tracking-widest text-text-muted hover:text-primary transition mb-8">
+            <ChevronLeft size={14} className="mr-1" /> Back to Providers
+          </Link>
 
         <h1 className="font-serif text-3xl md:text-4xl text-text-main mb-8">Book your session</h1>
 
@@ -200,6 +201,7 @@ export default function BookingClient({ service, provider }: BookingClientProps)
             </div>
           </div>
 
+        </div>
         </div>
       </div>
     </main>

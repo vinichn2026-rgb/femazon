@@ -131,7 +131,7 @@ export default function MeasurementsPage() {
   };
 
   return (
-    <div className="space-y-8 max-w-5xl">
+    <div className="space-y-8 w-full">
       
       {/* Header */}
       <div className="pb-6 border-b border-stone-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

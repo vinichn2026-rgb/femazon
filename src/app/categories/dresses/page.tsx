@@ -88,45 +88,47 @@ export default async function DressesCategoryPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Premium Hero Section */}
-      <section className="relative w-full h-[80vh] min-h-[600px] flex items-center justify-center overflow-hidden bg-neutral-900">
-        {/* Large Editorial Fashion Image */}
-        <div className="absolute inset-0 w-full h-full">
-          <Image
-            src="https://images.unsplash.com/photo-1515347619362-7dd35e726b2b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
-            alt="Editorial fashion model wearing a dress"
-            fill
-            className="object-cover object-top opacity-70"
-            priority
-          />
-          <div className="absolute inset-0 bg-black/20" /> {/* Subtle overlay for better text readability */}
-        </div>
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 pt-4">
+        <section className="relative w-full h-[65vh] min-h-[500px] flex items-center justify-center overflow-hidden bg-neutral-900 rounded-2xl shadow-sm">
+          {/* Large Editorial Fashion Image */}
+          <div className="absolute inset-0 w-full h-full">
+            <Image
+              src="https://images.unsplash.com/photo-1515347619362-7dd35e726b2b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+              alt="Editorial fashion model wearing a dress"
+              fill
+              className="object-cover object-top opacity-70"
+              priority
+            />
+            <div className="absolute inset-0 bg-black/20" /> {/* Subtle overlay for better text readability */}
+          </div>
 
-        {/* Hero Content */}
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto flex flex-col items-center">
-          <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tight mb-4 drop-shadow-sm uppercase">
-            Dresses
-          </h1>
-          
-          <h2 className="text-2xl md:text-3xl text-white font-medium mb-6 drop-shadow-sm">
-            Find the dress that feels like you.
-          </h2>
-          
-          <p className="text-lg md:text-xl text-white/90 max-w-2xl mb-10 font-light drop-shadow-sm leading-relaxed">
-            From effortless everyday styles to statement party looks — discover dresses made for every moment.
-          </p>
-          
-          <Link 
-            href="/shop/dresses" 
-            className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 text-sm font-bold uppercase tracking-wider hover:bg-neutral-100 transition-colors duration-300"
-          >
-            Shop All Dresses
-            <ArrowRight size={18} />
-          </Link>
-        </div>
-      </section>
+          {/* Hero Content */}
+          <div className="relative z-10 text-center px-4 max-w-4xl mx-auto flex flex-col items-center">
+            <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tight mb-4 drop-shadow-sm uppercase">
+              Dresses
+            </h1>
+            
+            <h2 className="text-2xl md:text-3xl text-white font-medium mb-6 drop-shadow-sm">
+              Find the dress that feels like you.
+            </h2>
+            
+            <p className="text-lg md:text-xl text-white/90 max-w-2xl mb-10 font-light drop-shadow-sm leading-relaxed">
+              From effortless everyday styles to statement party looks — discover dresses made for every moment.
+            </p>
+            
+            <Link 
+              href="/shop/dresses" 
+              className="inline-flex items-center gap-2 bg-white text-black px-8 py-4 text-sm font-bold uppercase tracking-wider hover:bg-neutral-100 transition-colors duration-300 rounded-full"
+            >
+              Shop All Dresses
+              <ArrowRight size={18} />
+            </Link>
+          </div>
+        </section>
+      </div>
 
       {/* Shop by Dress Style Section */}
-      <section className="py-16 md:py-24 px-4 max-w-7xl mx-auto">
+      <section className="py-16 md:py-24 max-w-[1400px] mx-auto px-4 sm:px-6">
         <div className="text-center mb-12">
           <h3 className="text-2xl md:text-3xl font-bold uppercase tracking-wide mb-4">
             Shop by Dress Style
@@ -161,7 +163,7 @@ export default async function DressesCategoryPage() {
       </section>
 
       {/* Explore More Styles Section */}
-      <section className="py-16 md:py-24 px-4 max-w-7xl mx-auto border-t border-neutral-100">
+      <section className="py-16 md:py-24 max-w-[1400px] mx-auto px-4 sm:px-6 border-t border-neutral-100">
         <div className="text-center mb-12">
           <h3 className="text-2xl md:text-3xl font-bold uppercase tracking-wide mb-4">
             Explore More Styles
@@ -225,7 +227,7 @@ export default async function DressesCategoryPage() {
       </section>
 
       {/* Shop by Occasion Section */}
-      <section className="py-16 md:py-24 px-4 max-w-7xl mx-auto border-t border-neutral-100">
+      <section className="py-16 md:py-24 max-w-[1400px] mx-auto px-4 sm:px-6 border-t border-neutral-100">
         <div className="text-center mb-12">
           <h3 className="text-2xl md:text-3xl font-bold uppercase tracking-wide mb-4">
             Shop by Occasion
@@ -260,7 +262,7 @@ export default async function DressesCategoryPage() {
       </section>
 
       {/* The Dress Edit Section */}
-      <section className="py-16 md:py-24 px-4 max-w-7xl mx-auto border-t border-neutral-100">
+      <section className="py-16 md:py-24 max-w-[1400px] mx-auto px-4 sm:px-6 border-t border-neutral-100">
         <div className="text-center mb-12">
           <h3 className="text-2xl md:text-3xl font-bold uppercase tracking-wide mb-4">
             The Dress Edit
@@ -302,7 +304,7 @@ export default async function DressesCategoryPage() {
       </section>
 
       {/* Trending Dresses Section */}
-      <section className="py-16 md:py-24 px-4 max-w-7xl mx-auto border-t border-neutral-100">
+      <section className="py-16 md:py-24 max-w-[1400px] mx-auto px-4 sm:px-6 border-t border-neutral-100">
         <div className="text-center mb-12">
           <h3 className="text-2xl md:text-3xl font-bold uppercase tracking-wide mb-2">
             Trending Dresses
@@ -320,31 +322,33 @@ export default async function DressesCategoryPage() {
       </section>
 
       {/* Explore All Dresses Section */}
-      <section className="relative py-24 md:py-32 px-4 mt-8 flex flex-col items-center justify-center text-center overflow-hidden">
-        <Image
-          src="https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
-          alt="Explore all dresses"
-          fill
-          className="object-cover object-[center_30%]"
-        />
-        <div className="absolute inset-0 bg-black/40" />
-        
-        <div className="relative z-10 max-w-2xl mx-auto flex flex-col items-center">
-          <h3 className="text-3xl md:text-5xl font-bold text-white uppercase tracking-wider mb-6 drop-shadow-md">
-            Your Next Favourite Dress Is Waiting
-          </h3>
-          <p className="text-lg text-white/90 font-medium mb-10 max-w-xl mx-auto drop-shadow-sm leading-relaxed">
-            Explore our complete collection of women's dresses, from effortless everyday styles to statement occasion wear.
-          </p>
-          <Link 
-            href="/shop/dresses" 
-            className="inline-flex items-center gap-2 bg-white text-black px-10 py-4 text-sm font-bold uppercase tracking-wider hover:bg-neutral-100 transition-colors duration-300 shadow-xl"
-          >
-            Explore All Dresses
-            <ArrowRight size={18} />
-          </Link>
-        </div>
-      </section>
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8">
+        <section className="relative py-20 md:py-28 px-4 flex flex-col items-center justify-center text-center overflow-hidden rounded-2xl shadow-sm">
+          <Image
+            src="https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+            alt="Explore all dresses"
+            fill
+            className="object-cover object-[center_30%]"
+          />
+          <div className="absolute inset-0 bg-black/40" />
+          
+          <div className="relative z-10 max-w-2xl mx-auto flex flex-col items-center">
+            <h3 className="text-3xl md:text-5xl font-bold text-white uppercase tracking-wider mb-6 drop-shadow-md">
+              Your Next Favourite Dress Is Waiting
+            </h3>
+            <p className="text-lg text-white/90 font-medium mb-10 max-w-xl mx-auto drop-shadow-sm leading-relaxed">
+              Explore our complete collection of women's dresses, from effortless everyday styles to statement occasion wear.
+            </p>
+            <Link 
+              href="/shop/dresses" 
+              className="inline-flex items-center gap-2 bg-white text-black px-10 py-4 text-sm font-bold uppercase tracking-wider hover:bg-neutral-100 transition-colors duration-300 shadow-xl rounded-full"
+            >
+              Explore All Dresses
+              <ArrowRight size={18} />
+            </Link>
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

@@ -113,7 +113,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     });
 
     try {
-      const { clearBookingsCache } = await import('../route');
+      const { clearBookingsCache } = await import('@/lib/bookingsCache');
       clearBookingsCache(userEmail);
     } catch {}
 

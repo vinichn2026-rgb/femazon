@@ -12,45 +12,47 @@ export default function StoreClient({ vendor }: { vendor: any }) {
     <main className="min-h-screen bg-surface pb-20">
       
       {/* Store Header/Cover */}
-      <div className="relative h-64 md:h-80 bg-primary overflow-hidden">
-        <img 
-          src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?q=80&w=2000&auto=format&fit=crop" 
-          alt="Store Cover" 
-          className="w-full h-full object-cover opacity-60"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/90 to-transparent"></div>
-        
-        <div className="absolute bottom-0 left-0 w-full px-4 sm:px-6 md:px-12 pb-8">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="flex items-end gap-6">
-              {/* Store Avatar */}
-              <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-primary bg-white overflow-hidden shrink-0 flex items-center justify-center text-3xl font-serif">
-                {vendor.businessName.charAt(0)}
-              </div>
-              
-              <div className="pb-2">
-                <h1 className="font-serif text-3xl md:text-5xl text-white mb-2">{vendor.businessName}</h1>
-                <div className="flex items-center gap-4 text-sm text-zinc-300">
-                  <span className="flex items-center gap-1 text-yellow-400 font-bold"><Star size={16} fill="currentColor" /> 4.6</span>
-                  <span className="flex items-center gap-1"><MapPin size={16} /> {vendor.location}</span>
-                  <span className="hidden sm:inline">Member since {vendor.joinDate}</span>
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 pt-4">
+        <div className="relative h-64 md:h-80 bg-primary overflow-hidden rounded-2xl shadow-sm">
+          <img 
+            src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?q=80&w=2000&auto=format&fit=crop" 
+            alt="Store Cover" 
+            className="w-full h-full object-cover opacity-60"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-900/90 to-transparent"></div>
+          
+          <div className="absolute bottom-0 left-0 w-full pb-8">
+            <div className="px-6 md:px-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div className="flex items-end gap-6">
+                {/* Store Avatar */}
+                <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-primary bg-white overflow-hidden shrink-0 flex items-center justify-center text-3xl font-serif">
+                  {vendor.businessName.charAt(0)}
+                </div>
+                
+                <div className="pb-2">
+                  <h1 className="font-serif text-3xl md:text-5xl text-white mb-2">{vendor.businessName}</h1>
+                  <div className="flex items-center gap-4 text-sm text-zinc-300">
+                    <span className="flex items-center gap-1 text-yellow-400 font-bold"><Star size={16} fill="currentColor" /> 4.6</span>
+                    <span className="flex items-center gap-1"><MapPin size={16} /> {vendor.location}</span>
+                    <span className="hidden sm:inline">Member since {vendor.joinDate}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="flex gap-3 pb-2">
-              <button className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center backdrop-blur-md transition">
-                <Share2 size={18} />
-              </button>
-              <button className="px-6 py-2.5 rounded-full bg-white text-primary font-bold text-xs uppercase tracking-widest hover:bg-zinc-200 transition flex items-center gap-2">
-                <Heart size={16} /> Follow
-              </button>
+              <div className="flex gap-3 pb-2">
+                <button className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center backdrop-blur-md transition">
+                  <Share2 size={18} />
+                </button>
+                <button className="px-6 py-2.5 rounded-full bg-white text-primary font-bold text-xs uppercase tracking-widest hover:bg-zinc-200 transition flex items-center gap-2">
+                  <Heart size={16} /> Follow
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 mt-8 md:mt-12">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 mt-8 md:mt-12">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 md:gap-12">
           
           {/* Left Sidebar: About Store */}

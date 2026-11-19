@@ -76,7 +76,8 @@ export function AdminNavbar({
   return (
     <>
       {/* Top Header Bar */}
-      <header className="sticky top-0 z-40 bg-white border-b border-stone-200 shadow-2xs px-4 sm:px-8 py-3.5 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-white border-b border-stone-200 shadow-2xs">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
         
         {/* Left: Mobile Toggle + Brand Logo + Admin Context Pill */}
         <div className="flex items-center gap-3 sm:gap-4">
@@ -199,6 +200,7 @@ export function AdminNavbar({
             <span className="hidden sm:inline">Admin Logout</span>
             <span className="sm:hidden">Logout</span>
           </button>
+        </div>
         </div>
       </header>
 
