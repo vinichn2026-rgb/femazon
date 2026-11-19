@@ -163,13 +163,13 @@ export function HeaderSearchBar({ className = "" }: { className?: string }) {
       )}
 
       <div ref={containerRef} className={`relative w-full z-50 ${className}`}>
-        {/* Search Input Bar (Aza Fashions Benchmark Style) */}
+        {/* Search Input Bar */}
         <form 
           onSubmit={handleSubmit}
-          className={`group relative w-full h-[44px] flex items-center px-4 rounded-sm transition-all duration-200 border shadow-[0_1px_4px_rgba(74,21,19,0.04)] ${
+          className={`group relative w-full h-[42px] flex items-center px-3.5 sm:px-4 rounded-full transition-all duration-200 bg-white shadow-sm border ${
             isOpen 
-              ? "bg-white border-[#4A1513] ring-2 ring-[#4A1513]/15" 
-              : "border-[#4A1513]/25 hover:border-[#4A1513]/50 bg-[#4A1513]/[0.02] hover:bg-[#4A1513]/[0.04]"
+              ? "border-amber-300 ring-2 ring-amber-300/30" 
+              : "border-transparent hover:border-amber-200/50"
           }`}
         >
           {/* Magnifying Glass Icon */}
@@ -357,7 +357,7 @@ export function HeaderSearchBar({ className = "" }: { className?: string }) {
                                     ₹{product.price.toLocaleString("en-IN")}
                                   </span>
                                   {product.discountPercent && product.discountPercent > 0 && (
-                                    <span className="text-[11px] font-semibold text-[#B2382A]">
+                                    <span className="text-[11px] font-semibold text-[#4A1513]">
                                       {product.discountPercent}% OFF
                                     </span>
                                   )}

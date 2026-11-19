@@ -3,18 +3,14 @@ const net = require('net');
 
 function isPortAvailable(port) {
   return new Promise((resolve) => {
-    const tester = net.createConnection({ host: '127.0.0.1', port });
-    tester.once('connect', () => {
-      tester.end();
+    const server = net.createServer();
+    server.once('error', (err) => {
       resolve(false);
     });
-    tester.once('error', (error) => {
-      if (error.code === 'ECONNREFUSED') {
-        resolve(true);
-      } else {
-        resolve(false);
-      }
+    server.once('listening', () => {
+      server.close(() => resolve(true));
     });
+    server.listen(port);
   });
 }
 
@@ -23,7 +19,7 @@ async function main() {
   const preferredPort = Number(process.env.PORT || 3000);
   let port = preferredPort;
 
-  for (let attempt = 0; attempt < 10; attempt += 1) {
+  for (let attempt = 0; attempt < 20; attempt += 1) {
     if (await isPortAvailable(port)) {
       break;
     }

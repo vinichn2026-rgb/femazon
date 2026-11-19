@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useFemazonStore } from "@/context/FemazonStoreContext";
 
 type CartItem = {
   id: number;
@@ -24,6 +25,7 @@ type CartData = {
 };
 
 export function CartSummary() {
+  const { user } = useFemazonStore();
   const [cartData, setCartData] = useState<CartData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -217,7 +219,7 @@ export function CartSummary() {
             </div>
           </div>
 
-          <Link href="/checkout" className="block w-full text-center rounded-full bg-text-main px-4 py-4 text-[11px] font-bold tracking-[0.2em] uppercase text-white hover:bg-primary transition shadow-md">
+          <Link href={user ? "/checkout" : "/login?callbackUrl=/checkout"} className="block w-full text-center rounded-full bg-text-main px-4 py-4 text-[11px] font-bold tracking-[0.2em] uppercase text-white hover:bg-primary transition shadow-md">
             Proceed to Checkout
           </Link>
         </div>

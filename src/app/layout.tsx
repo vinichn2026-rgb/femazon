@@ -28,8 +28,8 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: 'Femazon | Luxury Indian Couture & Designer Wear',
-  description: 'Shop luxury Indian designer couture, bridal lehengas, silk sarees, and contemporary anarkali sets.',
+  title: 'Femazon | Shop, Discover, Book & Celebrate',
+  description: 'Discover thoughtful gifts, women-led boutiques, designer fashion, and verified beauty and styling professionals on Femazon.',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

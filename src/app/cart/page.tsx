@@ -101,6 +101,7 @@ const RELATED_STYLING_SETS: Record<string, { title: string; subtitle: string; ed
 
 export default function FullCartPage() {
   const { 
+    user,
     cart, 
     cartCount, 
     cartSubtotal, 
@@ -176,7 +177,7 @@ export default function FullCartPage() {
 
   return (
     <div className="min-h-screen bg-[#FAF7F5] py-8 sm:py-12 text-stone-900 font-sans selection:bg-[#4A1513] selection:text-white">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center gap-2 text-[12px] font-medium text-stone-400 mb-6 uppercase tracking-wider">
@@ -574,7 +575,7 @@ export default function FullCartPage() {
 
                 {/* Primary Checkout CTA */}
                 <Link
-                  href="/checkout"
+                  href={user ? "/checkout" : "/login?callbackUrl=/checkout"}
                   className="w-full block py-4 bg-[#4A1513] hover:bg-[#350B0A] active:scale-[0.99] text-white font-bold text-[13px] uppercase tracking-[0.16em] text-center rounded-full shadow-md hover:shadow-lg transition-all"
                 >
                   Proceed to Checkout →

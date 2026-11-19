@@ -243,17 +243,16 @@ export function FemazonStoreProvider({
           }
         }
         
-        // If server returns 401 or invalid user, strictly log out
-        setUser(null);
-        try {
-          localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
-        } catch (e) {}
+        // If server returns 401, clear user
+        if (res.status === 401) {
+          setUser(null);
+          try {
+            localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
+          } catch (e) {}
+        }
         return false;
       } catch (e) {
-        setUser(null);
-        try {
-          localStorage.removeItem(LOCAL_STORAGE_USER_KEY);
-        } catch (err) {}
+        // Keep existing user on network error
         return false;
       } finally {
         authPromiseRef.current = null;
@@ -320,6 +319,13 @@ export function FemazonStoreProvider({
   useEffect(() => {
     setIsMounted(true);
     try {
+      const savedUser = localStorage.getItem(LOCAL_STORAGE_USER_KEY);
+      if (savedUser && !initialUser) {
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch (err) {}
+      }
+
       const savedCart = localStorage.getItem(LOCAL_STORAGE_CART_KEY);
       if (savedCart) setCart(JSON.parse(savedCart));
 

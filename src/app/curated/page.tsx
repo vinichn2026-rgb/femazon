@@ -1,6 +1,7 @@
 import React from "react";
 import { prisma } from "@/lib/prisma";
 import { CuratedPageClient } from "@/components/curated/CuratedPageClient";
+import { getApprovedProducts } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -10,17 +11,27 @@ export const metadata = {
 };
 
 export default async function CuratedPage() {
-  const dbProducts = await prisma.product.findMany({
-    where: { approvalStatus: "APPROVED" },
-    take: 12,
-    orderBy: { createdAt: "desc" }
-  });
+  let dbProducts: any[] = [];
+  try {
+    dbProducts = await prisma.product.findMany({
+      where: { approvalStatus: "APPROVED" },
+      take: 12,
+      orderBy: { createdAt: "desc" }
+    });
+  } catch (err) {
+    console.warn('[CuratedPage] DB unreachable, falling back to local catalog snapshot:', err);
+  }
+
+  if (!dbProducts || dbProducts.length === 0) {
+    const all = await getApprovedProducts();
+    dbProducts = all.slice(0, 12);
+  }
 
   const trendingProducts = dbProducts.map((p) => {
     let badge = "TRENDING";
-    if (p.category === "Saree") badge = "VIRAL SAREE";
-    else if (p.category === "Kurtis" || p.category === "Kurti") badge = "TRENDING KURTI";
-    else if (p.category === "Co-ords") badge = "POPULAR SET";
+    if (p.category === "Saree" || p.category === "Sarees") badge = "VIRAL SAREE";
+    else if (p.category === "Kurtis" || p.category === "Kurta Sets") badge = "TRENDING KURTI";
+    else if (p.category === "Co-ords" || p.category === "Co-ord Sets") badge = "POPULAR SET";
     else if (p.category === "Dresses") badge = "STATEMENT DRESS";
     else if (p.category === "Anarkali") badge = "ROYAL ANARKALI";
 

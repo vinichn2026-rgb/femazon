@@ -2,11 +2,16 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export default function proxy(req: NextRequest) {
-  const { pathname } = req.nextUrl;
+  const { pathname, search } = req.nextUrl;
 
   // Read femazon_session cookie or next-auth session cookie
   const sessionCookie = req.cookies.get("femazon_session")?.value;
+  const nextAuthCookie = 
+    req.cookies.get("next-auth.session-token")?.value || 
+    req.cookies.get("__Secure-next-auth.session-token")?.value;
+
   let role: string | null = null;
+  let isAuthenticated = false;
 
   if (sessionCookie) {
     try {
@@ -18,19 +23,32 @@ export default function proxy(req: NextRequest) {
         const now = Math.floor(Date.now() / 1000);
         if (!payload.exp || now <= payload.exp) {
           role = payload.role || null;
+          isAuthenticated = true;
         }
       }
     } catch {}
   }
 
-  // 1. Protected Admin Dashboard Routes
+  if (nextAuthCookie) {
+    isAuthenticated = true;
+  }
+
+  // 1. Protected Checkout Routes (Customer must be authenticated)
+  if (pathname.startsWith("/checkout")) {
+    if (!isAuthenticated) {
+      const callbackUrl = encodeURIComponent(pathname + search);
+      return NextResponse.redirect(new URL(`/login?callbackUrl=${callbackUrl}`, req.url));
+    }
+  }
+
+  // 2. Protected Admin Dashboard Routes
   if (pathname.startsWith("/admin/dashboard") || pathname === "/admin/products" || pathname === "/admin/vendors" || pathname === "/admin/users" || pathname === "/admin/bookings" || pathname === "/admin/services") {
     if (role !== "ADMIN") {
       return NextResponse.redirect(new URL("/admin", req.url));
     }
   }
 
-  // 2. Protected Vendor Dashboard Routes
+  // 3. Protected Vendor Dashboard Routes
   if (pathname.startsWith("/vendor/dashboard") || pathname.startsWith("/seller/dashboard")) {
     if (role !== "VENDOR") {
       return NextResponse.redirect(new URL("/vendor", req.url));
@@ -42,6 +60,7 @@ export default function proxy(req: NextRequest) {
 
 export const config = {
   matcher: [
+    "/checkout/:path*",
     "/admin/dashboard/:path*",
     "/admin/products/:path*",
     "/admin/vendors/:path*",

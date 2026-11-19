@@ -1,36 +1,25 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/lib/prisma';
-import { authOptions } from '@/lib/authOptions';
-import { getSessionFromCookie } from '@/lib/auth';
+import { getVendorUser } from '@/lib/vendorAuth';
 
-async function getVendorUser(request: Request) {
-  let userEmail: string | undefined;
-  try {
-    const session = await getServerSession(authOptions);
-    if (session?.user?.email) {
-      userEmail = session.user.email;
-    }
-  } catch {}
-
-  if (!userEmail) {
-    const payload = getSessionFromCookie(request.headers.get('cookie') || undefined);
-    if (payload?.email) {
-      userEmail = payload.email;
-    }
-  }
-
-  if (!userEmail) return null;
-
-  const user = await prisma.user.findUnique({ 
-    where: { email: userEmail },
-    include: { vendorProfile: true }
-  });
-  if (!user || user.role !== 'VENDOR') return null;
-  if (!user.vendorProfile || user.vendorProfile.status !== 'APPROVED') return null;
-
-  return user;
-}
+type VendorOrder = {
+  id: number;
+  status: string;
+  total: number;
+  createdAt: Date;
+  shippingName: string | null;
+  shippingPhone: string | null;
+  shippingAddr: string | null;
+  shippingCity: string | null;
+  paymentMethod: string;
+  items: Array<{
+    id: number;
+    product: { id: number; name: string; image: string | null; price: number };
+    price: number;
+    quantity: number;
+    size: string | null;
+  }>;
+};
 
 // GET orders containing vendor's products
 export async function GET(request: Request) {
@@ -65,11 +54,12 @@ export async function GET(request: Request) {
     });
 
     // Group items by order for standard presentation
-    const ordersMap = new Map<number, any>();
+    const ordersMap = new Map<number, VendorOrder>();
     orderItems.forEach(item => {
       const ord = item.order;
-      if (!ordersMap.has(ord.id)) {
-        ordersMap.set(ord.id, {
+      let vendorOrder = ordersMap.get(ord.id);
+      if (!vendorOrder) {
+        vendorOrder = {
           id: ord.id,
           status: ord.status,
           total: ord.total,
@@ -80,9 +70,10 @@ export async function GET(request: Request) {
           shippingCity: ord.shippingCity,
           paymentMethod: ord.paymentMethod,
           items: []
-        });
+        };
+        ordersMap.set(ord.id, vendorOrder);
       }
-      ordersMap.get(ord.id).items.push({
+      vendorOrder.items.push({
         id: item.id,
         product: item.product,
         price: item.price,

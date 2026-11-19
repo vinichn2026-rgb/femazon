@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getApprovedProducts } from '@/lib/catalog';
+import { getApprovedPartnerDirectory, type PartnerDirectoryListing } from '@/lib/partnerDirectory';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,14 +18,47 @@ const TOP_SEARCHES = [
   { label: 'Pure Banarasi Silk', query: 'Banarasi' },
 ];
 
-let cachedTopResponse: any = null;
+interface SearchProductResult {
+  id: number;
+  name: string;
+  slug: string;
+  price: number;
+  discountPrice: number | null;
+  discountPercent: number;
+  image: string;
+  brandName: string;
+  category: string | null;
+  silhouette: string | null;
+  readyToShip: boolean;
+}
+
+interface SearchResponse {
+  topSearches: typeof TOP_SEARCHES;
+  products: SearchProductResult[];
+  services?: {
+    id: number;
+    slug: string;
+    name: string;
+    description: string | null;
+    basePrice: number;
+    image: string;
+    providers: { id: number; name: string; rating: number; reviewCount: number }[];
+  }[];
+  partners?: PartnerDirectoryListing[];
+  serviceError?: string | null;
+  partnerError?: string | null;
+  isSearch: boolean;
+  totalCount?: number;
+}
+
+let cachedTopResponse: SearchResponse | null = null;
 let lastTopCacheTime = 0;
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const q = searchParams.get('q')?.trim() || '';
+    const q = searchParams.get('q')?.trim().slice(0, 120) || '';
 
     // If query is empty, return Top Searches and curated Top Products (Aza Fashions style)
     if (!q) {
@@ -59,6 +94,8 @@ export async function GET(request: Request) {
       const responseData = {
         topSearches: TOP_SEARCHES,
         products: topProducts,
+        services: [],
+        partners: [],
         isSearch: false,
       };
 
@@ -110,18 +147,78 @@ export async function GET(request: Request) {
       };
     });
 
+    let matchingServices: {
+      id: number;
+      slug: string;
+      name: string;
+      description: string | null;
+      basePrice: number;
+      image: string | null;
+      providers: { id: number; name: string; rating: number; reviewCount: number }[];
+    }[] = [];
+    let serviceError: string | null = null;
+    let matchingPartners: PartnerDirectoryListing[] = [];
+    let partnerError: string | null = null;
+    try {
+      matchingServices = await prisma.service.findMany({
+        where: {
+          OR: [
+            { name: { contains: q, mode: 'insensitive' } },
+            { slug: { contains: q, mode: 'insensitive' } },
+            { description: { contains: q, mode: 'insensitive' } },
+            {
+              providers: {
+                some: {
+                  OR: [
+                    { name: { contains: q, mode: 'insensitive' } },
+                    { bio: { contains: q, mode: 'insensitive' } },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+        include: {
+          providers: {
+            orderBy: { rating: 'desc' },
+            take: 2,
+            select: { id: true, name: true, rating: true, reviewCount: true },
+          },
+        },
+        orderBy: { name: 'asc' },
+        take: 4,
+      });
+    } catch (error) {
+      serviceError = 'Service search is temporarily unavailable.';
+      console.error('[API Search] Service search failed:', error);
+    }
+    try {
+      matchingPartners = await getApprovedPartnerDirectory({ query: q });
+    } catch (error) {
+      partnerError = 'Boutique and professional search is temporarily unavailable.';
+      console.error('[API Search] Partner search failed:', error);
+    }
+
     return NextResponse.json({
       topSearches: TOP_SEARCHES,
       products,
+      services: matchingServices.map((service) => ({
+        id: service.id,
+        slug: service.slug,
+        name: service.name,
+        description: service.description,
+        basePrice: service.basePrice,
+        image: service.image || '/femazon-emblem.png',
+        providers: service.providers,
+      })),
+      partners: matchingPartners,
+      serviceError,
+      partnerError,
       isSearch: true,
       totalCount: filtered.length,
     });
   } catch (error) {
-    console.warn('[API Search Warning]:', error);
-    return NextResponse.json({
-      topSearches: TOP_SEARCHES,
-      products: [],
-      isSearch: false,
-    });
+    console.error('[API Search Error]:', error);
+    return NextResponse.json({ error: 'Search is temporarily unavailable.' }, { status: 500 });
   }
 }

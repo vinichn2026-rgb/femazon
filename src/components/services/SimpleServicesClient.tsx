@@ -267,7 +267,7 @@ export function SimpleServicesClient({ dbServices }: { dbServices?: any[] }) {
       </div>
 
       {/* 2. Reassurance Banner */}
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 -mt-6">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 -mt-6">
         <div className="bg-white rounded-2xl border border-[#E8DFD5] p-5 sm:p-6 shadow-sm flex flex-col md:flex-row items-center justify-between gap-5">
           <div className="flex items-start sm:items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-[#F4ECE1] text-[#4A1513] flex items-center justify-center shrink-0">
@@ -295,7 +295,29 @@ export function SimpleServicesClient({ dbServices }: { dbServices?: any[] }) {
       </div>
 
       {/* 3. Simple Services Grid */}
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 mt-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 mt-12">
+        {/* Banner: Discover Personal Stylists & Beauty Artists Marketplace */}
+        <div className="mb-10 p-6 rounded-3xl bg-gradient-to-r from-[#4A1513] to-[#350B0A] text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-md">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#D4AF37]/20 text-[#D4AF37] text-[10px] font-bold tracking-widest uppercase mb-2">
+              <Sparkles size={11} />
+              <span>Beauty Professionals Marketplace</span>
+            </div>
+            <h3 className="font-serif text-xl sm:text-2xl font-bold">
+              Looking for Individual Celebrity Stylists &amp; Artists?
+            </h3>
+            <p className="text-xs sm:text-sm text-stone-300 mt-1 max-w-xl">
+              Browse verified individual profiles of top Makeup Artists, Saree Drapers, Hair Stylists, and Henna Specialists with full portfolios and custom packages.
+            </p>
+          </div>
+          <Link
+            href="/#stylists"
+            className="px-6 py-3 rounded-xl bg-[#D4AF37] hover:bg-[#C29B27] text-stone-950 font-bold text-xs uppercase tracking-wider transition shadow-sm whitespace-nowrap"
+          >
+            Explore Artists Marketplace →
+          </Link>
+        </div>
+
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-3">
           <div>
             <h2 className="font-serif text-2xl sm:text-3xl text-[#2B1810]">
@@ -387,8 +409,8 @@ export function SimpleServicesClient({ dbServices }: { dbServices?: any[] }) {
       </div>
 
       {/* 4. Trust & Support Help Section */}
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 mt-16 text-center">
-        <div className="bg-[#FAF6F0] rounded-3xl p-8 border border-[#E8DFD5] max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 mt-16 text-center">
+        <div className="bg-[#FAF6F0] rounded-3xl p-8 border border-[#E8DFD5]">
           <h3 className="font-serif text-2xl text-[#2B1810] mb-2">
             Prefer to talk to someone first?
           </h3>

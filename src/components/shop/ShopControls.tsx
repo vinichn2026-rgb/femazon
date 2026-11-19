@@ -14,9 +14,18 @@ import {
 } from 'lucide-react';
 import { FilterState } from './FilterSidebar';
 
+export interface DepartmentOption {
+  id: string;
+  name: string;
+  categories: string[];
+}
+
 interface ShopControlsProps {
   totalItems: number;
   selectedCategory?: string;
+  selectedDepartment?: string;
+  departments?: DepartmentOption[];
+  onSelectDepartment?: (deptId: string) => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
   selectedSort: string;
@@ -29,6 +38,9 @@ interface ShopControlsProps {
 export function ShopControls({
   totalItems,
   selectedCategory = "All",
+  selectedDepartment,
+  departments,
+  onSelectDepartment,
   searchQuery,
   onSearchChange,
   selectedSort,
@@ -79,28 +91,58 @@ export function ShopControls({
     : selectedCategory;
 
   return (
-    <div className="flex flex-col gap-4 pb-4 border-b border-stone-200/80 mb-6">
+    <div className="flex flex-col gap-3 pb-4 border-b border-stone-200/80 mb-6">
       
-      {/* Top Header Line: Category Title & Item Count */}
-      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
-        <h1 className="font-serif text-lg sm:text-xl md:text-2xl text-stone-900 font-normal tracking-tight">
-          <span>{categoryDisplayTitle}</span>{' '}
-          <span className="text-xs sm:text-sm font-sans font-normal text-stone-400">
-            ({totalItems.toLocaleString('en-IN')} Styles)
-          </span>
-        </h1>
-
-        {/* Mobile Filter Trigger Button */}
-        {onOpenMobileFilters && (
-          <button
-            type="button"
-            onClick={onOpenMobileFilters}
-            className="lg:hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-stone-300 text-xs font-semibold text-stone-800 self-start"
-          >
-            <SlidersHorizontal size={13} />
-            <span>Filters</span>
-          </button>
+      {/* Top Header Line: Department Navigation Bar (Straight in line with Categories sidebar) & Item Count */}
+      <div className="flex items-center justify-between gap-3 min-h-[36px]">
+        {departments && departments.length > 0 ? (
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto hide-scrollbar py-0.5">
+            {departments.map((dept) => {
+              const isActive = selectedDepartment === dept.id;
+              return (
+                <button
+                  key={dept.id}
+                  type="button"
+                  onClick={() => onSelectDepartment?.(dept.id)}
+                  className={`px-3.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-[12.5px] font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer flex items-center gap-1.5 shrink-0 ${
+                    isActive
+                      ? 'bg-[#4A1513] text-white shadow-xs'
+                      : 'bg-[#FAF7F5] text-stone-700 hover:bg-stone-200/70 hover:text-stone-950 border border-stone-200/60'
+                  }`}
+                >
+                  <span>{dept.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <h1 className="font-serif text-lg sm:text-xl md:text-2xl text-stone-900 font-normal tracking-tight">
+            <span>{categoryDisplayTitle}</span>{' '}
+            <span className="text-xs sm:text-sm font-sans font-normal text-stone-400">
+              ({totalItems.toLocaleString('en-IN')} Styles)
+            </span>
+          </h1>
         )}
+
+        <div className="flex items-center gap-2.5 shrink-0">
+          {departments && departments.length > 0 && (
+            <span className="hidden sm:inline-block text-xs sm:text-[13px] font-sans font-medium text-stone-400 whitespace-nowrap">
+              ({totalItems.toLocaleString('en-IN')} Styles)
+            </span>
+          )}
+
+          {/* Mobile Filter Trigger Button */}
+          {onOpenMobileFilters && (
+            <button
+              type="button"
+              onClick={onOpenMobileFilters}
+              className="lg:hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-stone-300 text-xs font-semibold text-stone-800"
+            >
+              <SlidersHorizontal size={13} />
+              <span>Filters</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Action Strip: Quick Pill Filters & Luxury Sort Dropdown */}

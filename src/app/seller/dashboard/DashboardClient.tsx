@@ -130,13 +130,13 @@ export default function DashboardClient({ vendorProfile }: { vendorProfile: any 
   };
 
   const handleTogglePublish = async (id: number, currentStatus: string) => {
-    const newStatus = currentStatus === "DRAFT" ? "PENDING" : "DRAFT";
+    const newStatus = currentStatus === "DRAFT" ? "SUBMITTED" : "DRAFT";
     if (!confirm(`Are you sure you want to change status to ${newStatus}?`)) return;
 
     const res = await fetch(`/api/seller/products/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ approvalStatus: newStatus })
+      body: JSON.stringify({ status: newStatus })
     });
     if (res.ok) fetchProducts();
   };

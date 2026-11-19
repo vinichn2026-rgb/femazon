@@ -20,6 +20,7 @@ import { useFemazonStore } from '@/context/FemazonStoreContext';
 
 export function GlobalCartDrawer() {
   const {
+    user,
     cart,
     cartCount,
     cartSubtotal,
@@ -298,7 +299,7 @@ export function GlobalCartDrawer() {
               </div>
 
               <Link
-                href="/checkout"
+                href={user ? "/checkout" : "/login?callbackUrl=/checkout"}
                 onClick={closeCart}
                 className="px-6 py-3.5 rounded-sm bg-[#4A1513] hover:bg-[#350B0A] text-white text-xs font-bold uppercase tracking-[0.16em] shadow-md hover:shadow-lg active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
               >

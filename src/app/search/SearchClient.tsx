@@ -3,11 +3,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { SlidersHorizontal, SearchX, ArrowRight, Search } from 'lucide-react';
+import { SlidersHorizontal, SearchX } from 'lucide-react';
 import { FilterSidebar, FilterState } from '@/components/shop/FilterSidebar';
 import { ShopControls } from '@/components/shop/ShopControls';
 import { ActiveFilterChips } from '@/components/shop/ActiveFilterChips';
 import { ProductCard, ProductCardSkeleton } from '@/components/shop/ProductCard';
+import { LuxuryPromoBanner } from '@/components/shop/LuxuryPromoBanner';
+import type { PartnerDirectoryListing } from '@/lib/partnerDirectory';
 
 const initialFilterState: FilterState = {
   silhouettes: [],
@@ -21,7 +23,31 @@ const initialFilterState: FilterState = {
   readyToShip: false,
 };
 
-export default function SearchClient({ query, initialProducts, initialWishlistIds = [] }: any) {
+interface SearchService {
+  id: number;
+  slug: string;
+  name: string;
+  description: string | null;
+  basePrice: number;
+  image: string | null;
+  providers: { id: number; name: string; rating: number; reviewCount: number }[];
+}
+
+export default function SearchClient({
+  query,
+  initialProducts,
+  initialWishlistIds = [],
+  serviceResults = [],
+  partnerResults = [],
+  partnerDirectoryError = null,
+}: {
+  query: string;
+  initialProducts: any[];
+  initialWishlistIds?: number[];
+  serviceResults?: SearchService[];
+  partnerResults?: PartnerDirectoryListing[];
+  partnerDirectoryError?: string | null;
+}) {
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
   const [wishlist, setWishlist] = useState<number[]>(initialWishlistIds);
@@ -158,31 +184,32 @@ export default function SearchClient({ query, initialProducts, initialWishlistId
 
   return (
     <div className="bg-surface min-h-screen text-text-main font-sans pb-24">
-      {initialProducts.length === 0 ? (
+      {/* Luxury Burgundy & Gold Promo Banner */}
+      <LuxuryPromoBanner />
+
+      {initialProducts.length === 0 && serviceResults.length === 0 && partnerResults.length === 0 ? (
         // Empty State
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-20">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="w-24 h-24 bg-white rounded-full shadow-md flex items-center justify-center mx-auto mb-8 text-accent">
-              <SearchX size={48} strokeWidth={1} />
-            </div>
-            <h2 className="font-serif text-3xl md:text-4xl text-text-main mb-4">No products found</h2>
-            <p className="text-zinc-500 mb-10 max-w-md mx-auto">
-              We couldn't find any matches for "{query}". Try checking your spelling or searching for a broader term.
-            </p>
-            
-            <div className="bg-white p-8 rounded-[2rem] border border-zinc-100 shadow-sm text-left">
-              <h3 className="font-bold text-sm uppercase tracking-widest text-text-main mb-6">Popular Searches</h3>
-              <div className="flex flex-wrap gap-3">
-                {['Dresses', 'Kurtis', 'Tops', 'Floral', 'Summer Collection', 'Handbags'].map(term => (
-                  <Link 
-                    key={term}
-                    href={`/search?q=${term}`}
-                    className="px-6 py-2.5 rounded-full bg-zinc-50 border border-zinc-200 text-sm font-medium hover:border-primary hover:text-primary transition"
-                  >
-                    {term}
-                  </Link>
-                ))}
-              </div>
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 py-20 text-center">
+          <div className="w-24 h-24 bg-white rounded-full shadow-md flex items-center justify-center mx-auto mb-8 text-accent">
+            <SearchX size={48} strokeWidth={1} />
+          </div>
+          <h2 className="font-serif text-3xl md:text-4xl text-text-main mb-4">No marketplace results found</h2>
+          <p className="text-zinc-500 mb-10 max-w-md mx-auto">
+            We couldn't find any matches for "{query}". Try checking your spelling or searching for a broader term.
+          </p>
+          
+          <div className="bg-white p-8 rounded-[2rem] border border-zinc-100 shadow-sm text-left">
+            <h3 className="font-bold text-sm uppercase tracking-widest text-text-main mb-6">Popular Searches</h3>
+            <div className="flex flex-wrap gap-3">
+              {['Dresses', 'Kurtis', 'Tops', 'Floral', 'Summer Collection', 'Handbags'].map(term => (
+                <Link 
+                  key={term}
+                  href={`/search?q=${term}`}
+                  className="px-6 py-2.5 rounded-full bg-zinc-50 border border-zinc-200 text-sm font-medium hover:border-primary hover:text-primary transition"
+                >
+                  {term}
+                </Link>
+              ))}
             </div>
           </div>
         </div>
@@ -221,7 +248,7 @@ export default function SearchClient({ query, initialProducts, initialWishlistId
             />
 
             {/* Product Grid */}
-            {isMounted ? (
+            {initialProducts.length === 0 ? null : isMounted ? (
               totalItems > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-x-6 md:gap-y-10">
                   {sortedProducts.map((product: any) => (
@@ -252,6 +279,62 @@ export default function SearchClient({ query, initialProducts, initialWishlistId
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-x-6 md:gap-y-10">
                 {Array.from({ length: 8 }).map((_, idx) => <ProductCardSkeleton key={idx} />)}
               </div>
+            )}
+            {partnerDirectoryError && (
+              <p role="status" className="mx-auto mt-6 max-w-[1400px] px-4 text-sm text-amber-800 sm:px-6">
+                {partnerDirectoryError}
+              </p>
+            )}
+
+            {partnerResults.length > 0 && (
+              <section className="mt-10 border-t border-stone-200 pt-8">
+                <h2 className="mb-4 font-serif text-2xl font-bold text-stone-900">Boutiques &amp; professionals</h2>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {partnerResults.map((partner) => (
+                    <article key={partner.id} className="rounded-2xl border border-stone-200 bg-white p-5">
+                      <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">
+                        Femazon approved {partner.type === "SELLER" ? "boutique" : "professional"}
+                      </span>
+                      <h3 className="mt-2 font-serif text-lg font-bold text-stone-900">{partner.businessName}</h3>
+                      <p className="mt-1 text-xs text-stone-500">{[partner.categories, partner.location].filter(Boolean).join(" · ")}</p>
+                      {partner.description && <p className="mt-3 line-clamp-2 text-sm text-stone-600">{partner.description}</p>}
+                      <div className="mt-4 flex flex-wrap gap-3">
+                        {partner.storeUrl ? (
+                          <Link href={partner.storeUrl} className="text-xs font-semibold text-[#4A1513] underline underline-offset-2">Visit boutique</Link>
+                        ) : (
+                          <a href={`mailto:support@femazon.com?subject=${encodeURIComponent(`Femazon enquiry: ${partner.businessName}`)}`} className="text-xs font-semibold text-[#4A1513] underline underline-offset-2">Enquire with Femazon</a>
+                        )}
+                        {partner.portfolioUrl && <a href={partner.portfolioUrl} target="_blank" rel="noreferrer" className="text-xs font-semibold text-[#4A1513] underline underline-offset-2">Portfolio</a>}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {serviceResults.length > 0 && (
+              <section className="mt-10 border-t border-stone-200 pt-8">
+                <h2 className="mb-4 font-serif text-2xl font-bold text-stone-900">Related services</h2>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {serviceResults.map((service) => (
+                    <Link
+                      key={service.id}
+                      href={`/services/${service.slug}`}
+                      className="rounded-2xl border border-stone-200 bg-white p-5 transition hover:border-[#4A1513]/40 hover:shadow-md"
+                    >
+                      <span className="text-xs font-bold uppercase tracking-wider text-[#4A1513]">Service</span>
+                      <h3 className="mt-2 font-serif text-lg font-bold text-stone-900">{service.name}</h3>
+                      <p className="mt-1 line-clamp-2 text-sm text-stone-600">
+                        {service.description || "View service details and listed providers."}
+                      </p>
+                      <p className="mt-3 text-xs text-stone-500">
+                        {service.providers.length} provider{service.providers.length === 1 ? "" : "s"} listed
+                        {service.basePrice > 0 ? ` · From ₹${service.basePrice.toLocaleString("en-IN")}` : ""}
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              </section>
             )}
             
           </div>

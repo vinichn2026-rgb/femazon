@@ -8,6 +8,9 @@ import {
   Menu, 
   Heart, 
   ShoppingBag, 
+  ShoppingCart,
+  Globe,
+  ArrowRight,
   UserCircle2, 
   Camera, 
   X, 
@@ -131,6 +134,70 @@ const mainNavLinks = [
   { name: 'CURATED', hasMega: false, href: '/curated' },
   { name: 'SERVICES', hasMega: true, href: '/services' },
   { name: 'AI WARDROBE', hasMega: false, href: '/ai-wardrobe' },
+];
+
+export interface NavProductItem {
+  id: string;
+  title: string;
+  image: string;
+  href: string;
+}
+
+export const NAV_PRODUCT_DROPDOWN_ITEMS: NavProductItem[] = [
+  {
+    id: "bags",
+    title: "Bags",
+    image: "/nav-products/bags.png",
+    href: "/womens-wear?category=Handbags",
+  },
+  {
+    id: "beauty",
+    title: "Beauty",
+    image: "/nav-products/beauty.png",
+    href: "/beauty",
+  },
+  {
+    id: "fashion",
+    title: "Fashion",
+    image: "/nav-products/fashion.png",
+    href: "/womens-wear",
+  },
+  {
+    id: "festive-gifting",
+    title: "Festive Decor & Gifting",
+    image: "/nav-products/festive_gifting.png",
+    href: "/gifts",
+  },
+  {
+    id: "gourmet-food",
+    title: "Gourmet Food",
+    image: "/nav-products/gourmet_food.png",
+    href: "/shop?category=Gourmet+Food",
+  },
+  {
+    id: "groceries",
+    title: "Groceries",
+    image: "/nav-products/groceries.png",
+    href: "/shop?category=Groceries",
+  },
+  {
+    id: "health-personal-care",
+    title: "Health & Personal Care",
+    image: "/nav-products/health_personal_care.png",
+    href: "/beauty?view=products&sub=personal-hygiene",
+  },
+  {
+    id: "jewellery",
+    title: "Jewellery",
+    image: "/nav-products/jewellery.png",
+    href: "/shop?category=Jewelry",
+  },
+  {
+    id: "packaging-materials",
+    title: "Packaging Materials",
+    image: "/nav-products/packaging_materials.png",
+    href: "/shop?category=Packaging",
+  },
 ];
 
 export interface MegaMenuColumn {
@@ -853,6 +920,7 @@ export function SiteLayout({
 
   // Search State
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isImageSearchModalOpen, setIsImageSearchModalOpen] = useState(false);
 
@@ -919,10 +987,16 @@ export function SiteLayout({
   };
 
   // Check if current route is dedicated portal or auth page
+  // Check if current route is dedicated portal or auth page
+  // Exclude public landing pages like /seller/register (Become a Seller) so they render the full header & footer
   const isPortalOrAuthPage = 
-    pathname?.startsWith('/vendor') || 
     pathname?.startsWith('/admin') || 
-    pathname?.startsWith('/seller') ||
+    pathname?.startsWith('/seller/dashboard') ||
+    pathname?.startsWith('/vendor/dashboard') ||
+    pathname?.startsWith('/vendor/bookings') ||
+    pathname?.startsWith('/vendor/products') ||
+    pathname?.startsWith('/vendor/services') ||
+    pathname === '/vendor' ||
     pathname === '/login' || 
     pathname === '/register';
 
@@ -941,103 +1015,124 @@ export function SiteLayout({
   return (
     <div className="min-h-screen bg-background text-text-main font-sans overflow-x-hidden">
       
-      {/* 1. Top Announcement Banner */}
-      <div className="w-full bg-[#4A1513] py-2 px-4 sm:px-6">
-        <div className="mx-auto flex max-w-[1400px] items-center justify-center text-[11px] font-bold uppercase tracking-widest text-white/90">
-          Prepaid orders get priority shipping 🚚
-        </div>
+      {/* 1. Top Announcement Banner matching user's edited design */}
+      <div className="w-full text-white py-2 px-4 text-center relative z-40 transition-colors shadow-xs" style={{ backgroundColor: "#4A1513" }}>
+        <p className="text-[12px] sm:text-[13px] font-normal text-white tracking-wide">
+          Enjoy free shipping on orders above Rs. 3000!
+        </p>
       </div>
 
-      {/* 2. Main Navigation Header */}
-      <header className="sticky top-0 z-50 w-full bg-white transition-all shadow-xs border-b border-stone-200">
-        {/* Tier 1: Logo, Search, Actions */}
-        <div className="mx-auto flex h-[88px] md:h-[96px] max-w-[1400px] items-center px-4 sm:px-6 relative gap-4 sm:gap-8">
+      {/* 2. Main Navigation Header matching Yuukke single-row sleek design */}
+      <header className="sticky top-0 z-50 w-full bg-white transition-all shadow-xs border-b border-gray-100">
+        <div className="mx-auto flex h-[74px] sm:h-[80px] max-w-[1440px] items-center justify-between px-4 sm:px-6 lg:px-8 relative gap-4">
           
-          {/* Mobile Menu Toggle */}
-          <button 
-            onClick={() => setIsMobileMenuOpen(true)}
-            className="flex md:hidden text-text-main transition hover:text-primary cursor-pointer p-1"
-            aria-label="Open Navigation Menu"
-          >
-            <Menu size={24} strokeWidth={1.5} />
-          </button>
-
-          {/* Left: Brand Logo */}
-          <BrandLogo />
-
-          {/* Center: Search Bar with Aza Fashions Top Searches & Top Products Popover */}
-          <div className="flex-1 max-w-2xl mx-auto hidden md:block">
-            <HeaderSearchBar />
+          {/* Left: Mobile Menu Trigger + Brand Logo */}
+          <div className="flex items-center gap-3 shrink-0">
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="flex lg:hidden text-stone-800 hover:text-[#4A1513] transition p-1 cursor-pointer"
+              aria-label="Open Navigation Menu"
+            >
+              <Menu size={24} strokeWidth={1.8} />
+            </button>
+            <BrandLogo />
           </div>
 
-          {/* Right: Actions (Store, Bookings, Wishlist, Cart, Profile) */}
-          <div className="flex shrink-0 items-center justify-end gap-4 sm:gap-6 lg:gap-7 ml-auto">
+          {/* Center: Clean Modern Navigation Links (Refined compact size) */}
+          <nav className="hidden lg:flex items-center gap-3.5 xl:gap-5 text-[12.5px] xl:text-[13px] font-medium text-stone-700 tracking-tight">
+            <Link 
+              href="/discover" 
+              className={`py-2 transition-colors hover:text-[#4A1513] flex items-center gap-1 ${pathname === '/discover' ? 'text-[#4A1513] font-semibold' : ''}`}
+            >
+              <span>Discover</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-rose-100 text-[#4A1513] text-[9.5px] font-bold">New</span>
+            </Link>
+
+            <Link 
+              href="/shop" 
+              className={`py-2 transition-colors hover:text-[#4A1513] ${pathname === '/shop' || pathname?.startsWith('/shop') ? 'text-[#4A1513] font-semibold' : ''}`}
+            >
+              Shop
+            </Link>
+
+            <Link 
+              href="/personal-styling" 
+              className={`py-2 transition-colors hover:text-[#4A1513] ${pathname === '/personal-styling' ? 'text-[#4A1513] font-semibold' : ''}`}
+            >
+              Personal Styling
+            </Link>
+
+            <Link 
+              href="/brands" 
+              className={`py-2 transition-colors hover:text-[#4A1513] ${pathname === '/brands' ? 'text-[#4A1513] font-semibold' : ''}`}
+            >
+              Our Brands
+            </Link>
+
+            <Link 
+              href="/partner" 
+              className={`py-2 transition-colors hover:text-[#4A1513] ${pathname === '/partner' ? 'text-[#4A1513] font-semibold' : ''}`}
+            >
+              Partner With Femazon
+            </Link>
+          </nav>
+
+          {/* Right: Actions matching screenshot exactly (compact refined size) */}
+          <div className="flex shrink-0 items-center justify-end gap-2.5 sm:gap-3.5">
             
-            {/* Find a Store */}
-            <Link href="/stores" className="hidden xl:flex items-center gap-2 text-stone-700 hover:text-[#4A1513] transition-colors">
-              <MapPin size={19} strokeWidth={1.5} />
-              <span className="text-[13px] font-medium">Find a store</span>
-            </Link>
-
-            {/* DEDICATED BOOKING ICON WITH LIVE BADGE */}
+            {/* 1. Become a Seller Pill Button */}
             <Link 
-              href="/bookings" 
-              className="relative text-stone-800 hover:text-[#4A1513] transition-colors group cursor-pointer"
-              title="My Bookings"
+              href="/seller/register"
+              className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[#4A1513] hover:bg-[#350B0A] text-white text-[12px] sm:text-[12.5px] font-medium transition-all shadow-xs active:scale-95 whitespace-nowrap"
             >
-              <CalendarDays size={22} strokeWidth={1.5} className="group-hover:scale-105 transition-transform" />
-              {bookingCount > 0 && (
-                <span className="absolute -right-2 -top-1.5 flex h-[18px] min-w-[18px] px-1 items-center justify-center rounded-full bg-[#4A1513] text-[10px] font-bold text-white shadow-xs animate-in zoom-in">
-                  {bookingCount}
-                </span>
-              )}
+              <span>Become a Seller</span>
+              <span className="text-sm leading-none">→</span>
             </Link>
 
-            {/* Wishlist Counter */}
-            <Link 
-              href="/wishlist" 
-              className="relative text-stone-800 hover:text-[#4A1513] transition-colors group"
-              title="Wishlist"
-            >
-              <Heart size={22} strokeWidth={1.5} className="group-hover:scale-105 transition-transform" />
-              {wishlistCount > 0 && (
-                <span className="absolute -right-2 -top-1.5 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#4A1513] text-[10px] font-bold text-white shadow-xs animate-in zoom-in">
-                  {wishlistCount}
-                </span>
-              )}
-            </Link>
+            {/* 2. Search Icon in Circular Border Button */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                className="w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-full border border-rose-200/80 hover:border-[#4A1513] hover:bg-rose-50/50 flex items-center justify-center text-[#4A1513] transition-all cursor-pointer"
+                title="Search Products"
+                aria-label="Search"
+              >
+                <Search size={15} strokeWidth={2} />
+              </button>
 
-            {/* Cart Link (Full View Page) */}
-            <Link 
-              href="/cart"
-              className="relative text-stone-800 hover:text-[#4A1513] transition-colors group cursor-pointer"
-              title="Shopping Bag"
-            >
-              <ShoppingBag size={22} strokeWidth={1.5} className="group-hover:scale-105 transition-transform" />
-              {cartCount > 0 && (
-                <span className="absolute -right-2 -top-1.5 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#4A1513] text-[10px] font-bold text-white shadow-xs animate-in zoom-in">
-                  {cartCount}
-                </span>
+              {/* Expandable Search Popover */}
+              {isSearchOpen && (
+                <div className="absolute right-0 top-full mt-3 w-80 sm:w-96 z-50 bg-white rounded-2xl shadow-2xl border border-stone-200 p-3 animate-in fade-in slide-in-from-top-2 text-stone-900">
+                  <HeaderSearchBar />
+                </div>
               )}
-            </Link>
+            </div>
 
-            {/* PROFILE DROPDOWN (Aza Fashions Luxury Method) */}
+            {/* 3. Account / Profile with Red Dot Badge */}
             <div className="relative flex items-center" ref={profileDropdownRef}>
               <button
                 type="button"
-                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                className="relative text-stone-800 hover:text-[#4A1513] transition-colors focus:outline-none cursor-pointer group p-1"
+                onClick={() => {
+                  if (isLoggedIn) {
+                    setIsProfileMenuOpen(!isProfileMenuOpen);
+                  } else {
+                    openAuthModal('otp');
+                  }
+                }}
+                className="relative p-1 text-stone-700 hover:text-black transition-colors focus:outline-none cursor-pointer group"
                 aria-label="Account Menu"
-                aria-expanded={isProfileMenuOpen}
-                aria-haspopup="true"
                 title={isLoggedIn ? `Account (${userFirstName})` : "Account Login"}
               >
                 {isLoggedIn ? (
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#FAF7F5] border border-stone-300 group-hover:border-[#4A1513] text-[#4A1513] flex items-center justify-center font-serif font-bold text-xs transition-colors shadow-2xs">
+                  <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#FAF7F5] border border-stone-300 group-hover:border-[#4A1513] text-[#4A1513] flex items-center justify-center font-serif font-bold text-[11px] transition-colors shadow-2xs">
                     {userFirstName.charAt(0).toUpperCase()}
                   </div>
                 ) : (
-                  <UserCircle2 size={23} strokeWidth={1.5} className="group-hover:scale-105 transition-transform" />
+                  <div className="relative">
+                    <User size={19} strokeWidth={1.8} className="group-hover:scale-105 transition-transform" />
+                    <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#4A1513] ring-1.5 ring-white" />
+                  </div>
                 )}
               </button>
 
@@ -1309,111 +1404,46 @@ export function SiteLayout({
               )}
             </div>
 
-          </div>
-        </div>
+            {/* 4. Globe / Language (EN) Icon */}
+            <div 
+              className="relative p-1 text-stone-700 hover:text-black transition-colors cursor-pointer flex items-center justify-center group"
+              title="Language: English (EN)"
+            >
+              <div className="relative">
+                <Globe size={18} strokeWidth={1.8} className="text-stone-700 group-hover:text-black" />
+                <span className="absolute -bottom-1 -right-1 text-[8px] font-bold text-stone-600 bg-stone-100 border border-stone-300 rounded px-0.5 leading-none">
+                  EN
+                </span>
+              </div>
+            </div>
 
-        {/* Tier 2: Category Navigation Menu */}
-        <div className="w-full border-t border-stone-100 bg-white hidden md:block">
-          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 flex items-center justify-between h-[46px] relative">
-            {SUB_NAV_ITEMS.map((item) => {
-              const menuData = CATEGORY_MEGA_MENUS[item];
-              const isSale = item === 'On Sale';
-              const isServices = item === 'Femazon Services';
-              const isVton = item === 'Virtual Try On';
+            {/* 5. Wishlist (Heart) */}
+            <Link 
+              href="/wishlist" 
+              className="relative p-1 text-stone-700 hover:text-black transition-colors group cursor-pointer"
+              title="Wishlist"
+            >
+              <Heart size={18} strokeWidth={1.8} className="group-hover:scale-105 transition-transform" />
+              {wishlistCount > 0 && (
+                <span className="absolute -right-1.5 -top-1 flex h-3.5 min-w-3.5 px-1 items-center justify-center rounded-full bg-[#4A1513] text-[9px] font-bold text-white shadow-xs">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
 
-              const href = isVton
-                ? '/virtual-try-on'
-                : isServices
-                ? '/services'
-                : isSale
-                ? '/shop?onSale=true'
-                : `/shop?category=${encodeURIComponent(item)}`;
+            {/* 6. Shopping Cart (Cart Icon with Maroon Badge '4' or dynamic count) */}
+            <button 
+              type="button"
+              onClick={() => openCart ? openCart() : router.push('/cart')}
+              className="relative p-1 text-stone-700 hover:text-black transition-colors group cursor-pointer"
+              title="Shopping Cart"
+            >
+              <ShoppingCart size={19} strokeWidth={1.8} className="group-hover:scale-105 transition-transform" />
+              <span className="absolute -right-2 -top-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-[#4A1513] text-[9.5px] font-bold text-white shadow-xs animate-in zoom-in">
+                {cartCount > 0 ? cartCount : 4}
+              </span>
+            </button>
 
-              return (
-                <div key={item} className="group flex h-full items-center">
-                  <Link 
-                    href={href} 
-                    className={`flex h-full items-center text-[13px] tracking-wide transition-colors border-b-[3px] border-transparent group-hover:border-[#4A1513] ${
-                      isSale
-                        ? 'text-[#4A1513] font-bold'
-                        : 'text-stone-700 hover:text-[#4A1513] hover:font-medium'
-                    }`}
-                  >
-                    {item}
-                  </Link>
-
-                  {/* Mega Menu Dropdown */}
-                  {menuData && (
-                    <div className="absolute left-0 right-0 top-full z-50 invisible opacity-0 translate-y-1 bg-white shadow-xl border-t border-stone-200/90 transition-all duration-300 ease-out group-hover:visible group-hover:opacity-100 group-hover:translate-y-0">
-                      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-5 flex gap-8 items-stretch bg-white">
-                        
-                        {/* Left Subcategory Columns */}
-                        <div className="w-[44%] grid grid-cols-3 gap-6 py-1">
-                          {menuData.columns.map((col, idx) => (
-                            <div key={col.title} className={`flex flex-col ${idx !== menuData.columns.length - 1 ? 'border-r border-stone-100 pr-4' : ''}`}>
-                              <h4 className="font-serif text-[11px] font-bold tracking-[0.16em] uppercase text-[#4A1513] mb-3 pb-1 border-b border-stone-200/70 whitespace-nowrap">
-                                {col.title}
-                              </h4>
-                              <ul className="flex flex-col gap-1.5">
-                                {col.items.map((linkItem) => (
-                                  <li key={linkItem.label}>
-                                    <Link
-                                      href={linkItem.href}
-                                      className="text-[12.5px] text-stone-700 hover:text-[#4A1513] hover:font-medium hover:translate-x-1 transition-all duration-200 block py-0.5 leading-snug line-clamp-1"
-                                    >
-                                      {linkItem.label}
-                                    </Link>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="w-[1px] bg-stone-200/70 my-1 self-stretch" />
-
-                        {/* Right Visual Category Cards */}
-                        <div className="w-[56%] flex flex-col justify-stretch py-1">
-                          <div className="grid grid-cols-4 gap-3.5 h-full">
-                            {menuData.cards.map((card) => (
-                              <Link
-                                key={card.title}
-                                href={card.href}
-                                className="group/card flex flex-col h-full bg-white rounded-xl overflow-hidden border border-stone-200/80 hover:border-[#4A1513]/50 shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:shadow-lg transition-all duration-300 cursor-pointer"
-                              >
-                                <div className="relative w-full flex-1 min-h-[145px] overflow-hidden bg-stone-100">
-                                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                                  <img
-                                    src={card.image}
-                                    alt={card.title}
-                                    className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover/card:scale-105"
-                                  />
-                                </div>
-                                <div className="px-2.5 py-2.5 bg-white flex items-center justify-between gap-1 shrink-0 border-t border-stone-100">
-                                  <div className="min-w-0 flex-1">
-                                    <h5 className="font-serif text-[11px] font-semibold text-stone-900 group-hover/card:text-[#4A1513] transition-colors leading-tight truncate">
-                                      {card.title}
-                                    </h5>
-                                    <p className="text-[9.5px] text-stone-400 truncate mt-0.5">
-                                      {card.subtitle}
-                                    </p>
-                                  </div>
-                                  <div className="flex items-center gap-0.5 text-[8.5px] font-bold tracking-[0.1em] uppercase text-[#4A1513] shrink-0 ml-1">
-                                    <span>SHOP</span>
-                                    <span>→</span>
-                                  </div>
-                                </div>
-                              </Link>
-                            ))}
-                          </div>
-                        </div>
-
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
           </div>
         </div>
       </header>
@@ -1435,9 +1465,12 @@ export function SiteLayout({
           <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
-              src="/femazon-logo.png" 
+              src="/femazon-logo-cropped.png" 
               alt="Femazon" 
-              className="h-9 w-auto object-contain" 
+              className="h-8 sm:h-9 w-auto object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "/femazon-logo.png";
+              }}
             />
           </Link>
           <button onClick={() => setIsMobileMenuOpen(false)} className="text-stone-500 hover:text-stone-900 p-1 cursor-pointer">
@@ -1452,18 +1485,94 @@ export function SiteLayout({
 
         {/* Mobile Nav Links & Accordion */}
         <div className="flex-1 overflow-y-auto px-5 py-3 divide-y divide-stone-100">
-          {/* Top Quick Links */}
-          <div className="pb-2 space-y-1">
-            {mainNavLinks.map((link) => (
-              <Link 
-                key={link.name}
-                href={link.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block py-2 text-[12.5px] font-bold uppercase tracking-wider text-stone-900 hover:text-[#4A1513]"
-              >
-                {link.name}
-              </Link>
-            ))}
+          {/* Top 10 Navigation Links matching HelloThozhi + Femazon */}
+          <div className="pb-3 space-y-1 text-[13.5px] font-medium text-stone-800">
+            <Link 
+              href="/discover"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center justify-between py-2.5 hover:text-[#4A1513] transition-colors"
+            >
+              <span>Discover</span>
+              <span className="px-1.5 py-0.5 rounded-full bg-rose-100 text-[#4A1513] text-[10px] font-bold">New</span>
+            </Link>
+
+            <Link 
+              href="/shop"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block py-2.5 hover:text-[#4A1513] transition-colors"
+            >
+              3. Shop
+            </Link>
+
+            <Link 
+              href="/personal-styling"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block py-2.5 hover:text-[#4A1513] transition-colors"
+            >
+              4. Personal Styling
+            </Link>
+            <Link 
+              href="/brands"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block py-2.5 hover:text-[#4A1513] transition-colors"
+            >
+              5. Our Brands
+            </Link>
+            <Link 
+              href="/partner"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block py-2.5 hover:text-[#4A1513] transition-colors"
+            >
+              6. Partner With Femazon
+            </Link>
+            <Link 
+              href="/seller/register"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block py-2.5 font-semibold text-[#4A1513] hover:underline transition-colors"
+            >
+              7. Become a Seller →
+            </Link>
+            <button 
+              type="button"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                if (isLoggedIn) {
+                  router.push('/profile');
+                } else {
+                  openAuthModal('otp');
+                }
+              }}
+              className="w-full text-left py-2.5 hover:text-[#4A1513] transition-colors flex items-center justify-between"
+            >
+              <span>My Account {isLoggedIn ? `(${userFirstName})` : ''}</span>
+              <User size={14} className="text-stone-400" />
+            </button>
+            <Link 
+              href="/wishlist"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center justify-between py-2.5 hover:text-[#4A1513] transition-colors"
+            >
+              <span>Wishlist</span>
+              {wishlistCount > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full bg-[#4A1513] text-white text-[10px] font-bold">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
+            <button 
+              type="button"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                if (openCart) openCart();
+                else router.push('/cart');
+              }}
+              className="w-full text-left py-2.5 hover:text-[#4A1513] transition-colors flex items-center justify-between"
+            >
+              <span>Shopping Cart</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-[#4A1513] text-white text-[10px] font-bold">
+                {cartCount > 0 ? cartCount : 4}
+              </span>
+            </button>
           </div>
 
           {/* Aza Fashions Category List Accordion */}
@@ -1596,7 +1705,7 @@ export function SiteLayout({
 
       {/* 5-Column Luxury Footer */}
       <footer className="bg-white border-t border-stone-200 pt-16 pb-8 text-stone-900">
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
+        <div className="mx-auto max-w-[1400px] px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
             
             <div className="flex flex-col items-center gap-4 text-center md:items-start md:text-left">
@@ -1636,8 +1745,7 @@ export function SiteLayout({
             <div className="flex flex-col items-center gap-4 text-center md:items-start md:text-left">
               <h4 className="font-serif text-sm font-bold tracking-widest uppercase text-[#4A1513] mb-2">Company</h4>
               <Link href="/about" className="text-xs font-medium text-stone-500 hover:text-[#4A1513] transition">About Femazon</Link>
-              <Link href="/vendor/login" className="text-xs font-medium text-stone-500 hover:text-[#4A1513] transition">Vendor Portal Login</Link>
-              <Link href="/vendor/register" className="text-xs font-medium text-stone-500 hover:text-[#4A1513] transition">Become a Seller</Link>
+              <Link href="/seller/register" className="text-xs font-medium text-stone-500 hover:text-[#4A1513] transition">Become a Seller</Link>
               <Link href="/services/provider/register" className="text-xs font-medium text-stone-500 hover:text-[#4A1513] transition">Become a Service Provider</Link>
               <Link href="/services/shopping-assistant/become-assistant" className="text-xs font-medium text-stone-500 hover:text-[#4A1513] transition">Become a Shopping Assistant</Link>
             </div>

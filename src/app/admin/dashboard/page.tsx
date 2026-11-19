@@ -9,8 +9,8 @@ import AdminClient from "../AdminClient";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Admin Dashboard | Femazon Control Center",
-  description: "Platform management, vendor approvals, orders, and services.",
+  title: "Super Admin Control Centre | Femazon Luxury Marketplace",
+  description: "Platform-level governance for Women's Gallery Product Marketplace and Personal Styling Services.",
 };
 
 export default async function AdminDashboardPage() {
@@ -47,29 +47,92 @@ export default async function AdminDashboardPage() {
     redirect("/admin");
   }
 
-  // 4. Fetch all admin data in parallel using Promise.all for high performance
+  // 4. Fetch all marketplace data across Product & Service divisions in parallel
   const [
     users, 
     vendors, 
+    stylists,
     products, 
     categories, 
     orders, 
-    bookings, 
-    services
+    stylistBookings
   ] = await Promise.all([
-    prisma.user.findMany({ orderBy: { createdAt: 'desc' } }).catch(() => []),
-    prisma.vendorProfile.findMany({ include: { user: true }, orderBy: { createdAt: 'desc' } }).catch(() => []),
-    prisma.product.findMany({ include: { vendor: true }, orderBy: { createdAt: 'desc' } }).catch(() => []),
-    prisma.category.findMany({ orderBy: { createdAt: 'desc' } }).catch(() => []),
+    // Customers & platform users
+    prisma.user.findMany({ 
+      where: { role: 'CUSTOMER' },
+      orderBy: { createdAt: 'desc' } 
+    }).catch(() => []),
+
+    // External Product Vendors (Women's Gallery)
+    prisma.vendorProfile.findMany({ 
+      include: { 
+        user: { 
+          include: { 
+            products: true 
+          } 
+        } 
+      }, 
+      orderBy: { createdAt: 'desc' } 
+    }).catch(() => []),
+
+    // Service Providers (Personal Styling Professionals)
+    prisma.stylistProfile.findMany({ 
+      include: { 
+        user: true, 
+        packages: true, 
+        portfolios: true, 
+        bookings: true 
+      }, 
+      orderBy: { createdAt: 'desc' } 
+    }).catch(() => []),
+
+    // Vendor submitted products
+    prisma.product.findMany({ 
+      include: { 
+        vendor: { 
+          include: { 
+            vendorProfile: true 
+          } 
+        } 
+      }, 
+      orderBy: { createdAt: 'desc' } 
+    }).catch(() => []),
+
+    // Product Marketplace categories
+    prisma.category.findMany({ 
+      orderBy: { createdAt: 'asc' } 
+    }).catch(() => []),
+
+    // Customer product orders (with line items & vendor linking)
     prisma.order.findMany({ 
-      include: { user: true, items: { include: { product: true } } },
+      include: { 
+        user: true, 
+        items: { 
+          include: { 
+            product: { 
+              include: { 
+                vendor: { 
+                  include: { 
+                    vendorProfile: true 
+                  } 
+                } 
+              } 
+            } 
+          } 
+        } 
+      },
       orderBy: { createdAt: 'desc' }
     }).catch(() => []),
-    prisma.serviceBooking.findMany({
-      include: { user: true, service: true, provider: true },
+
+    // Personal Styling service bookings
+    prisma.stylistBooking.findMany({
+      include: { 
+        stylist: true, 
+        package: true, 
+        user: true 
+      },
       orderBy: { createdAt: 'desc' }
-    }).catch(() => []),
-    prisma.service.findMany({ orderBy: { createdAt: 'desc' } }).catch(() => [])
+    }).catch(() => [])
   ]);
 
   return (
@@ -77,11 +140,11 @@ export default async function AdminDashboardPage() {
       user={user}
       users={users} 
       vendors={vendors} 
+      stylists={stylists}
       products={products} 
       categories={categories} 
       orders={orders} 
-      bookings={bookings}
-      services={services}
+      bookings={stylistBookings}
     />
   );
 }

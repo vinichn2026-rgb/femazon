@@ -160,11 +160,19 @@ export function ProductCard({ product, isWishlisted = false, onQuickAdd, onToggl
           )}
         </div>
 
-        {/* Brand Display */}
+        {/* Seller / Brand Display - HelloThozhi Style */}
         {(product as any).vendorName || product.brand ? (
-          <h2 className="text-[12px] text-text-main font-bold uppercase tracking-widest mt-1 mb-0.5">
-            {(product as any).vendorName || product.brand}
-          </h2>
+          <div className="flex items-center gap-1 mt-1 mb-0.5">
+            <span className="text-[11px] font-bold text-[#4A1513] uppercase tracking-wider truncate flex items-center gap-1.5">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-[#4A1513]">
+                <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7" />
+                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4" />
+                <path d="M2 7h20" />
+              </svg>
+              <span>{(product as any).vendorName || product.brand}</span>
+            </span>
+          </div>
         ) : null}
 
         <h3 className="text-[12px] text-text-muted font-normal leading-snug line-clamp-1 mb-1">

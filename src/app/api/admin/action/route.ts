@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/authOptions';
+import { getApiAuthPayload } from '@/lib/auth';
 import { sendVendorApprovalEmail } from '@/lib/email';
 
 function slugify(text: string): string {
@@ -16,16 +17,39 @@ function slugify(text: string): string {
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    let email: string | undefined;
 
-    const admin = await prisma.user.findUnique({ where: { email: session.user.email } });
-    if (!admin || admin.role !== 'ADMIN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const session = await getServerSession(authOptions).catch(() => null);
+    if (session?.user?.email) {
+      email = session.user.email;
+    } else {
+      const authPayload = await getApiAuthPayload(request).catch(() => null);
+      if (authPayload?.email) {
+        email = authPayload.email;
+      }
+    }
 
-    const body = await request.json();
-    const { action, payload } = body;
+    if (!email) {
+      return NextResponse.json({ error: 'Unauthorized: Session missing' }, { status: 401 });
+    }
+
+    const admin = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true, role: true }
+    });
+
+    if (!admin || admin.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden: Super Admin access required' }, { status: 403 });
+    }
+
+    const body = await request.json().catch(() => ({}));
+    const { action, ...payloadData } = body;
+    const payload = body.payload || payloadData;
 
     switch (action) {
+      // ==========================================
+      // 1. PRODUCT VENDORS MANAGEMENT
+      // ==========================================
       case 'APPROVE_VENDOR': {
         const vendorId = Number(payload?.vendorId || body?.vendorId);
         if (!vendorId || isNaN(vendorId)) {
@@ -66,7 +90,6 @@ export async function POST(request: Request) {
         let emailErrorMsg: string | null = null;
 
         // 5. Duplicate Prevention & Automatic Email Dispatch
-        // If already sent and not an explicit retry request, prevent duplicate email
         const shouldSendEmail = Boolean(recipientEmail) && (!existingProfile.approvalEmailSent || payload.retryEmail === true);
 
         if (shouldSendEmail && recipientEmail) {
@@ -84,7 +107,6 @@ export async function POST(request: Request) {
 
             if (emailResult.success) {
               emailDispatched = true;
-              // Record successful email timestamp in database
               await prisma.vendorProfile.update({
                 where: { id: existingProfile.id },
                 data: {
@@ -95,7 +117,6 @@ export async function POST(request: Request) {
               });
             } else {
               emailErrorMsg = emailResult.error || 'Email dispatch failed';
-              // Record failure in database without reverting approved vendor status
               await prisma.vendorProfile.update({
                 where: { id: existingProfile.id },
                 data: {
@@ -125,6 +146,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ 
           success: true,
+          message: 'Vendor approved successfully',
           vendor: {
             id: vp.id,
             businessName: vp.businessName,
@@ -137,19 +159,209 @@ export async function POST(request: Request) {
         });
       }
 
-      case 'APPROVE_PRODUCT':
+      case 'RESEND_APPROVAL_EMAIL': {
+        const vendorId = Number(payload?.vendorId || body?.vendorId);
+        if (!vendorId || isNaN(vendorId)) {
+          return NextResponse.json({ error: 'Valid vendorId is required' }, { status: 400 });
+        }
+
+        const vendor = await prisma.vendorProfile.findUnique({
+          where: { id: vendorId },
+          include: { user: true }
+        });
+
+        if (!vendor) {
+          return NextResponse.json({ error: 'Vendor not found' }, { status: 404 });
+        }
+
+        const recipientEmail = vendor.user?.email || vendor.email;
+        if (!recipientEmail) {
+          return NextResponse.json({ error: 'Vendor has no registered email address' }, { status: 400 });
+        }
+
+        const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+        const result = await sendVendorApprovalEmail({
+          to: recipientEmail,
+          vendorName: vendor.ownerName || vendor.user?.name || undefined,
+          shopName: vendor.businessName || 'Femazon Partner Boutique',
+          vendorId: vendor.id,
+          loginUrl: `${baseUrl}/vendor/login`,
+          dashboardUrl: `${baseUrl}/vendor/dashboard`,
+          supportEmail: process.env.SUPPORT_EMAIL || 'support@femazon.com'
+        });
+
+        if (result.success) {
+          await prisma.vendorProfile.update({
+            where: { id: vendor.id },
+            data: {
+              approvalEmailSent: true,
+              approvalEmailSentAt: new Date(),
+              approvalEmailError: null
+            }
+          });
+          return NextResponse.json({ success: true, message: 'Approval email dispatched successfully' });
+        } else {
+          await prisma.vendorProfile.update({
+            where: { id: vendor.id },
+            data: { approvalEmailError: result.error || 'Failed to dispatch email' }
+          });
+          return NextResponse.json({ success: false, error: result.error || 'Failed to send email' }, { status: 500 });
+        }
+      }
+
+      case 'REJECT_VENDOR': {
+        await prisma.vendorProfile.update({
+          where: { id: Number(payload.vendorId) },
+          data: { status: 'REJECTED' }
+        });
+        return NextResponse.json({ success: true, message: 'Vendor rejected' });
+      }
+
+      case 'SUSPEND_VENDOR': {
+        await prisma.vendorProfile.update({
+          where: { id: Number(payload.vendorId) },
+          data: { status: 'SUSPENDED' }
+        });
+        return NextResponse.json({ success: true, message: 'Vendor suspended' });
+      }
+
+      case 'ACTIVATE_VENDOR': {
+        await prisma.vendorProfile.update({
+          where: { id: Number(payload.vendorId) },
+          data: { status: 'APPROVED' }
+        });
+        return NextResponse.json({ success: true, message: 'Vendor activated' });
+      }
+
+      case 'UPDATE_VENDOR': {
+        const updated = await prisma.vendorProfile.update({
+          where: { id: Number(payload.vendorId) },
+          data: {
+            businessName: payload.businessName,
+            ownerName: payload.ownerName,
+            phone: payload.phone,
+            address: payload.address,
+            businessCategory: payload.businessCategory,
+            gstNumber: payload.gstNumber,
+            description: payload.description
+          }
+        });
+        return NextResponse.json({ success: true, vendor: updated });
+      }
+
+      // ==========================================
+      // 2. PERSONAL STYLISTS (SERVICE PROVIDERS)
+      // ==========================================
+      case 'APPROVE_STYLIST': {
+        await prisma.stylistProfile.update({
+          where: { id: Number(payload.stylistId) },
+          data: {
+            status: 'APPROVED',
+            verified: true,
+            isActive: true,
+            rejectionReason: null
+          }
+        });
+        return NextResponse.json({ success: true, message: 'Stylist approved and verified' });
+      }
+
+      case 'REJECT_STYLIST': {
+        await prisma.stylistProfile.update({
+          where: { id: Number(payload.stylistId) },
+          data: {
+            status: 'REJECTED',
+            verified: false,
+            rejectionReason: payload.rejectionReason || 'Application does not meet platform requirements'
+          }
+        });
+        return NextResponse.json({ success: true, message: 'Stylist application rejected' });
+      }
+
+      case 'SUSPEND_STYLIST': {
+        await prisma.stylistProfile.update({
+          where: { id: Number(payload.stylistId) },
+          data: {
+            isActive: false,
+            status: 'SUSPENDED'
+          }
+        });
+        return NextResponse.json({ success: true, message: 'Stylist profile suspended' });
+      }
+
+      case 'ACTIVATE_STYLIST': {
+        await prisma.stylistProfile.update({
+          where: { id: Number(payload.stylistId) },
+          data: {
+            isActive: true,
+            status: 'APPROVED'
+          }
+        });
+        return NextResponse.json({ success: true, message: 'Stylist profile activated' });
+      }
+
+      case 'TOGGLE_STYLIST_FEATURED': {
+        const current = await prisma.stylistProfile.findUnique({
+          where: { id: Number(payload.stylistId) },
+          select: { featured: true }
+        });
+        const updated = await prisma.stylistProfile.update({
+          where: { id: Number(payload.stylistId) },
+          data: { featured: !current?.featured }
+        });
+        return NextResponse.json({ success: true, featured: updated.featured });
+      }
+
+      case 'UPDATE_STYLIST': {
+        const updated = await prisma.stylistProfile.update({
+          where: { id: Number(payload.stylistId) },
+          data: {
+            fullName: payload.fullName,
+            email: payload.email,
+            phone: payload.phone,
+            city: payload.city,
+            location: payload.location,
+            experience: payload.experience,
+            experienceYears: Number(payload.experienceYears) || 0,
+            bio: payload.bio,
+            specializations: typeof payload.specializations === 'string' ? payload.specializations : JSON.stringify(payload.specializations || []),
+            availabilitySchedule: payload.availabilitySchedule,
+            commissionRate: payload.commissionRate !== undefined ? Number(payload.commissionRate) : undefined,
+          }
+        });
+        return NextResponse.json({ success: true, stylist: updated });
+      }
+
+      // ==========================================
+      // 3. VENDOR PRODUCTS (MONITORING & APPROVAL)
+      // ==========================================
+      case 'APPROVE_PRODUCT': {
         await prisma.product.update({
-          where: { id: payload.productId },
+          where: { id: Number(payload.productId) },
           data: { approvalStatus: 'APPROVED' }
         });
-        return NextResponse.json({ success: true });
-        
-      case 'REJECT_PRODUCT':
+        return NextResponse.json({ success: true, message: 'Vendor product approved' });
+      }
+
+      case 'REJECT_PRODUCT': {
         await prisma.product.update({
-          where: { id: payload.productId },
+          where: { id: Number(payload.productId) },
           data: { approvalStatus: 'REJECTED' }
         });
-        return NextResponse.json({ success: true });
+        return NextResponse.json({ success: true, message: 'Vendor product rejected' });
+      }
+
+      case 'TOGGLE_PRODUCT_ACTIVE': {
+        const current = await prisma.product.findUnique({
+          where: { id: Number(payload.productId) },
+          select: { approvalStatus: true }
+        });
+        const newStatus = current?.approvalStatus === 'APPROVED' ? 'SUSPENDED' : 'APPROVED';
+        const updated = await prisma.product.update({
+          where: { id: Number(payload.productId) },
+          data: { approvalStatus: newStatus }
+        });
+        return NextResponse.json({ success: true, approvalStatus: updated.approvalStatus });
+      }
 
       case 'CREATE_PRODUCT': {
         const slug = (payload.name || 'product').toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now();
@@ -210,32 +422,82 @@ export async function POST(request: Request) {
         await prisma.product.delete({
           where: { id: Number(payload.productId || payload.id) }
         });
+        return NextResponse.json({ success: true, message: 'Product removed' });
+      }
+
+      // ==========================================
+      // 4. ORDERS MANAGEMENT
+      // ==========================================
+      case 'UPDATE_ORDER_STATUS': {
+        const orderId = Number(payload.orderId);
+        const updateData: any = {};
+        if (payload.status) updateData.status = payload.status;
+        if (payload.remarks !== undefined) updateData.remarks = payload.remarks;
+        if (payload.dueDate !== undefined) updateData.dueDate = payload.dueDate ? new Date(payload.dueDate) : null;
+        if (payload.deliveredOn !== undefined) updateData.deliveredOn = payload.deliveredOn ? new Date(payload.deliveredOn) : null;
+        if (payload.status === 'DELIVERED' && !payload.deliveredOn) updateData.deliveredOn = new Date();
+
+        const updated = await prisma.order.update({
+          where: { id: orderId },
+          data: updateData
+        });
+        return NextResponse.json({ success: true, order: updated });
+      }
+
+      // ==========================================
+      // 5. BOOKINGS MANAGEMENT (STYLIST BOOKINGS)
+      // ==========================================
+      case 'UPDATE_STYLIST_BOOKING_STATUS': {
+        const bookingId = Number(payload.bookingId);
+        const updated = await prisma.stylistBooking.update({
+          where: { id: bookingId },
+          data: { status: payload.status }
+        });
+        return NextResponse.json({ success: true, booking: updated });
+      }
+
+      case 'UPDATE_BOOKING_STATUS': {
+        await prisma.serviceBooking.update({
+          where: { id: Number(payload.bookingId) },
+          data: { status: payload.status }
+        });
         return NextResponse.json({ success: true });
       }
 
-      case 'DELETE_USER':
+      // ==========================================
+      // 6. CUSTOMERS & SYSTEM
+      // ==========================================
+      case 'DELETE_USER': {
+        const targetUserId = Number(payload.userId);
+        if (targetUserId === admin.id) {
+          return NextResponse.json({ error: 'Cannot delete the current active administrator' }, { status: 400 });
+        }
         await prisma.user.delete({
-          where: { id: payload.userId }
+          where: { id: targetUserId }
         });
-        return NextResponse.json({ success: true });
+        return NextResponse.json({ success: true, message: 'User deleted' });
+      }
 
-      case 'CREATE_CATEGORY':
+      case 'CREATE_CATEGORY': {
+        const slug = (payload.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
         const cat = await prisma.category.create({
           data: {
             name: payload.name,
-            slug: payload.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+            slug,
             description: payload.description
           }
         });
-        return NextResponse.json(cat);
+        return NextResponse.json({ success: true, category: cat });
+      }
 
-      case 'DELETE_CATEGORY':
+      case 'DELETE_CATEGORY': {
         await prisma.category.delete({
-          where: { id: payload.categoryId }
+          where: { id: Number(payload.categoryId) }
         });
         return NextResponse.json({ success: true });
+      }
 
-      case 'CREATE_SERVICE':
+      case 'CREATE_SERVICE': {
         const newService = await prisma.service.create({
           data: {
             name: payload.name,
@@ -246,25 +508,20 @@ export async function POST(request: Request) {
           }
         });
         return NextResponse.json(newService);
+      }
 
-      case 'DELETE_SERVICE':
+      case 'DELETE_SERVICE': {
         await prisma.service.delete({
-          where: { id: payload.serviceId }
+          where: { id: Number(payload.serviceId) }
         });
         return NextResponse.json({ success: true });
-
-      case 'UPDATE_BOOKING_STATUS':
-        await prisma.serviceBooking.update({
-          where: { id: payload.bookingId },
-          data: { status: payload.status }
-        });
-        return NextResponse.json({ success: true });
+      }
 
       default:
-        return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
+        return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });
     }
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: 'Failed to perform action' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Admin action error:', error);
+    return NextResponse.json({ error: error?.message || 'Failed to perform administrative action' }, { status: 500 });
   }
 }

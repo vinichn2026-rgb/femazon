@@ -399,7 +399,7 @@ export function AddProductWithVariants({
     <div className="w-full max-w-5xl mx-auto space-y-8 font-sans text-stone-800">
       
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-[#4A1513] to-[#2B1311] rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+      <div className="bg-gradient-to-r from-[#4A1513] to-[#350B0A] rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white text-xs font-bold uppercase tracking-wider mb-3">

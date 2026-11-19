@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { X, ChevronDown, Check, Search } from 'lucide-react';
+import { X, ChevronDown, Check, Search, Store } from 'lucide-react';
 
 export interface FilterState {
   silhouettes?: string[];
@@ -13,6 +13,13 @@ export interface FilterState {
   inStockOnly: boolean;
   onSale: boolean;
   readyToShip: boolean;
+}
+
+export interface FilterBrandOption {
+  name: string;
+  count: number;
+  city?: string;
+  verified?: boolean;
 }
 
 export const SILHOUETTE_OPTIONS = [
@@ -34,10 +41,131 @@ export const SILHOUETTE_OPTIONS = [
   { label: "Peplum Set", value: "Peplum" }
 ];
 
+export interface DepartmentCategoryGroup {
+  id: string;
+  number: number;
+  name: string;
+  categories: string[];
+}
+
+export const SHOP_CATEGORY_DEPARTMENTS: DepartmentCategoryGroup[] = [
+  {
+    id: "womens-wear",
+    number: 1,
+    name: "Women's Wear",
+    categories: [
+      "Sarees",
+      "Kurtis",
+      "Chudithar",
+      "Kurta Sets",
+      "Lehengas",
+      "Dresses",
+      "Gowns",
+      "Co-ord Sets",
+      "Western Wear",
+      "Tops",
+      "Kaftans",
+      "Indo-Western"
+    ]
+  },
+  {
+    id: "beauty",
+    number: 2,
+    name: "Beauty & Self-Care",
+    categories: [
+      "Skincare",
+      "Hair Care",
+      "Face Care",
+      "Body Care",
+      "Makeup",
+      "Fragrances",
+      "Bath & Body",
+      "Beauty Gift Sets"
+    ]
+  },
+  {
+    id: "jewellery",
+    number: 3,
+    name: "Jewellery & Accessories",
+    categories: [
+      "Handbags",
+      "Potlis",
+      "Earrings",
+      "Necklaces",
+      "Bangles",
+      "Rings",
+      "Hair Accessories",
+      "Shawls",
+      "Stoles & Scarves",
+      "Belts",
+      "Footwear"
+    ]
+  },
+  {
+    id: "gifts",
+    number: 4,
+    name: "Gifts for Every Occasion",
+    categories: [
+      "Birthday Gifts",
+      "Anniversary Gifts",
+      "Personalised Gifts",
+      "Festival Gifts",
+      "Wedding Gifts",
+      "Return Gifts",
+      "Gift Hampers",
+      "Gifts for Her",
+      "Gifts for Him"
+    ]
+  }
+];
+
+export const DEPARTMENT_PRICE_TIERS: Record<string, PriceTier[]> = {
+  "womens-wear": [
+    { label: "Under ₹1,499", min: 0, max: 1499 },
+    { label: "₹1,500 – ₹2,999", min: 1500, max: 2999 },
+    { label: "₹3,000 – ₹5,999", min: 3000, max: 5999 },
+    { label: "₹6,000 – ₹9,999", min: 6000, max: 9999 },
+    { label: "₹10,000 & Above", min: 10000, max: null },
+  ],
+  beauty: [
+    { label: "Under ₹499", min: 0, max: 499 },
+    { label: "₹500 – ₹999", min: 500, max: 999 },
+    { label: "₹1,000 – ₹1,999", min: 1000, max: 1999 },
+    { label: "₹2,000 & Above", min: 2000, max: null },
+  ],
+  jewellery: [
+    { label: "Under ₹799", min: 0, max: 799 },
+    { label: "₹800 – ₹1,999", min: 800, max: 1999 },
+    { label: "₹2,000 – ₹3,999", min: 2000, max: 3999 },
+    { label: "₹4,000 & Above", min: 4000, max: null },
+  ],
+  gifts: [
+    { label: "Under ₹499", min: 0, max: 499 },
+    { label: "₹500 – ₹1,499", min: 500, max: 1499 },
+    { label: "₹1,500 – ₹2,999", min: 1500, max: 2999 },
+    { label: "₹3,000 & Above", min: 3000, max: null },
+  ],
+  all: [
+    { label: "Under ₹999", min: 0, max: 999 },
+    { label: "₹1,000 – ₹2,499", min: 1000, max: 2499 },
+    { label: "₹2,500 – ₹4,999", min: 2500, max: 4999 },
+    { label: "₹5,000 & Above", min: 5000, max: null },
+  ],
+};
+
+export interface PriceTier {
+  label: string;
+  min: number;
+  max: number | null;
+}
+
 interface FilterSidebarProps {
   categories: string[];
   selectedCategory: string;
   onSelectCategory: (category: string) => void;
+  selectedDepartment?: string;
+  onSelectDepartment?: (deptId: string) => void;
+  availableBrands?: FilterBrandOption[];
   filters: FilterState;
   onFilterChange: (type: keyof FilterState, value: any) => void;
   onClearAll: () => void;
@@ -194,68 +322,290 @@ const OCCASION_VARIETIES = [
   "Daily Wear"
 ];
 
-const CATEGORY_SUB_ITEMS: Record<string, string[]> = {
-  Chudithar: CHUDITHAR_VARIETIES,
-  Kurti: KURTI_VARIETIES,
-  Anarkali: ANARKALI_VARIETIES,
+export const CATEGORY_SUB_ITEMS: Record<string, string[]> = {
+  Sarees: SAREE_VARIETIES,
   Saree: SAREE_VARIETIES,
+  "Kurta Sets": [
+    "Kurta with Dupatta Set",
+    "Kurta Palazzo Set",
+    "Kurta Pant Set",
+    "Kurta Skirt Set",
+    "Straight Cut Kurta Set",
+    "Anarkali Kurta Set",
+    "Sharara Kurta Set",
+    "Embroidered Kurta Set"
+  ],
+  Kurtis: KURTI_VARIETIES,
+  Kurti: KURTI_VARIETIES,
+  Chudithar: CHUDITHAR_VARIETIES,
+  Anarkali: ANARKALI_VARIETIES,
+  Lehengas: [
+    "Bridal Lehenga",
+    "Party Wear Lehenga",
+    "Floral Print Lehenga",
+    "Semi-Stitched Lehenga",
+    "Velvet Lehenga",
+    "Georgette Lehenga",
+    "Silk Brocade Lehenga"
+  ],
+  Dresses: [
+    "Midi Dresses",
+    "Maxi Dresses",
+    "Mini Dresses",
+    "Bodycon Dresses",
+    "A-Line Dresses",
+    "Wrap Dresses",
+    "Shirt Dresses",
+    "Party Wear Dresses"
+  ],
+  Gowns: [
+    "Evening Gowns",
+    "Ball Gowns",
+    "Indo-Western Gowns",
+    "Cape Style Gowns",
+    "Embroidered Gowns",
+    "Reception Gowns"
+  ],
+  "Co-ord Sets": [
+    "Printed Co-ords",
+    "Festive Ethnic Co-ords",
+    "Blazer Sets",
+    "Crop Top & Skirt Sets",
+    "Casual Summer Sets"
+  ],
+  "Western Wear": [
+    "Jumpsuits",
+    "Blazers & Jackets",
+    "Tops & Blouses",
+    "Trousers & Pants",
+    "Skirts"
+  ],
+  Tops: [
+    "Crop Tops",
+    "Shirts & Blouses",
+    "Tunics",
+    "Peplum Tops",
+    "Ethnic Tops"
+  ],
+  Handbags: [
+    "Tote Bags",
+    "Shoulder Bags",
+    "Crossbody Bags",
+    "Clutches",
+    "Satchels"
+  ],
+  Potlis: [
+    "Embroidered Potlis",
+    "Bridal Potlis",
+    "Velvet Potlis",
+    "Pearl Embellished Potlis",
+    "Zari Work Potlis"
+  ],
+  Earrings: [
+    "Jhumkas",
+    "Chandbalis",
+    "Stud Earrings",
+    "Drop & Dangle Earrings",
+    "Hoop Earrings"
+  ],
+  Necklaces: [
+    "Choker Sets",
+    "Kundan Necklaces",
+    "Temple Jewellery",
+    "Polki Sets",
+    "Pendant Chains"
+  ],
+  Bangles: [
+    "Kada Bangles",
+    "Silk Thread Bangles",
+    "Bridal Chooda",
+    "Glass Bangles",
+    "Antique Gold Bangles"
+  ],
+  Rings: [
+    "Statement Rings",
+    "Solitaire Rings",
+    "Kundan Rings",
+    "Adjustable Rings"
+  ],
+  "Hair Accessories": [
+    "Hair Bands",
+    "Matha Patti",
+    "Maang Tikka",
+    "Hair Pins & Brooches",
+    "Scrunchies & Clips"
+  ],
+  Shawls: [
+    "Pashmina Shawls",
+    "Kashmiri Embroidered Shawls",
+    "Silk Shawls",
+    "Woolen Shawls"
+  ],
+  "Stoles & Scarves": [
+    "Silk Stoles",
+    "Printed Scarves",
+    "Chiffon Stoles",
+    "Handloom Stoles"
+  ],
+  Belts: [
+    "Embroidered Belts",
+    "Metallic Kamarbandh",
+    "Leather Belts",
+    "Saree Belts"
+  ],
+  Footwear: [
+    "Punjabi Juttis",
+    "Kolhapuris",
+    "Embellished Mojaris",
+    "Block Heels",
+    "Bridal Sandals"
+  ],
+  Skincare: [
+    "Face Serums",
+    "Moisturizers",
+    "Sunscreen",
+    "Toners & Mists",
+    "Night Creams"
+  ],
+  "Hair Care": [
+    "Herbal Hair Oils",
+    "Shampoos",
+    "Conditioners",
+    "Hair Masks",
+    "Hair Growth Serums"
+  ],
+  "Face Care": [
+    "Cleansers",
+    "Exfoliators & Scrubs",
+    "Sheet Masks",
+    "Clay Masks"
+  ],
+  "Body Care": [
+    "Body Lotions",
+    "Body Washes",
+    "Body Butters",
+    "Scrubs & Polishes"
+  ],
+  Makeup: [
+    "Lipsticks & Lip Oils",
+    "Kohl & Eyeliners",
+    "Eyeshadow Palettes",
+    "Foundations & BB Creams",
+    "Highlighters"
+  ],
+  Fragrances: [
+    "Artisanal Attars",
+    "Eau De Parfum",
+    "Body Mists",
+    "Solid Perfumes"
+  ],
+  "Birthday Gifts": [
+    "Curated Birthday Hampers",
+    "Personalised Keepsakes",
+    "Luxury Chocolate Boxes",
+    "Spa & Self-Care Kits"
+  ],
+  "Anniversary Gifts": [
+    "Couples Hampers",
+    "Personalised Frame & Watch",
+    "Luxury Scented Candles",
+    "Wine & Gourmet Sets"
+  ],
+  "Wedding Gifts": [
+    "Bridal Trousseau Boxes",
+    "Silverware & Keepsakes",
+    "Luxury Home Decor Gifts",
+    "Heritage Silk Hampers"
+  ],
+  "Personalised Gifts": [
+    "Custom Engraved Gifts",
+    "Monogrammed Robes & Bags",
+    "Personalised Jewellery Boxes",
+    "Custom Photo Hampers"
+  ],
+  "Gift Hampers": [
+    "Festive Sweet Hampers",
+    "Organic Wellness Hampers",
+    "Tea & Coffee Connoisseur",
+    "Royal Gourmet Baskets"
+  ],
+  "Gifts for Her": [
+    "Designer Jewellery Gifts",
+    "Luxury Perfume Sets",
+    "Silk Sarees & Dupattas",
+    "Pamper Care Hampers"
+  ],
+  "Gifts for Him": [
+    "Grooming Essentials Kits",
+    "Wallets & Belt Sets",
+    "Classic Watches",
+    "Gourmet Snack Hampers"
+  ],
+  "Festival Gifts": [
+    "Diwali Sweet & Diya Sets",
+    "Pongal & Sankranti Hampers",
+    "Eid Royal Treats",
+    "Christmas & New Year Hampers"
+  ],
   Occasions: OCCASION_VARIETIES,
-  Ethnic: ["Kurtas", "Anarkali", "Ethnic Dresses", "Kurta Sets", "Lehengas", "Dupattas"],
-  Dresses: ["Midi Dresses", "Maxi Dresses", "Mini Dresses", "Party Dresses", "Bodycon Dresses"],
-  "Co-ords": ["Printed Co-ords", "Festive Sets", "Western Sets", "Blazer Sets"],
-  Tops: ["Crop Tops", "Shirts & Blouses", "Tunics", "T-Shirts"]
 };
 
-const PRICE_RANGES = [
-  "Under ₹999",
-  "₹1,000 - ₹2,499",
-  "₹2,500 - ₹4,999",
-  "₹5,000+"
+const DEFAULT_BRANDS: FilterBrandOption[] = [
+  { name: "Femazon Luxe", count: 113, city: "Chennai", verified: true },
+  { name: "Femazon Heritage", count: 7, city: "Coimbatore", verified: true },
+  { name: "Kovai Handlooms & Silks", count: 18, city: "Coimbatore", verified: true },
+  { name: "Nagla Atelier", count: 24, city: "Chennai", verified: true },
+  { name: "Siruvani Botanical Care", count: 14, city: "Coimbatore", verified: true },
+  { name: "Kongu Artisanal Treats", count: 12, city: "Coimbatore", verified: true },
+  { name: "Mylapore Heritage Silks", count: 16, city: "Chennai", verified: true },
+  { name: "Priya Sundaram Couture", count: 9, city: "Chennai", verified: true },
+  { name: "Bengaluru Silk Haven", count: 15, city: "Bangalore", verified: true },
 ];
-
-const SIZES = ["XS", "S", "M", "L", "XL", "XXL", "Free Size"];
-
-const COLORS = [
-  { name: "Black", hex: "#4A1513" },
-  { name: "White", hex: "#FFFFFF" },
-  { name: "Red", hex: "#E53E3E" },
-  { name: "Navy", hex: "#2C5282" },
-  { name: "Emerald Green", hex: "#38A169" },
-  { name: "Mustard", hex: "#D69E2E" },
-  { name: "Blush Pink", hex: "#F687B3" },
-  { name: "Lavender", hex: "#B794F4" }
-];
-
-const BRANDS = ["Aura Studio", "Ethnic Vibes", "Urban Chic", "Festive Glow"];
 
 // Accordion Component Helper
-function Accordion({ title, children, defaultOpen = false }: { title: string, children: React.ReactNode, defaultOpen?: boolean }) {
+function Accordion({ title, badge, children, defaultOpen = false }: { title: string, badge?: string | number, children: React.ReactNode, defaultOpen?: boolean }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   return (
-    <div className="border-b border-zinc-100 py-5">
+    <div className="border-b border-zinc-100 py-4">
       <button 
+        type="button"
         onClick={() => setIsOpen(!isOpen)} 
-        className="flex w-full items-center justify-between font-bold text-[13px] tracking-wide text-primary hover:text-zinc-600 transition-colors"
+        className="flex w-full items-center justify-between font-bold text-[13px] tracking-wide text-stone-900 hover:text-[#4A1513] transition-colors"
       >
-        <span>{title}</span>
-        <ChevronDown size={14} className={`transition-transform duration-300 text-zinc-400 ${isOpen ? 'rotate-180' : ''}`} />
+        <span className="flex items-center gap-2">
+          <span>{title}</span>
+          {badge !== undefined && (
+            <span className="px-1.5 py-0.2 rounded-full bg-stone-100 text-[#4A1513] text-[10px] font-bold">
+              {badge}
+            </span>
+          )}
+        </span>
+        <ChevronDown size={14} className={`transition-transform duration-300 text-zinc-400 ${isOpen ? 'rotate-180 text-[#4A1513]' : ''}`} />
       </button>
-      <div className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
+      <div className={`overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-[500px] opacity-100 mt-3' : 'max-h-0 opacity-0'}`}>
         {children}
       </div>
     </div>
   );
 }
 
-export function FilterSidebar({ categories, selectedCategory, onSelectCategory, filters, onFilterChange, onClearAll, isOpen, onClose }: FilterSidebarProps) {
+export function FilterSidebar({ 
+  categories, 
+  selectedCategory, 
+  onSelectCategory, 
+  selectedDepartment = "all",
+  onSelectDepartment,
+  availableBrands = DEFAULT_BRANDS,
+  filters, 
+  onFilterChange, 
+  onClearAll, 
+  isOpen, 
+  onClose 
+}: FilterSidebarProps) {
   const [brandSearch, setBrandSearch] = useState("");
-  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
-    Chudithar: true,
-    Kurti: false,
-    Anarkali: false,
-    Saree: false,
-    Occasions: false,
-  });
+  const [customMin, setCustomMin] = useState("");
+  const [customMax, setCustomMax] = useState("");
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
 
   const toggleCategoryExpand = (cat: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -295,13 +645,14 @@ export function FilterSidebar({ categories, selectedCategory, onSelectCategory, 
     }
   };
 
-  const filteredBrands = BRANDS.filter(b => b.toLowerCase().includes(brandSearch.toLowerCase()));
+  const allBrandsList = availableBrands && availableBrands.length > 0 ? availableBrands : DEFAULT_BRANDS;
+  const filteredBrands = allBrandsList.filter(b => b.name.toLowerCase().includes(brandSearch.toLowerCase()));
 
   const SidebarContent = (
     <div className="flex h-full flex-col">
       {/* Header for Mobile */}
       <div className="flex lg:hidden items-center justify-between pb-4 border-b border-accent/20 px-6 py-5">
-        <h2 className="font-serif text-xl font-normal text-text-main tracking-wide">Filters</h2>
+        <h2 className="font-serif text-xl font-normal text-text-main tracking-wide">Filters &amp; Categories</h2>
         <button onClick={onClose} className="text-text-muted hover:text-text-main">
           <X size={20} />
         </button>
@@ -310,39 +661,54 @@ export function FilterSidebar({ categories, selectedCategory, onSelectCategory, 
       {/* Scrollable Filters Area */}
       <div className="flex-1 overflow-y-auto px-6 lg:px-0 pb-24 lg:pb-8 hide-scrollbar">
         
-        {/* CATEGORY NAV - Revolve Style with Nested Dropdowns */}
-        <div className="pb-6 lg:pt-0 pt-4">
-          <h3 className="font-bold text-[13px] tracking-wide text-primary uppercase mb-4">Category</h3>
-          <ul className="space-y-1">
+        {/* 1. CATEGORY NAV - Clean List with Nested Subcategories */}
+        <div className="pb-5 lg:pt-0 pt-4 border-b border-stone-100">
+          <div className="flex items-center justify-between min-h-[36px] mb-3">
+            <h3 className="font-bold text-[13px] tracking-wider text-stone-900 uppercase">Categories</h3>
+            {selectedCategory !== "All" && (
+              <button 
+                type="button" 
+                onClick={() => onSelectCategory("All")}
+                className="text-[11px] font-semibold text-[#4A1513] hover:underline cursor-pointer"
+              >
+                Reset to All
+              </button>
+            )}
+          </div>
+
+          {/* Clean List of Categories under selected department */}
+          <ul className="space-y-0.5">
             {categories.map((cat) => {
               const subItems = CATEGORY_SUB_ITEMS[cat] || [];
               const isExpanded = Boolean(expandedCategories[cat]);
               const isSelected = selectedCategory === cat;
-              const hasActiveSub = subItems.some(sub => filters.subcategories.includes(sub));
+              const hasActiveSub = subItems.some((sub) => filters.subcategories.includes(sub));
 
               return (
-                <li key={cat} className="flex flex-col border-b border-stone-100/60 pb-1 pt-1">
-                  <div className="flex items-center justify-between py-1 group/cat">
+                <li key={cat} className="flex flex-col border-b border-stone-100/60 last:border-0 pb-0.5 pt-0.5">
+                  <div className="flex items-center justify-between py-1 group/cat px-1">
                     <button
                       type="button"
                       onClick={() => {
                         onSelectCategory(cat);
                         if (subItems.length > 0 && !isExpanded) {
-                          setExpandedCategories(prev => ({ ...prev, [cat]: true }));
+                          setExpandedCategories((prev) => ({ ...prev, [cat]: true }));
                         }
                         if (window.innerWidth < 1024 && subItems.length === 0) onClose();
                       }}
-                      className={`text-[13px] text-left transition-all flex items-center gap-2 cursor-pointer flex-1 ${
-                        isSelected 
-                          ? 'font-bold text-[#4A1513]' 
+                      className={`text-[12.5px] text-left transition-all flex items-center gap-1.5 cursor-pointer flex-1 ${
+                        isSelected
+                          ? "font-bold text-[#4A1513]"
                           : hasActiveSub
-                          ? 'font-semibold text-[#4A1513]'
-                          : 'text-stone-600 hover:text-stone-950 font-normal'
+                          ? "font-semibold text-[#4A1513]"
+                          : "text-stone-600 hover:text-stone-950 font-normal"
                       }`}
                     >
-                      <span>{cat === 'All' ? 'All Items' : cat}</span>
+                      <span>{cat === "All" ? "All in This Department" : cat}</span>
                       {subItems.length > 0 && (
-                        <span className="text-[10px] text-stone-400 font-medium group-hover/cat:text-[#4A1513]">({subItems.length})</span>
+                        <span className="text-[10px] text-stone-400 font-medium group-hover/cat:text-[#4A1513]">
+                          ({subItems.length})
+                        </span>
                       )}
                     </button>
 
@@ -354,19 +720,28 @@ export function FilterSidebar({ categories, selectedCategory, onSelectCategory, 
                         <button
                           type="button"
                           onClick={(e) => toggleCategoryExpand(cat, e)}
-                          className="p-1 text-stone-400 hover:text-[#4A1513] transition-transform duration-200"
+                          className="p-1 text-stone-400 hover:text-[#4A1513] transition-transform duration-200 cursor-pointer"
                           title={`Toggle ${cat} list`}
                         >
-                          <ChevronDown size={13} className={`transition-transform duration-300 ${isExpanded ? 'rotate-180 text-[#4A1513]' : ''}`} />
+                          <ChevronDown
+                            size={12}
+                            className={`transition-transform duration-300 ${
+                              isExpanded ? "rotate-180 text-[#4A1513]" : ""
+                            }`}
+                          />
                         </button>
                       )}
                     </div>
                   </div>
 
-                  {/* Expandable Sub-Categories List */}
+                  {/* Subcategories (only shown when expanded) */}
                   {subItems.length > 0 && (
-                    <div className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-[280px] opacity-100 mt-1 mb-2' : 'max-h-0 opacity-0'}`}>
-                      <div className="pl-3.5 ml-1 border-l-2 border-[#4A1513]/20 space-y-1 py-1 max-h-[260px] overflow-y-auto hide-scrollbar">
+                    <div
+                      className={`overflow-hidden transition-all duration-300 ${
+                        isExpanded ? "max-h-[260px] opacity-100 mt-1 mb-1.5" : "max-h-0 opacity-0"
+                      }`}
+                    >
+                      <div className="pl-3.5 ml-1 border-l-2 border-[#4A1513]/20 space-y-1 py-1 max-h-[240px] overflow-y-auto hide-scrollbar">
                         {subItems.map((sub) => {
                           const isSubSelected = filters.subcategories.includes(sub);
                           return (
@@ -374,16 +749,16 @@ export function FilterSidebar({ categories, selectedCategory, onSelectCategory, 
                               key={sub}
                               type="button"
                               onClick={() => {
-                                handleCheckboxToggle('subcategories', sub, filters.subcategories);
-                                if (selectedCategory !== cat && selectedCategory !== 'All') {
+                                handleCheckboxToggle("subcategories", sub, filters.subcategories);
+                                if (selectedCategory !== cat && selectedCategory !== "All") {
                                   onSelectCategory(cat);
                                 }
                                 if (window.innerWidth < 1024) onClose();
                               }}
-                              className={`text-[12px] text-left w-full flex items-center justify-between py-1 px-1.5 rounded-md transition-colors ${
+                              className={`text-[11.5px] text-left w-full flex items-center justify-between py-1 px-1.5 rounded-md transition-colors cursor-pointer ${
                                 isSubSelected
-                                  ? 'font-bold text-[#4A1513] bg-[#4A1513]/5'
-                                  : 'text-stone-500 hover:text-stone-900 hover:bg-stone-50'
+                                  ? "font-bold text-[#4A1513] bg-[#4A1513]/5"
+                                  : "text-stone-500 hover:text-stone-900 hover:bg-stone-50"
                               }`}
                             >
                               <span className="truncate pr-2">{sub}</span>
@@ -404,306 +779,181 @@ export function FilterSidebar({ categories, selectedCategory, onSelectCategory, 
           </ul>
         </div>
 
-        {/* DRESS SILHOUETTE ACCORDION */}
-        <Accordion title="Dress Silhouette" defaultOpen={true}>
-          <div className="space-y-2 max-h-[220px] overflow-y-auto hide-scrollbar pt-1">
-            {SILHOUETTE_OPTIONS.map((sil) => {
-              const isChecked = filters.silhouettes?.includes(sil.value);
-              return (
-                <label key={sil.value} className="flex items-center gap-2.5 group cursor-pointer py-0.5">
-                  <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-colors ${isChecked ? 'bg-[#4A1513] border-[#4A1513] text-white' : 'border-stone-300 bg-white group-hover:border-[#4A1513]'}`}>
-                    {isChecked && <Check size={10} strokeWidth={3} />}
-                  </div>
-                  <span className={`text-[12.5px] transition-colors ${isChecked ? 'font-bold text-[#4A1513]' : 'text-stone-600 group-hover:text-stone-900'}`}>
-                    {sil.label}
-                  </span>
-                  <input
-                    type="checkbox"
-                    className="hidden"
-                    checked={isChecked}
-                    onChange={() => handleCheckboxToggle('silhouettes', sil.value, filters.silhouettes || [])}
-                  />
-                </label>
-              );
-            })}
+        {/* 2. SELLERS & BRANDS (DIRECTLY UNDER CATEGORIES - HelloThozhi Style) */}
+        <Accordion title="Sellers &amp; Brands" badge={filters.brands.length > 0 ? filters.brands.length : undefined} defaultOpen={false}>
+          <div className="pt-1">
+            {/* Search Sellers / Brands */}
+            <div className="mb-3 relative">
+              <input 
+                type="text" 
+                placeholder="Search sellers or brands..." 
+                value={brandSearch}
+                onChange={(e) => setBrandSearch(e.target.value)}
+                className="w-full bg-stone-50 border border-stone-200/90 rounded-lg py-1.5 pl-7 pr-3 text-[12px] text-stone-900 placeholder-stone-400 focus:outline-none focus:border-[#4A1513] transition"
+              />
+              <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-stone-400" />
+            </div>
+
+            {/* List of Sellers & Brands with real-time product counts */}
+            <div className="space-y-1.5 max-h-[220px] overflow-y-auto hide-scrollbar pr-1">
+              {filteredBrands.map((b) => {
+                const isChecked = filters.brands.includes(b.name);
+                return (
+                  <label key={b.name} className="flex items-center justify-between group cursor-pointer py-1 px-1.5 rounded-md hover:bg-stone-50 transition-colors">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-colors shrink-0 ${
+                        isChecked ? 'bg-[#4A1513] border-[#4A1513] text-white' : 'border-stone-300 bg-white group-hover:border-[#4A1513]'
+                      }`}>
+                        {isChecked && <Check size={10} strokeWidth={3} />}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className={`text-[12.5px] block truncate transition-colors ${
+                          isChecked ? 'font-bold text-[#4A1513]' : 'text-stone-700 group-hover:text-stone-950'
+                        }`}>
+                          {b.name}
+                        </span>
+                        {b.city && (
+                          <span className="text-[10px] text-stone-400 block truncate">
+                            {b.city}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0 pl-2">
+                      {b.verified && (
+                        <span className="px-1.5 py-0.2 rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-bold">
+                          VERIFIED
+                        </span>
+                      )}
+                      <span className="text-[11px] text-stone-400 font-mono">
+                        ({b.count})
+                      </span>
+                    </div>
+
+                    <input
+                      type="checkbox"
+                      className="hidden"
+                      checked={isChecked}
+                      onChange={() => handleCheckboxToggle('brands', b.name, filters.brands)}
+                    />
+                  </label>
+                );
+              })}
+              {filteredBrands.length === 0 && (
+                <p className="text-xs text-stone-400 py-2 text-center">No sellers found</p>
+              )}
+            </div>
+          </div>
+        </Accordion>
+
+        {/* 3. DEPARTMENT-AWARE PRICE FILTER (Accurate rates tailored per section) */}
+        <Accordion 
+          title="Price Range" 
+          badge={filters.priceRange ? "1" : undefined}
+          defaultOpen={false}
+        >
+          <div className="pt-1 space-y-2">
+            {/* Dynamic Price Tiers tailored to the current section */}
+            <div className="space-y-1.5">
+              {(DEPARTMENT_PRICE_TIERS[selectedDepartment] || DEPARTMENT_PRICE_TIERS["all"]).map((tier) => {
+                const isSelected = filters.priceRange === tier.label;
+                return (
+                  <button
+                    key={tier.label}
+                    type="button"
+                    onClick={() => onFilterChange("priceRange", isSelected ? null : tier.label)}
+                    className={`w-full text-left py-1.5 px-2.5 rounded-lg text-[12px] transition-colors flex items-center justify-between cursor-pointer ${
+                      isSelected
+                        ? "bg-[#4A1513] text-white font-bold shadow-2xs"
+                        : "text-stone-600 hover:bg-stone-50 hover:text-stone-900"
+                    }`}
+                  >
+                    <span>{tier.label}</span>
+                    {isSelected && <Check size={12} strokeWidth={3} />}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Custom Min / Max Price Input */}
+            <div className="mt-2.5 pt-2.5 border-t border-stone-100">
+              <span className="text-[10.5px] font-bold text-stone-500 uppercase tracking-wider block mb-1.5">
+                Custom Budget (₹)
+              </span>
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="number"
+                  placeholder="Min"
+                  value={customMin}
+                  onChange={(e) => setCustomMin(e.target.value)}
+                  className="w-full min-w-0 px-2 py-1 bg-stone-50 border border-stone-200 rounded-md text-xs text-stone-900 focus:outline-none focus:border-[#4A1513]"
+                />
+                <span className="text-stone-400 text-xs">–</span>
+                <input
+                  type="number"
+                  placeholder="Max"
+                  value={customMax}
+                  onChange={(e) => setCustomMax(e.target.value)}
+                  className="w-full min-w-0 px-2 py-1 bg-stone-50 border border-stone-200 rounded-md text-xs text-stone-900 focus:outline-none focus:border-[#4A1513]"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (customMin || customMax) {
+                      const label = customMin && customMax 
+                        ? `₹${customMin} – ₹${customMax}`
+                        : customMin 
+                        ? `₹${customMin}+` 
+                        : `Under ₹${customMax}`;
+                      onFilterChange("priceRange", label);
+                    }
+                  }}
+                  className="px-2.5 py-1 bg-[#4A1513] hover:bg-[#350B0A] text-white text-[11px] font-bold rounded-md transition cursor-pointer shrink-0"
+                >
+                  Go
+                </button>
+              </div>
+            </div>
           </div>
         </Accordion>
 
         {/* Clear Filters (Only show if active) */}
         {hasActiveFilters && (
-          <div className="py-4 border-t border-zinc-100 flex justify-between items-center">
-            <span className="font-bold text-[13px] tracking-wide text-primary">Filters</span>
+          <div className="py-4 border-t border-zinc-100 flex justify-between items-center mt-2">
+            <span className="font-bold text-[13px] tracking-wide text-primary">Active Filters</span>
             <button 
               onClick={onClearAll}
-              className="text-[11px] font-bold uppercase tracking-widest text-text-muted hover:text-text-main underline transition-colors"
+              className="text-[11px] font-bold uppercase tracking-widest text-text-muted hover:text-[#4A1513] underline transition-colors cursor-pointer"
             >
-              Clear
+              Clear All
             </button>
           </div>
         )}
 
-        {/* Designers (Formerly Brand) */}
-        <Accordion title="Designers" defaultOpen={false}>
-          <div className="mb-4 relative">
-            <input 
-              type="text" 
-              placeholder="Search designers..." 
-              value={brandSearch}
-              onChange={(e) => setBrandSearch(e.target.value)}
-              className="w-full bg-accent/5 border border-accent/20 rounded-md py-2 pl-8 pr-3 text-[12px] text-text-main placeholder-text-muted/60 focus:outline-none focus:border-primary transition"
-            />
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
-          </div>
-          <div className="space-y-3 max-h-[150px] overflow-y-auto hide-scrollbar">
-            {filteredBrands.map((brand) => (
-              <label key={brand} className="flex items-center gap-3 group cursor-pointer">
-                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${filters.brands.includes(brand) ? 'bg-text-main border-text-main text-white' : 'border-accent/40 bg-white group-hover:border-text-main'}`}>
-                  {filters.brands.includes(brand) && <Check size={12} strokeWidth={3} />}
-                </div>
-                <span className="text-[13px] text-text-muted group-hover:text-text-main transition-colors">{brand}</span>
-              </label>
-            ))}
-            {filteredBrands.length === 0 && <p className="text-xs text-text-muted">No designers found.</p>}
-          </div>
-        </Accordion>
-
-        {/* Occasion Filter */}
-        <Accordion title="Occasion" defaultOpen={false}>
-          <div className="space-y-3">
-            {[
-              "Casual Wear",
-              "Office Wear",
-              "Party Wear",
-              "Festive Wear",
-              "Wedding Wear",
-              "Reception Wear",
-              "Engagement Wear",
-              "Traditional Wear",
-              "Daily Wear"
-            ].map((item) => (
-              <label key={item} className="flex items-center gap-3 group cursor-pointer">
-                <div className="w-4 h-4 rounded border border-accent/40 bg-white group-hover:border-text-main flex items-center justify-center"></div>
-                <span className="text-[13px] text-text-muted group-hover:text-text-main">{item}</span>
-              </label>
-            ))}
-          </div>
-        </Accordion>
-
-        {/* Price */}
-        <Accordion title="Price" defaultOpen={true}>
-          <div className="space-y-4 pt-2">
-            <div className="relative h-1 w-full bg-zinc-200 rounded-full">
-              <div className="absolute top-0 left-1/4 right-1/4 h-full bg-[#E78A7A] rounded-full"></div>
-              <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-[#E78A7A] rounded-full shadow-sm cursor-pointer"></div>
-              <div className="absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-[#E78A7A] rounded-full shadow-sm cursor-pointer"></div>
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <div className="relative w-full border border-zinc-200 rounded-md">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-[12px]">₹</span>
-                <input type="text" value="399" readOnly className="w-full bg-transparent py-1.5 pl-6 pr-2 text-[12px] font-medium text-zinc-700 outline-none" />
-              </div>
-              <span className="text-zinc-400">-</span>
-              <div className="relative w-full border border-zinc-200 rounded-md">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-[12px]">₹</span>
-                <input type="text" value="4999" readOnly className="w-full bg-transparent py-1.5 pl-6 pr-2 text-[12px] font-medium text-zinc-700 outline-none" />
-              </div>
-            </div>
-          </div>
-        </Accordion>
-
-        {/* Discount */}
-        <Accordion title="Discount" defaultOpen={false}>
-          <div className="space-y-4 pt-2">
-            <label className="flex items-center justify-between cursor-pointer group">
-              <span className="text-[13px] font-medium text-text-main transition-colors">On Sale (&gt; 30% off)</span>
-              <div className={`w-9 h-5 rounded-full transition-colors flex items-center px-0.5 ${filters.onSale ? 'bg-[#E53E3E]' : 'bg-accent/20'}`}>
-                <div className={`w-4 h-4 rounded-full bg-white transition-transform ${filters.onSale ? 'translate-x-4' : 'translate-x-0'}`} />
-              </div>
-              <input type="checkbox" className="hidden" checked={filters.onSale} onChange={() => onFilterChange('onSale', !filters.onSale)} />
-            </label>
-            <label className="flex items-center justify-between cursor-pointer group">
-              <span className="text-[13px] text-text-muted group-hover:text-text-main transition-colors">Clearance (Up to 70% off)</span>
-              <div className="w-9 h-5 rounded-full bg-accent/20 transition-colors flex items-center px-0.5">
-                <div className="w-4 h-4 rounded-full bg-white translate-x-0" />
-              </div>
-            </label>
-          </div>
-        </Accordion>
-
-        {/* Pattern - Dummy */}
-        <Accordion title="Pattern" defaultOpen={false}>
-          <div className="space-y-3">
-            {["Floral", "Geometric", "Solid", "Striped", "Printed"].map((item) => (
-              <label key={item} className="flex items-center gap-3 group cursor-pointer">
-                <div className="w-4 h-4 rounded border border-accent/40 bg-white group-hover:border-text-main flex items-center justify-center"></div>
-                <span className="text-[13px] text-text-muted group-hover:text-text-main">{item}</span>
-              </label>
-            ))}
-          </div>
-        </Accordion>
-
-        {/* Type of Work - Dummy */}
-        <Accordion title="Type of Work" defaultOpen={false}>
-          <div className="space-y-3">
-            {["Embroidery", "Zari", "Mirror Work", "Sequin", "Handwoven"].map((item) => (
-              <label key={item} className="flex items-center gap-3 group cursor-pointer">
-                <div className="w-4 h-4 rounded border border-accent/40 bg-white group-hover:border-text-main flex items-center justify-center"></div>
-                <span className="text-[13px] text-text-muted group-hover:text-text-main">{item}</span>
-              </label>
-            ))}
-          </div>
-        </Accordion>
-
-        {/* Size */}
-        <Accordion title="Size" defaultOpen={false}>
-          <div className="flex flex-wrap gap-2">
-            {SIZES.map((size) => {
-              const isActive = filters.sizes.includes(size);
-              return (
-                <button
-                  key={size}
-                  onClick={() => handleCheckboxToggle('sizes', size, filters.sizes)}
-                  className={`min-w-[40px] px-3 py-1.5 rounded-full text-[11px] font-bold transition-all border ${
-                    isActive 
-                      ? 'bg-primary text-white border-primary' 
-                      : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-400'
-                  }`}
-                >
-                  {size}
-                </button>
-              );
-            })}
-          </div>
-        </Accordion>
-
-        {/* Color */}
-        <Accordion title="Color" defaultOpen={false}>
-          <div className="flex flex-wrap gap-3">
-            {COLORS.map((color) => {
-              const isActive = filters.colors.includes(color.name);
-              return (
-                <button
-                  key={color.name}
-                  onClick={() => handleCheckboxToggle('colors', color.name, filters.colors)}
-                  className={`relative w-8 h-8 rounded-full flex items-center justify-center transition-transform hover:scale-110 ${
-                    isActive ? 'ring-2 ring-offset-2 ring-text-main' : 'ring-1 ring-accent/20'
-                  }`}
-                  style={{ backgroundColor: color.hex }}
-                  title={color.name}
-                  aria-label={`Color ${color.name}`}
-                >
-                  {isActive && <Check size={14} className={color.name === 'White' ? 'text-primary' : 'text-white'} strokeWidth={3} />}
-                </button>
-              );
-            })}
-          </div>
-        </Accordion>
-
-        {/* Shipping Time - Dummy */}
-        <Accordion title="Shipping Time" defaultOpen={false}>
-          <div className="space-y-3 pt-2">
-            <label className="flex items-center justify-between cursor-pointer group py-1">
-              <span className="text-[13px] text-stone-700 group-hover:text-[#4A1513] font-medium transition-colors">Ready to Ship</span>
-              <div className={`w-9 h-5 rounded-full transition-colors flex items-center px-0.5 ${filters.readyToShip ? 'bg-[#4A1513]' : 'bg-stone-200'}`}>
-                <div className={`w-4 h-4 rounded-full bg-white shadow-xs transition-transform ${filters.readyToShip ? 'translate-x-4' : 'translate-x-0'}`} />
-              </div>
-              <input type="checkbox" className="hidden" checked={filters.readyToShip} onChange={() => onFilterChange('readyToShip', !filters.readyToShip)} />
-            </label>
-            <label className="flex items-center justify-between cursor-pointer group">
-              <span className="text-[13px] text-text-muted group-hover:text-text-main transition-colors">1-2 Weeks</span>
-              <div className="w-9 h-5 rounded-full bg-accent/20 transition-colors flex items-center px-0.5">
-                <div className="w-4 h-4 rounded-full bg-white translate-x-0" />
-              </div>
-            </label>
-          </div>
-        </Accordion>
-
-        {/* Styles - Dummy */}
-        <Accordion title="Styles" defaultOpen={false}>
-          <div className="space-y-3">
-            {["A-Line", "Straight", "Flared", "Asymmetric"].map((item) => (
-              <label key={item} className="flex items-center gap-3 group cursor-pointer">
-                <div className="w-4 h-4 rounded border border-accent/40 bg-white group-hover:border-text-main flex items-center justify-center"></div>
-                <span className="text-[13px] text-text-muted group-hover:text-text-main">{item}</span>
-              </label>
-            ))}
-          </div>
-        </Accordion>
-
-        {/* Fabric/Material - Dummy */}
-        <Accordion title="Fabric/Material" defaultOpen={false}>
-          <div className="space-y-3">
-            {["Cotton", "Silk", "Georgette", "Chiffon", "Velvet"].map((item) => (
-              <label key={item} className="flex items-center gap-3 group cursor-pointer">
-                <div className="w-4 h-4 rounded border border-accent/40 bg-white group-hover:border-text-main flex items-center justify-center"></div>
-                <span className="text-[13px] text-text-muted group-hover:text-text-main">{item}</span>
-              </label>
-            ))}
-          </div>
-        </Accordion>
-
-        {/* Sleeve Length - Dummy */}
-        <Accordion title="Sleeve Length" defaultOpen={false}>
-          <div className="space-y-3">
-            {["Sleeveless", "Short Sleeves", "3/4 Sleeves", "Full Sleeves"].map((item) => (
-              <label key={item} className="flex items-center gap-3 group cursor-pointer">
-                <div className="w-4 h-4 rounded border border-accent/40 bg-white group-hover:border-text-main flex items-center justify-center"></div>
-                <span className="text-[13px] text-text-muted group-hover:text-text-main">{item}</span>
-              </label>
-            ))}
-          </div>
-        </Accordion>
-
-        {/* Neckline Style - Dummy */}
-        <Accordion title="Neckline Style" defaultOpen={false}>
-          <div className="space-y-3">
-            {["V-Neck", "Round Neck", "Boat Neck", "Halter Neck"].map((item) => (
-              <label key={item} className="flex items-center gap-3 group cursor-pointer">
-                <div className="w-4 h-4 rounded border border-accent/40 bg-white group-hover:border-text-main flex items-center justify-center"></div>
-                <span className="text-[13px] text-text-muted group-hover:text-text-main">{item}</span>
-              </label>
-            ))}
-          </div>
-        </Accordion>
-      </div>
-
-      {/* Mobile Sticky Footer */}
-      <div className="lg:hidden absolute bottom-0 left-0 w-full bg-white border-t border-accent/20 p-4 flex gap-4 z-10 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
-        <button 
-          onClick={onClearAll}
-          className="flex-1 py-3.5 border border-text-main text-text-main font-bold text-[12px] uppercase tracking-widest rounded-full hover:bg-accent/5 transition-colors"
-        >
-          Reset
-        </button>
-        <button 
-          onClick={onClose}
-          className="flex-1 py-3.5 bg-text-main text-white font-bold text-[12px] uppercase tracking-widest rounded-full shadow-md hover:bg-primary transition-colors"
-        >
-          Apply Filters
-        </button>
       </div>
     </div>
   );
 
   return (
     <>
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:block w-[280px] shrink-0">
-        <div className="sticky top-[160px] pb-12">
-          {SidebarContent}
-        </div>
+      {/* Desktop Sidebar (Left Column) */}
+      <aside className="hidden lg:block w-64 xl:w-72 shrink-0 self-start sticky top-28">
+        {SidebarContent}
       </aside>
 
       {/* Mobile Drawer */}
-      <div 
-        className={`fixed inset-0 z-50 bg-primary/40 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-        onClick={onClose}
-      />
-      <div 
-        className={`fixed inset-y-0 left-0 z-50 w-full max-w-[340px] bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
-      >
-        {SidebarContent}
-      </div>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden flex">
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity" 
+            onClick={onClose} 
+          />
+          <div className="relative ml-auto w-full max-w-xs bg-white h-full shadow-2xl z-10 flex flex-col">
+            {SidebarContent}
+          </div>
+        </div>
+      )}
     </>
   );
 }

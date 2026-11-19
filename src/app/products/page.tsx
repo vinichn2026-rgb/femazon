@@ -1,29 +1,48 @@
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
+import { getApprovedProducts } from '@/lib/catalog';
 
 export default async function ProductsPage({ searchParams }: { searchParams: Promise<{ q?: string; category?: string }> }) {
   const params = await searchParams;
   const query = params.q?.trim() ?? '';
   const category = params.category?.trim() ?? '';
 
-  const products = await prisma.product.findMany({
-    where: {
-      ...(query
-        ? {
-            OR: [
-              { name: { contains: query } },
-              { description: { contains: query } },
-            ],
-          }
-        : {}),
-      ...(category ? { slug: { contains: category } } : {}),
-    },
-    orderBy: { createdAt: 'desc' },
-  });
+  let products: any[] = [];
+  try {
+    products = await prisma.product.findMany({
+      where: {
+        ...(query
+          ? {
+              OR: [
+                { name: { contains: query } },
+                { description: { contains: query } },
+              ],
+            }
+          : {}),
+        ...(category ? { slug: { contains: category } } : {}),
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  } catch (err) {
+    console.warn('[ProductsPage] DB query error, using fallback catalog:', err);
+  }
+
+  if (!products || products.length === 0) {
+    const all = await getApprovedProducts();
+    products = all.filter((p) => {
+      if (query && !p.name.toLowerCase().includes(query.toLowerCase()) && !p.description?.toLowerCase().includes(query.toLowerCase())) {
+        return false;
+      }
+      if (category && !p.slug.toLowerCase().includes(category.toLowerCase()) && !p.category?.toLowerCase().includes(category.toLowerCase())) {
+        return false;
+      }
+      return true;
+    });
+  }
 
   return (
-    <main className="min-h-screen bg-zinc-50 py-16 text-primary">
-      <div className="mx-auto flex max-w-[1400px] px-4 sm:px-6 flex-col gap-8">
+    <main className="min-h-screen bg-zinc-50 px-6 py-16 text-primary">
+      <div className="mx-auto flex max-w-6xl flex-col gap-8">
         <section className="rounded-[2rem] border border-zinc-200 bg-white p-8 shadow-sm">
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-amber-600">Marketplace</p>
           <h1 className="mt-3 text-3xl font-semibold">Browse products</h1>
@@ -56,7 +75,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
               <p className="mt-4 text-sm text-zinc-600">{product.description ?? 'A handcrafted product from the Femazon catalog.'}</p>
               <div className="mt-5 flex items-center justify-between">
                 <span className="text-sm text-zinc-500">{product.stock > 0 ? `${product.stock} in stock` : 'Sold out'}</span>
-                <span className="text-lg font-semibold">${(product.price / 100).toFixed(2)}</span>
+                <span className="text-lg font-semibold">₹{product.price.toLocaleString('en-IN')}</span>
               </div>
               <Link href={`/products/${product.slug}`} className="mt-6 inline-flex rounded-full bg-primary px-4 py-2 text-sm font-medium text-white">
                 View details

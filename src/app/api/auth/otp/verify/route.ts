@@ -39,12 +39,13 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if user exists in database or create user
+    // Safely check if user exists in database or create user (non-blocking if DB offline)
     const userEmail = email || (phone ? `${phone}@femazon.luxury` : `member_${Date.now()}@femazon.luxury`);
-    let user = await prisma.user.findUnique({ where: { email: userEmail } });
+    let user: any = null;
+    try {
+      user = await prisma.user.findUnique({ where: { email: userEmail } });
 
-    if (!user) {
-      try {
+      if (!user) {
         const dummyPassword = await import('bcryptjs').then(b => b.hash('Femazon@123', 10));
         user = await prisma.user.create({
           data: {
@@ -54,13 +55,15 @@ export async function POST(request: Request) {
             role: 'CUSTOMER',
             password: dummyPassword,
           }
+        }).catch(async () => {
+          return await prisma.user.findUnique({ where: { email: userEmail } });
         });
-      } catch (e) {
-        user = await prisma.user.findUnique({ where: { email: userEmail } });
       }
+    } catch (dbErr) {
+      console.warn('[OTP Verify Warning] DB query skipped:', dbErr);
     }
 
-    // Set signed cookie if user is found
+    // Set signed session token stored in an HttpOnly cookie
     const secret = process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET || 'dev-secret';
     const now = Math.floor(Date.now() / 1000);
     const expiresIn = 60 * 60 * 24 * 7; // 7 days
@@ -69,22 +72,14 @@ export async function POST(request: Request) {
       sub: user ? String(user.id) : `user_${Date.now()}`,
       name: user?.name || (email ? email.split('@')[0] : 'Femazon Member'),
       email: user?.email || userEmail,
+      phone: user?.phone || phone || '',
       role: user?.role || 'CUSTOMER',
       iat: now,
       exp: now + expiresIn,
     };
 
     const token = signToken(sessionPayload, secret);
-    const isProd = process.env.NODE_ENV === 'production';
-
-    const cookieParts = [
-      `femazon_session=${token}`,
-      `Path=/`,
-      `HttpOnly`,
-      `SameSite=Lax`,
-      `Max-Age=${expiresIn}`,
-    ];
-    if (isProd) cookieParts.push('Secure');
+    const isHttps = request.url.startsWith('https://') || request.headers.get('x-forwarded-proto') === 'https';
 
     const res = NextResponse.json({
       success: true,
@@ -93,11 +88,21 @@ export async function POST(request: Request) {
         id: sessionPayload.sub,
         name: sessionPayload.name,
         email: sessionPayload.email,
+        phone: sessionPayload.phone,
         role: sessionPayload.role,
       }
     });
 
-    res.headers.append('Set-Cookie', cookieParts.join('; '));
+    res.cookies.set({
+      name: 'femazon_session',
+      value: token,
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: expiresIn,
+      secure: isHttps,
+    });
+
     return res;
   } catch (error) {
     console.error('[OTP Verify Error]', error);

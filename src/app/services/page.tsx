@@ -27,7 +27,7 @@ export default async function ServicesPage() {
         dbServices = freshServices;
       }
     } catch (err: any) {
-      console.warn('[ServicesPage] Notice: Using cached/fallback catalog due to DB latency:', err?.message || err);
+      console.warn('[ServicesPage] Notice: Using cached/fallback catalog due to DB unavailability:', typeof err?.message === 'string' ? err.message.split('\n').pop() : String(err));
     }
   }
 

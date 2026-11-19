@@ -8,6 +8,8 @@ const globalForBookings = globalThis as unknown as {
   __femazon_bookings_inflight__?: Map<string, Promise<any[]>>;
 };
 
+export const CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
+
 export function getBookingsCache() {
   if (!globalForBookings.__femazon_bookings_cache__) {
     globalForBookings.__femazon_bookings_cache__ = new Map();

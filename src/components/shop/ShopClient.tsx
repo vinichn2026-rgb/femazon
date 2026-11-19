@@ -3,37 +3,112 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronRight, SlidersHorizontal, PackageX } from 'lucide-react';
+import { ChevronRight, SlidersHorizontal, PackageX, Sparkles, Store, ShoppingBag, Heart } from 'lucide-react';
 
 import { ShopControls } from '@/components/shop/ShopControls';
 import { ActiveFilterChips } from '@/components/shop/ActiveFilterChips';
-import { FilterSidebar, FilterState } from '@/components/shop/FilterSidebar';
+import { FilterSidebar, FilterState, FilterBrandOption } from '@/components/shop/FilterSidebar';
 import { ProductCard, ProductCardSkeleton } from '@/components/shop/ProductCard';
+import { LuxuryPromoBanner } from '@/components/shop/LuxuryPromoBanner';
 import { useFemazonStore } from '@/context/FemazonStoreContext';
 
-const CATEGORIES = [
-  "All",
-  "Kurta Sets",
-  "Lehengas",
-  "Sarees",
-  "Wedding",
-  "Dresses",
-  "Gowns",
-  "Handbags",
-  "Potlis",
-  "Footwear",
-  "Shawls",
-  "Hair Accessories",
-  "Stoles & Scarves",
-  "Belts",
-  "Indo-Western",
-  "Western Wear",
-  "Co-ord Sets",
-  "Kaftans",
-  "Tops",
-  "Femazon Exclusive",
-  "On Sale",
-  "New Arrivals"
+export interface DepartmentOption {
+  id: string;
+  name: string;
+  categories: string[];
+}
+
+export const SHOP_DEPARTMENTS: DepartmentOption[] = [
+  {
+    id: "all",
+    name: "All Categories",
+    categories: [
+      "All",
+      "Kurta Sets",
+      "Lehengas",
+      "Sarees",
+      "Dresses",
+      "Gowns",
+      "Handbags",
+      "Potlis",
+      "Footwear",
+      "Shawls",
+      "Hair Accessories",
+      "Stoles & Scarves",
+      "Belts",
+      "Indo-Western",
+      "Western Wear",
+      "Co-ord Sets",
+      "Kaftans",
+      "Tops",
+      "Femazon Exclusive",
+      "On Sale",
+      "New Arrivals"
+    ]
+  },
+  {
+    id: "womens-wear",
+    name: "Women's Wear",
+    categories: [
+      "Sarees",
+      "Kurta Sets",
+      "Kurtis",
+      "Chudithar",
+      "Lehengas",
+      "Dresses",
+      "Gowns",
+      "Co-ord Sets",
+      "Western Wear",
+      "Tops",
+      "Kaftans",
+      "Indo-Western"
+    ]
+  },
+  {
+    id: "beauty",
+    name: "Beauty & Self-Care",
+    categories: [
+      "Skincare",
+      "Hair Care",
+      "Face Care",
+      "Body Care",
+      "Makeup",
+      "Fragrances",
+      "Bath & Body",
+      "Beauty Gift Sets"
+    ]
+  },
+  {
+    id: "jewellery",
+    name: "Jewellery & Accessories",
+    categories: [
+      "Handbags",
+      "Potlis",
+      "Earrings",
+      "Necklaces",
+      "Bangles",
+      "Rings",
+      "Hair Accessories",
+      "Shawls",
+      "Stoles & Scarves",
+      "Belts",
+      "Footwear"
+    ]
+  },
+  {
+    id: "gifts",
+    name: "Gifts for Every Occasion",
+    categories: [
+      "Birthday Gifts",
+      "Anniversary Gifts",
+      "Wedding Gifts",
+      "Personalised Gifts",
+      "Gift Hampers",
+      "Gifts for Her",
+      "Gifts for Him",
+      "Festival Gifts"
+    ]
+  }
 ];
 
 const initialFilterState: FilterState = {
@@ -52,14 +127,47 @@ interface ShopClientProps {
   initialProducts: any[];
   initialCategory: string;
   initialSilhouette?: string;
+  initialSubcategory?: string;
+  initialOccasion?: string;
   initialWishlistIds?: number[];
   bannerImage?: string;
+}
+
+function matchesPriceRange(price: number, rangeStr: string): boolean {
+  if (!rangeStr) return true;
+  const clean = rangeStr.replace(/,/g, '').trim();
+
+  // "Under ₹X" or "< ₹X"
+  const underMatch = clean.match(/under\s*₹?\s*(\d+)/i) || clean.match(/<\s*₹?\s*(\d+)/i);
+  if (underMatch) {
+    const maxVal = parseFloat(underMatch[1]);
+    return price <= maxVal;
+  }
+
+  // "₹X & Above" or "₹X+" or "Above ₹X"
+  const aboveMatch = clean.match(/₹?\s*(\d+)\s*(?:&|\+)\s*(?:above)?/i) || clean.match(/above\s*₹?\s*(\d+)/i);
+  if (aboveMatch) {
+    const minVal = parseFloat(aboveMatch[1]);
+    return price >= minVal;
+  }
+
+  // "₹X – ₹Y" or "₹X - ₹Y"
+  const rangeMatch = clean.match(/₹?\s*(\d+)\s*[-–]\s*₹?\s*(\d+)/);
+  if (rangeMatch) {
+    const minVal = parseFloat(rangeMatch[1]);
+    const maxVal = parseFloat(rangeMatch[2]);
+    return price >= minVal && price <= maxVal;
+  }
+
+  return true;
 }
 
 export function ShopClient({ 
   initialProducts, 
   initialCategory, 
   initialSilhouette = "All",
+  initialSubcategory,
+  initialOccasion,
   initialWishlistIds = [], 
   bannerImage 
 }: ShopClientProps) {
@@ -67,10 +175,18 @@ export function ShopClient({
   const { isInWishlist, toggleWishlist, addToCart } = useFemazonStore();
   const [isMounted, setIsMounted] = useState(false);
   
-  // Match incoming category case-insensitively
-  const matchedCat = CATEGORIES.find(c => c.toLowerCase() === (initialCategory || "").toLowerCase()) || (initialCategory || "All");
-  
-  const [selectedCategory, setSelectedCategory] = useState(matchedCat);
+  // Resolve initial department based on initialCategory
+  const resolvedInitialDept = useMemo(() => {
+    const catLower = (initialCategory || "").toLowerCase();
+    if (catLower === "beauty" || catLower === "skincare" || catLower === "makeup" || catLower === "hair care") return "beauty";
+    if (catLower === "handbags" || catLower === "potlis" || catLower === "jewelry" || catLower === "jewellery" || catLower === "accessories" || catLower === "belts" || catLower === "footwear" || catLower === "shawls") return "jewellery";
+    if (catLower === "gifts" || catLower.includes("gift")) return "gifts";
+    if (catLower === "womens-wear" || catLower === "sarees" || catLower === "dresses" || catLower === "kurta sets") return "womens-wear";
+    return "all";
+  }, [initialCategory]);
+
+  const [selectedDepartment, setSelectedDepartment] = useState(resolvedInitialDept);
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory || "All");
   const [selectedSilhouette, setSelectedSilhouette] = useState(initialSilhouette || "All");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSort, setSelectedSort] = useState("Recommended");
@@ -85,8 +201,7 @@ export function ShopClient({
   // Update selectedCategory whenever initialCategory prop changes
   useEffect(() => {
     if (initialCategory) {
-      const match = CATEGORIES.find(c => c.toLowerCase() === initialCategory.toLowerCase()) || initialCategory;
-      setSelectedCategory(match);
+      setSelectedCategory(initialCategory);
     }
   }, [initialCategory]);
 
@@ -97,10 +212,13 @@ export function ShopClient({
     }
   }, [initialSilhouette]);
 
-  // Sync category and silhouette states to URL query params
+  // Sync state to URL query params
   useEffect(() => {
     if (!isMounted) return;
     const url = new URL(window.location.href);
+    if (selectedDepartment !== "all") url.searchParams.set("dept", selectedDepartment);
+    else url.searchParams.delete("dept");
+
     if (selectedCategory !== "All") url.searchParams.set("category", selectedCategory);
     else url.searchParams.delete("category");
     
@@ -108,10 +226,69 @@ export function ShopClient({
     else url.searchParams.delete("silhouette");
 
     window.history.replaceState({}, '', url.toString());
-  }, [selectedCategory, selectedSilhouette, isMounted]);
+  }, [selectedDepartment, selectedCategory, selectedSilhouette, isMounted]);
+
+  // Categories to display in sidebar based on current department
+  const activeCategories = useMemo(() => {
+    const dept = SHOP_DEPARTMENTS.find(d => d.id === selectedDepartment);
+    return dept ? dept.categories : SHOP_DEPARTMENTS[0].categories;
+  }, [selectedDepartment]);
+
+  // Dynamically compute available sellers & brands with live counts
+  const availableBrands: FilterBrandOption[] = useMemo(() => {
+    const counts: Record<string, number> = {};
+    initialProducts.forEach(p => {
+      const b = p.vendorName || p.brand || "Femazon Luxe";
+      counts[b] = (counts[b] || 0) + 1;
+    });
+
+    const partnerBrands: { name: string; city: string; verified: boolean; baseCount: number }[] = [
+      { name: "Kovai Handlooms & Silks", city: "Coimbatore", verified: true, baseCount: 18 },
+      { name: "Nagla Atelier", city: "Chennai", verified: true, baseCount: 24 },
+      { name: "Siruvani Botanical Care", city: "Coimbatore", verified: true, baseCount: 14 },
+      { name: "Kongu Artisanal Treats", city: "Coimbatore", verified: true, baseCount: 12 },
+      { name: "Mylapore Heritage Silks", city: "Chennai", verified: true, baseCount: 16 },
+      { name: "Priya Sundaram Couture", city: "Chennai", verified: true, baseCount: 9 },
+      { name: "Bengaluru Silk Haven", city: "Bangalore", verified: true, baseCount: 15 },
+    ];
+
+    const list: FilterBrandOption[] = [];
+
+    // Add existing catalog brands
+    Object.entries(counts).forEach(([name, count]) => {
+      list.push({
+        name,
+        count,
+        verified: true,
+        city: name.includes("Heritage") ? "Coimbatore" : "Chennai",
+      });
+    });
+
+    // Add partner brands if not present
+    partnerBrands.forEach(pb => {
+      if (!counts[pb.name]) {
+        list.push({
+          name: pb.name,
+          city: pb.city,
+          count: pb.baseCount,
+          verified: pb.verified,
+        });
+      }
+    });
+
+    return list.sort((a, b) => b.count - a.count);
+  }, [initialProducts]);
+
+  // Handle department change
+  const handleSelectDepartment = (deptId: string) => {
+    setSelectedDepartment(deptId);
+    setSelectedCategory("All");
+    setSelectedSilhouette("All");
+  };
 
   // Derived Active Filters Array for Chips
   const activeFilterChips = [
+    ...(selectedDepartment !== "all" ? [`Dept: ${SHOP_DEPARTMENTS.find(d => d.id === selectedDepartment)?.name}`] : []),
     ...(selectedCategory !== "All" ? [`Category: ${selectedCategory}`] : []),
     ...(selectedSilhouette !== "All" ? [`Silhouette: ${selectedSilhouette}`] : []),
     ...(filters.silhouettes || []).map(s => `Silhouette: ${s}`),
@@ -119,7 +296,7 @@ export function ShopClient({
     ...(filters.priceRange ? [filters.priceRange] : []),
     ...filters.sizes.map(s => `Size: ${s}`),
     ...filters.colors,
-    ...filters.brands,
+    ...filters.brands.map(b => `Seller: ${b}`),
     ...(filters.inStockOnly ? ['In Stock'] : []),
     ...(filters.onSale ? ['On Sale'] : []),
     ...(filters.readyToShip ? ['Ready to Ship'] : [])
@@ -130,6 +307,10 @@ export function ShopClient({
   };
 
   const handleRemoveChip = (chipText: string) => {
+    if (chipText.startsWith('Dept: ')) {
+      setSelectedDepartment("all");
+      return;
+    }
     if (chipText.startsWith('Category: ')) {
       setSelectedCategory("All");
       return;
@@ -138,6 +319,11 @@ export function ShopClient({
       const sil = chipText.replace('Silhouette: ', '');
       if (selectedSilhouette === sil) setSelectedSilhouette("All");
       handleFilterChange('silhouettes', (filters.silhouettes || []).filter(s => s !== sil));
+      return;
+    }
+    if (chipText.startsWith('Seller: ')) {
+      const seller = chipText.replace('Seller: ', '');
+      handleFilterChange('brands', filters.brands.filter(b => b !== seller));
       return;
     }
     if (chipText === filters.priceRange) {
@@ -167,29 +353,60 @@ export function ShopClient({
   };
 
   const handleClearAllFilters = () => {
+    setSelectedDepartment("all");
     setSelectedCategory("All");
     setSelectedSilhouette("All");
     setFilters(initialFilterState);
     setSearchQuery("");
   };
 
-  // ---- STRICT DRESS CATEGORY & SILHOUETTE FILTERING LOGIC ----
+  // ---- FILTERING LOGIC ----
   const filteredProducts = useMemo(() => {
     return initialProducts.filter(p => {
-      // 0. Safety Check: Exclude unapproved or flagged products
+      // 0. Safety Check
       if (p.flaggedForReview) return false;
 
-      // 1. Search Query
+      // 1. Department Filter
+      if (selectedDepartment !== "all") {
+        const prodCat = (p.category || "").toLowerCase().trim();
+        const prodName = (p.name || "").toLowerCase().trim();
+
+        if (selectedDepartment === "womens-wear") {
+          const isWomen = [
+            "saree", "kurta", "kurti", "chudithar", "lehenga", "dress", "gown", 
+            "co-ord", "western", "top", "kaftan", "indo-western"
+          ].some(w => prodCat.includes(w) || prodName.includes(w));
+          if (!isWomen && (prodCat.includes("bag") || prodCat.includes("belt") || prodCat.includes("footwear"))) return false;
+        } else if (selectedDepartment === "beauty") {
+          const isBeauty = [
+            "beauty", "skincare", "hair", "face", "body", "makeup", "fragrance", "serum", "lotion", "oil"
+          ].some(b => prodCat.includes(b) || prodName.includes(b));
+          if (!isBeauty) return false;
+        } else if (selectedDepartment === "jewellery") {
+          const isJewelleryOrAccessory = [
+            "bag", "handbag", "potli", "jewel", "earring", "necklace", "bangle", "ring", 
+            "hair accessory", "shawl", "stole", "scarf", "belt", "footwear", "accessories"
+          ].some(j => prodCat.includes(j) || prodName.includes(j));
+          if (!isJewelleryOrAccessory) return false;
+        } else if (selectedDepartment === "gifts") {
+          const isGift = [
+            "gift", "hamper", "birthday", "anniversary", "wedding", "personalised", "festive", "box"
+          ].some(g => prodCat.includes(g) || prodName.includes(g));
+          if (!isGift) return false;
+        }
+      }
+
+      // 2. Search Query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesName = p.name.toLowerCase().includes(q);
-        const matchesBrand = p.brand?.toLowerCase().includes(q);
-        const matchesCat = p.category?.toLowerCase().includes(q);
+        const matchesBrand = (p.brand || '').toLowerCase().includes(q) || (p.vendorName || '').toLowerCase().includes(q);
+        const matchesCat = (p.category || '').toLowerCase().includes(q);
         const matchesSil = (p.silhouette || '').toLowerCase().includes(q);
         if (!matchesName && !matchesBrand && !matchesCat && !matchesSil) return false;
       }
 
-      // 2. Strict Category Filter
+      // 3. Category Filter
       if (selectedCategory && selectedCategory !== "All") {
         const selCat = selectedCategory.toLowerCase().trim();
         const prodCat = (p.category || "").toLowerCase().trim();
@@ -200,18 +417,14 @@ export function ShopClient({
           if (!p.isNew) return false;
         } else if (selCat === "femazon exclusive") {
           if (!p.brand?.toLowerCase().includes("femazon") && !p.brand?.toLowerCase().includes("nagla")) return false;
-        } else if (selCat === "wedding") {
-          const isWeddingOccasion = (p.occasion || "").toLowerCase() === "wedding";
-          if (!isWeddingOccasion && prodCat !== "lehengas" && prodCat !== "sarees") return false;
         } else {
-          // Exact, strict category matching
-          if (prodCat !== selCat) {
+          if (prodCat !== selCat && !prodCat.includes(selCat) && !selCat.includes(prodCat)) {
             return false;
           }
         }
       }
 
-      // 3. Strict Silhouette Filter (AND logic with Category)
+      // 4. Dress Silhouette Filter
       const activeSilhouettes = [
         ...(selectedSilhouette && selectedSilhouette !== "All" ? [selectedSilhouette] : []),
         ...(filters.silhouettes || [])
@@ -223,7 +436,7 @@ export function ShopClient({
         if (!matchesSilhouette) return false;
       }
 
-      // 4. Sub-categories
+      // 5. Sub-categories
       if (filters.subcategories.length > 0) {
         const matchesSub = filters.subcategories.some(sub => {
           const s = sub.toLowerCase().trim();
@@ -234,40 +447,41 @@ export function ShopClient({
         if (!matchesSub) return false;
       }
 
-      // 5. Brands / Designers
-      if (filters.brands.length > 0 && !filters.brands.includes(p.brand)) {
+      // 6. Sellers / Brands Filter (Directly from FilterSidebar)
+      if (filters.brands.length > 0) {
+        const prodSeller = (p.vendorName || p.brand || "").toLowerCase().trim();
+        const matchesBrand = filters.brands.some(b => {
+          const target = b.toLowerCase().trim();
+          return prodSeller === target || prodSeller.includes(target) || target.includes(prodSeller);
+        });
+        if (!matchesBrand) return false;
+      }
+
+      // 7. Price Range (Department-aware & custom ranges)
+      if (filters.priceRange && !matchesPriceRange(p.price, filters.priceRange)) {
         return false;
       }
 
-      // 6. Price Range
-      if (filters.priceRange) {
-        const range = filters.priceRange;
-        if (range === "Under ₹999" && p.price >= 999) return false;
-        if (range === "₹1,000 - ₹2,499" && (p.price < 1000 || p.price > 2499)) return false;
-        if (range === "₹2,500 - ₹4,999" && (p.price < 2500 || p.price > 4999)) return false;
-        if (range === "₹5,000+" && p.price < 5000) return false;
-      }
-
-      // 7. Sizes
+      // 8. Sizes
       if (filters.sizes.length > 0) {
         const hasSize = filters.sizes.some((s: string) => p.sizes?.includes(s));
         if (!hasSize) return false;
       }
 
-      // 8. Colors
+      // 9. Colors
       if (filters.colors.length > 0) {
         const hasColor = filters.colors.some((c: string) => p.colors?.includes(c));
         if (!hasColor) return false;
       }
 
-      // 9. Stock / Sale / Shipping Toggles
+      // 10. Stock / Sale / Shipping Toggles
       if (filters.inStockOnly && !p.inStock) return false;
       if (filters.onSale && p.discount < 30) return false;
       if (filters.readyToShip && !p.readyToShip) return false;
 
       return true;
     });
-  }, [searchQuery, selectedCategory, selectedSilhouette, filters, initialProducts]);
+  }, [searchQuery, selectedDepartment, selectedCategory, selectedSilhouette, filters, initialProducts]);
 
   // ---- SORTING LOGIC ----
   const sortedProducts = useMemo(() => {
@@ -327,16 +541,20 @@ export function ShopClient({
 
   return (
     <div className="bg-surface min-h-screen text-text-main font-sans pb-24">
-      {/* 2. Main Layout Architecture */}
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 pt-4 md:pt-6 flex flex-col lg:flex-row gap-8 lg:gap-12 relative">
+      {/* Luxury Burgundy & Gold Promo Banner */}
+      <LuxuryPromoBanner />
+
+      {/* Main Layout Architecture */}
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 pt-5 md:pt-7 flex flex-col lg:flex-row gap-8 lg:gap-12 relative">
         
-        {/* Filter Sidebar (Desktop & Mobile Drawer) */}
+        {/* Filter Sidebar (Desktop & Mobile Drawer) with Sellers & Brands right under Categories */}
         <FilterSidebar 
-          categories={CATEGORIES}
+          categories={activeCategories}
           selectedCategory={selectedCategory}
-          onSelectCategory={(c) => {
-            setSelectedCategory(c);
-          }}
+          onSelectCategory={(c) => setSelectedCategory(c)}
+          selectedDepartment={selectedDepartment}
+          onSelectDepartment={handleSelectDepartment}
+          availableBrands={availableBrands}
           filters={filters}
           onFilterChange={handleFilterChange}
           onClearAll={handleClearAllFilters}
@@ -347,10 +565,13 @@ export function ShopClient({
         {/* Right Main Section */}
         <div className="flex-1 w-full min-w-0 flex flex-col">
           
-          {/* Top Control Bar & Active Filters */}
+          {/* Top Control Bar with Department Bar & Active Filters */}
           <ShopControls 
             totalItems={totalItems}
             selectedCategory={selectedCategory}
+            selectedDepartment={selectedDepartment}
+            departments={SHOP_DEPARTMENTS}
+            onSelectDepartment={handleSelectDepartment}
             searchQuery={searchQuery}
             onSearchChange={(q) => setSearchQuery(q)}
             selectedSort={selectedSort}
@@ -387,11 +608,11 @@ export function ShopClient({
                 </div>
                 <h3 className="font-serif text-2xl text-text-main mb-2">No products found</h3>
                 <p className="text-text-muted max-w-[400px] mx-auto mb-8">
-                  We couldn't find anything matching your current filters. Try adjusting your search or clearing your filters to see more results.
+                  We couldn&apos;t find anything matching your current filters. Try adjusting your search, department or clearing your filters to see more results.
                 </p>
                 <button 
                   onClick={handleClearAllFilters}
-                  className="bg-text-main text-white font-bold text-[12px] uppercase tracking-widest px-8 py-3.5 rounded-full shadow-lg hover:bg-primary transition-colors"
+                  className="bg-[#4A1513] text-white font-bold text-[12px] uppercase tracking-widest px-8 py-3.5 rounded-full shadow-lg hover:bg-[#380E0C] transition-colors cursor-pointer"
                 >
                   Clear All Filters
                 </button>
@@ -410,10 +631,10 @@ export function ShopClient({
       <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
         <button 
           onClick={() => setIsFilterDrawerOpen(true)}
-          className="flex items-center gap-2 bg-text-main text-white px-8 py-3.5 rounded-full shadow-xl font-bold text-[12px] uppercase tracking-widest hover:bg-primary transition-colors"
+          className="flex items-center gap-2 bg-[#4A1513] text-white px-7 py-3 rounded-full shadow-xl font-bold text-[12px] uppercase tracking-widest hover:bg-[#380E0C] transition-colors cursor-pointer"
         >
-          <SlidersHorizontal size={16} />
-          Filter & Sort
+          <SlidersHorizontal size={15} />
+          Filter &amp; Sort
         </button>
       </div>
 

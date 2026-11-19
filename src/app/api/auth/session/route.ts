@@ -12,21 +12,26 @@ export async function POST(request: Request) {
     const userName = name || 'Femazon Member';
     const userRole = (role === 'ADMIN' || role === 'VENDOR') ? role : 'CUSTOMER';
 
-    // Ensure user exists in database so orders, cart, and wishlist don't throw 404
-    let dbUser = await prisma.user.findUnique({ where: { email: userEmail } });
-    if (!dbUser) {
-      const dummyPassword = await bcrypt.hash('Femazon@123', 10);
-      dbUser = await prisma.user.create({
-        data: {
-          email: userEmail,
-          name: userName,
-          phone: phone || null,
-          role: userRole,
-          password: dummyPassword,
-        }
-      }).catch(async () => {
-        return await prisma.user.findUnique({ where: { email: userEmail } });
-      });
+    // Safely attempt to sync user in database (non-blocking if DB is offline)
+    let dbUser: any = null;
+    try {
+      dbUser = await prisma.user.findUnique({ where: { email: userEmail } });
+      if (!dbUser) {
+        const dummyPassword = await bcrypt.hash('Femazon@123', 10);
+        dbUser = await prisma.user.create({
+          data: {
+            email: userEmail,
+            name: userName,
+            phone: phone || null,
+            role: userRole,
+            password: dummyPassword,
+          }
+        }).catch(async () => {
+          return await prisma.user.findUnique({ where: { email: userEmail } });
+        });
+      }
+    } catch (dbErr) {
+      console.warn('[Session Sync] Database query skipped:', dbErr);
     }
 
     const secret = process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET || 'dev-secret';
@@ -37,13 +42,14 @@ export async function POST(request: Request) {
       sub: String(dbUser?.id || id || Date.now()),
       name: dbUser?.name || userName,
       email: dbUser?.email || userEmail,
+      phone: dbUser?.phone || phone || '',
       role: dbUser?.role || userRole,
       iat: now,
       exp: now + expiresIn,
     };
 
     const token = signToken(sessionPayload, secret);
-    const isHttps = request.url.startsWith('https://');
+    const isHttps = request.url.startsWith('https://') || request.headers.get('x-forwarded-proto') === 'https';
 
     const res = NextResponse.json({
       success: true,
@@ -51,6 +57,7 @@ export async function POST(request: Request) {
         id: sessionPayload.sub,
         name: sessionPayload.name,
         email: sessionPayload.email,
+        phone: sessionPayload.phone,
         role: sessionPayload.role,
       },
     });

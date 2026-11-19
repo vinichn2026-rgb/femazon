@@ -221,35 +221,6 @@ const MOCK_SERVICES: ServiceItem[] = [
       'https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&q=80&w=600',
       'https://images.unsplash.com/photo-1512496015851-a1dc8b41cd83?auto=format&fit=crop&q=80&w=600'
     ]
-  },
-  {
-    id: 's6',
-    slug: 'trousseau-event-planning',
-    title: 'End-to-End Trousseau & Wedding Planning',
-    tagline: 'Milestone Timeline Tracker, Designer Concierge & Theme Styling',
-    category: 'Concierge & Lifestyle',
-    rating: 4.99,
-    reviewsCount: 98,
-    basePrice: 29999,
-    startingPrice: 29999,
-    image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=85&w=1000',
-    badge: 'Luxury Concierge',
-    isInstantBooking: false,
-    description: 'A seamless, white-glove wedding trousseau and event styling service. From Haldi hues to Reception regal drapes, our concierges orchestrate every designer ensemble.',
-    highlights: ['Full Milestone Timeline Tracker', 'Bridesmaid & Family Theme Harmonization', 'Direct Couture Atelier Access', 'Packing & Box Trunk Styling'],
-    modes: ['Home', 'Virtual', 'Salon'],
-    expertName: 'Natasha Singhal',
-    expertRole: 'Luxury Trousseau Curator',
-    expertImage: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&q=80&w=300',
-    packages: [
-      { id: 'p6_1', name: 'Trousseau Box Curation', price: 29999, duration: '2 Weeks', features: ['Curated Outfits for 5 Pre-wedding Events', 'Jewelry Matching & Trunk Packaging Guide', 'Direct Brand Discounts'] },
-      { id: 'p6_2', name: 'Grand Bridal Concierge', price: 49999, duration: '1 Month', features: ['Full Wedding Week Ensemble Management', 'Family & Bridesmaid Theme Coordination', 'Fittings Supervision with Ateliers', 'Dedicated On-Ground Stylist on Wedding Day'], popular: true },
-      { id: 'p6_3', name: 'Royal Destination Royale', price: 99999, duration: 'Full Wedding', features: ['End-to-End Trousseau & Bridal Team Coordination', 'Travel Wardrobe Planning for Destination', '2 Stylists on Venue for 3 Days', 'Unlimited Design Alterations Support'] }
-    ],
-    portfolio: [
-      'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=600',
-      'https://images.unsplash.com/photo-1583391733958-65e2be10c3fb?auto=format&fit=crop&q=80&w=600'
-    ]
   }
 ];
 

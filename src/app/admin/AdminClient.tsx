@@ -2,78 +2,92 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Sparkles, Users, Store, Package, Grid, CalendarDays, ShoppingCart, CheckCircle, XCircle, Trash2, Plus, LogOut, ArrowLeft, Loader2, Truck } from "lucide-react";
+import { 
+  Grid, 
+  Store, 
+  Package, 
+  ShoppingCart, 
+  Sparkles, 
+  CalendarDays, 
+  Users, 
+  TrendingUp, 
+  ShieldCheck, 
+  Loader2 
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { AdminNavbar } from "@/components/admin/AdminNavbar";
+import { AdminOverview } from "@/components/admin/AdminOverview";
+import { AdminProductVendors } from "@/components/admin/AdminProductVendors";
+import { AdminOrdersManagement } from "@/components/admin/AdminOrdersManagement";
+import { AdminPersonalStylists } from "@/components/admin/AdminPersonalStylists";
+import { AdminStylistBookings } from "@/components/admin/AdminStylistBookings";
+import { AdminCustomers } from "@/components/admin/AdminCustomers";
+import { AdminMarketplaceAnalytics } from "@/components/admin/AdminMarketplaceAnalytics";
 
-export default function AdminClient({ user, users, vendors, products, categories, orders, bookings, services }: any) {
+export default function AdminClient({ 
+  user, 
+  users = [], 
+  vendors = [], 
+  stylists = [], 
+  products = [], 
+  categories = [], 
+  orders = [], 
+  bookings = [] 
+}: any) {
   const [activeTab, setActiveTab] = useState("overview");
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [navigatingHref, setNavigatingHref] = useState<string | null>(null);
+  const [isActionLoading, setIsActionLoading] = useState(false);
   const router = useRouter();
 
-  const handleLogout = async () => {
-    setIsLoggingOut(true);
-    try {
-      await fetch("/api/admin/logout", { method: "POST" }).catch(() => {});
-      try {
-        sessionStorage.clear();
-      } catch (e) {}
-      router.push("/admin");
-      router.refresh();
-    } catch {
-      router.push("/admin");
-    }
-  };
-
   const handleAction = async (action: string, payload: any) => {
-    if (action.includes("DELETE") && !confirm("Are you sure?")) return;
-    
-    const res = await fetch("/api/admin/action", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, ...payload })
-    });
-    
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data.success) {
-      alert(data.error || "Action failed. Please try again.");
+    if (action.includes("DELETE") && !confirm("Are you sure you want to proceed with this permanent deletion?")) {
       return;
     }
     
-    router.refresh(); // Refresh server component data
-  };
-
-  const [newCatName, setNewCatName] = useState("");
-  const [showProductForm, setShowProductForm] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
-
-  const handleAddCategory = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCatName) return;
-    await handleAction("CREATE_CATEGORY", { name: newCatName });
-    setNewCatName("");
+    setIsActionLoading(true);
+    try {
+      const res = await fetch("/api/admin/action", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, ...payload })
+      });
+      
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) {
+        alert(data.error || "Action failed. Please try again.");
+        return;
+      }
+      
+      router.refresh(); // Refresh server component data
+    } catch {
+      alert("Network error. Please try again.");
+    } finally {
+      setIsActionLoading(false);
+    }
   };
 
   const navMenuItems = [
-    { id: 'overview', icon: <Grid size={18}/>, label: 'Overview' },
-    { id: 'products', icon: <Package size={18}/>, label: 'Products (New UI)', href: '/admin/products' },
-    { id: 'ready-to-ship', icon: <Truck size={18}/>, label: 'Ready to Ship (Variants)', href: '/vendor/products' },
-    { id: 'users', icon: <Users size={18}/>, label: 'Users' },
-    { id: 'vendors', icon: <Store size={18}/>, label: 'Vendors' },
-    { id: 'categories', icon: <Grid size={18}/>, label: 'Categories' },
-    { id: 'services', icon: <Sparkles size={18}/>, label: 'Services' },
-    { id: 'orders', icon: <ShoppingCart size={18}/>, label: 'Orders' },
-    { id: 'bookings', icon: <CalendarDays size={18}/>, label: 'Bookings' },
+    { id: 'overview', icon: <Grid size={18}/>, label: 'Overview', group: 'DASHBOARD' },
+    
+    // Division A: Product Marketplace
+    { id: 'product-vendors', icon: <Store size={18}/>, label: 'Product Vendors', group: "PRODUCT MARKETPLACE" },
+    { id: 'orders', icon: <ShoppingCart size={18}/>, label: 'Orders Management', group: "PRODUCT MARKETPLACE" },
+    
+    // Division B: Service Marketplace
+    { id: 'personal-stylists', icon: <Sparkles size={18}/>, label: 'Personal Stylists', group: "SERVICE MARKETPLACE" },
+    { id: 'bookings', icon: <CalendarDays size={18}/>, label: 'Bookings Management', group: "SERVICE MARKETPLACE" },
+    
+    // Platform Governance
+    { id: 'customers', icon: <Users size={18}/>, label: 'Customers', group: "PLATFORM GOVERNANCE" },
+    { id: 'analytics', icon: <TrendingUp size={18}/>, label: 'Marketplace Analytics', group: "PLATFORM GOVERNANCE" },
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAF7F5] flex flex-col font-sans text-stone-900">
+    <div className="min-h-screen bg-[#FAF7F5] flex flex-col font-sans text-stone-900 selection:bg-[#4A1513] selection:text-white">
       
       {/* Top Sticky Admin Navbar */}
       <AdminNavbar
-        currentSection="Platform Operations"
+        currentSection="Super Admin Control Centre"
         adminName={user?.name || "Super Admin"}
         adminEmail={user?.email || "admin@femazon.com"}
         stats={{
@@ -89,451 +103,263 @@ export default function AdminClient({ user, users, vendors, products, categories
       />
 
       {/* Main Layout Body */}
-      <div className="flex-1 flex max-w-[1400px] w-full mx-auto px-4 sm:px-6 py-6 md:py-8 gap-6">
+      <div className="flex-1 flex max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 gap-7">
         
         {/* Left Sidebar Nav */}
-        <aside className="w-56 shrink-0 hidden md:block">
-          <div className="bg-white rounded-2xl border border-stone-200/90 p-3 shadow-2xs sticky top-24 space-y-1">
-            <div className="px-3 py-3 border-b border-stone-100 mb-2">
-              <p className="text-xs font-bold text-[#4A1513] uppercase tracking-wider">
-                Management Modules
-              </p>
-              <div className="flex items-center gap-1 mt-1 text-[11px] text-emerald-600 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span>Super Admin Privileges</span>
+        <aside className="w-64 shrink-0 hidden md:block">
+          <div className="bg-white rounded-3xl border border-stone-200/90 p-4 shadow-2xs sticky top-24 space-y-4">
+            
+            {/* Header info */}
+            <div className="px-3 py-2 border-b border-stone-100">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-lg bg-[#4A1513]/10 text-[#4A1513] flex items-center justify-center">
+                  <ShieldCheck size={14} />
+                </div>
+                <p className="text-xs font-bold text-[#4A1513] uppercase tracking-wider">
+                  Super Admin
+                </p>
               </div>
+              <p className="text-[11px] text-stone-400 mt-1">Platform Control Centre</p>
             </div>
 
-            {navMenuItems.map((item) => {
-              if (item.href) {
-                return (
-                  <Link
-                    key={item.id}
-                    href={item.href}
-                    onClick={() => setNavigatingHref(item.href || null)}
-                    className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition ${
-                      navigatingHref === item.href
-                        ? 'bg-[#4A1513] text-white shadow-xs'
-                        : 'text-stone-600 hover:bg-[#FAF7F5] hover:text-[#4A1513]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      {navigatingHref === item.href ? (
-                        <Loader2 size={16} className="animate-spin text-white" />
-                      ) : (
-                        item.icon
-                      )}
-                      <span>{item.label}</span>
-                    </div>
-                  </Link>
-                );
-              }
-
-              const isActive = activeTab === item.id;
-              return (
+            {/* Navigation grouped by division */}
+            <div className="space-y-4">
+              
+              {/* Group 1: Core */}
+              <div className="space-y-1">
                 <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition cursor-pointer ${
-                    isActive
+                  type="button"
+                  onClick={() => setActiveTab('overview')}
+                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold tracking-wide transition cursor-pointer text-left ${
+                    activeTab === 'overview'
                       ? 'bg-[#4A1513] text-white shadow-xs'
-                      : 'text-stone-600 hover:bg-[#FAF7F5] hover:text-[#4A1513]'
+                      : 'text-stone-700 hover:bg-[#FAF7F5] hover:text-[#4A1513]'
                   }`}
                 >
-                  {item.icon}
-                  <span>{item.label}</span>
+                  <Grid size={17} />
+                  <span>Overview</span>
                 </button>
-              );
-            })}
+              </div>
+
+              {/* Group 2: Division A - Product Marketplace */}
+              <div className="space-y-1">
+                <div className="px-3 pt-1">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+                    Product Marketplace
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('product-vendors')}
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer text-left ${
+                    activeTab === 'product-vendors'
+                      ? 'bg-[#4A1513] text-white shadow-xs font-bold'
+                      : 'text-stone-700 hover:bg-[#FAF7F5] hover:text-[#4A1513]'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Store size={17} />
+                    <span>Product Vendors</span>
+                  </div>
+                  {vendors.filter((v: any) => v.status === 'PENDING').length > 0 && (
+                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('service-vendors')}
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer text-left ${
+                    activeTab === 'service-vendors' || activeTab === 'personal-stylists'
+                      ? 'bg-[#4A1513] text-white shadow-xs font-bold'
+                      : 'text-stone-700 hover:bg-[#FAF7F5] hover:text-[#4A1513]'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Sparkles size={17} />
+                    <span>Service Vendors</span>
+                  </div>
+                  {stylists.filter((s: any) => s.status === 'PENDING').length > 0 && (
+                    <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+                  )}
+                </button>
+
+
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('orders')}
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer text-left ${
+                    activeTab === 'orders'
+                      ? 'bg-[#4A1513] text-white shadow-xs font-bold'
+                      : 'text-stone-700 hover:bg-[#FAF7F5] hover:text-[#4A1513]'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <ShoppingCart size={17} />
+                    <span>Orders Table</span>
+                  </div>
+                </button>
+              </div>
+
+              {/* Group 3: Division B - Service Marketplace */}
+              <div className="space-y-1">
+                <div className="px-3 pt-1">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-purple-900/60">
+                    Service Marketplace
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('personal-stylists')}
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer text-left ${
+                    activeTab === 'personal-stylists'
+                      ? 'bg-[#4A1513] text-white shadow-xs font-bold'
+                      : 'text-stone-700 hover:bg-[#FAF7F5] hover:text-[#4A1513]'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Sparkles size={17} />
+                    <span>Personal Stylists</span>
+                  </div>
+                  {stylists.filter((s: any) => s.status === 'PENDING').length > 0 && (
+                    <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('bookings')}
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer text-left ${
+                    activeTab === 'bookings'
+                      ? 'bg-[#4A1513] text-white shadow-xs font-bold'
+                      : 'text-stone-700 hover:bg-[#FAF7F5] hover:text-[#4A1513]'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <CalendarDays size={17} />
+                    <span>Bookings Table</span>
+                  </div>
+                </button>
+              </div>
+
+              {/* Group 4: Platform Governance */}
+              <div className="space-y-1 pt-1">
+                <div className="px-3 pt-1">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+                    Platform Governance
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('customers')}
+                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer text-left ${
+                    activeTab === 'customers'
+                      ? 'bg-[#4A1513] text-white shadow-xs font-bold'
+                      : 'text-stone-700 hover:bg-[#FAF7F5] hover:text-[#4A1513]'
+                  }`}
+                >
+                  <Users size={17} />
+                  <span>Customers</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('analytics')}
+                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer text-left ${
+                    activeTab === 'analytics'
+                      ? 'bg-[#4A1513] text-white shadow-xs font-bold'
+                      : 'text-stone-700 hover:bg-[#FAF7F5] hover:text-[#4A1513]'
+                  }`}
+                >
+                  <TrendingUp size={17} />
+                  <span>Marketplace Analytics</span>
+                </button>
+              </div>
+
+            </div>
+
           </div>
         </aside>
 
-        {/* Main Content */}
+        {/* Main Content Area */}
         <main className="flex-1 min-w-0">
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h1 className="font-serif text-2xl sm:text-3xl font-bold text-[#4A1513] mb-1 capitalize">{activeTab}</h1>
-              <p className="text-xs sm:text-sm text-stone-500">Manage {activeTab} across the platform.</p>
-            </div>
-          </div>
+          
+          {/* TAB 1: OVERVIEW */}
+          {activeTab === 'overview' && (
+            <AdminOverview
+              users={users}
+              vendors={vendors}
+              stylists={stylists}
+              products={products}
+              orders={orders}
+              bookings={bookings}
+              categories={categories}
+              onNavigateTab={(tabId) => setActiveTab(tabId)}
+            />
+          )}
 
-        {/* OVERVIEW */}
-        {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white p-6 rounded-3xl shadow-sm border border-zinc-100">
-              <p className="text-sm text-zinc-500 font-bold uppercase tracking-widest mb-2">Total Users</p>
-              <p className="text-4xl font-serif text-primary">{users.length}</p>
-            </div>
-            <div className="bg-white p-6 rounded-3xl shadow-sm border border-zinc-100">
-              <p className="text-sm text-zinc-500 font-bold uppercase tracking-widest mb-2">Total Vendors</p>
-              <p className="text-4xl font-serif text-primary">{vendors.length}</p>
-            </div>
-            <div className="bg-white p-6 rounded-3xl shadow-sm border border-zinc-100">
-              <p className="text-sm text-zinc-500 font-bold uppercase tracking-widest mb-2">Products</p>
-              <p className="text-4xl font-serif text-primary">{products.length}</p>
-            </div>
-            <div className="bg-white p-6 rounded-3xl shadow-sm border border-zinc-100">
-              <p className="text-sm text-zinc-500 font-bold uppercase tracking-widest mb-2">Total Orders</p>
-              <p className="text-4xl font-serif text-primary">{orders.length}</p>
-            </div>
-          </div>
-        )}
+          {/* TAB 2: PRODUCT VENDORS */}
+          {activeTab === 'product-vendors' && (
+            <AdminProductVendors
+              vendors={vendors}
+              onAction={handleAction}
+            />
+          )}
 
-        {/* USERS */}
-        {activeTab === 'users' && (
-          <div className="bg-white rounded-3xl shadow-sm border border-zinc-100 overflow-hidden">
-            <table className="w-full text-left">
-              <thead className="bg-zinc-50 border-b border-zinc-100 text-xs font-bold uppercase tracking-widest text-zinc-500">
-                <tr>
-                  <th className="px-6 py-4">Name / Email</th>
-                  <th className="px-6 py-4">Role</th>
-                  <th className="px-6 py-4">Joined Date</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-100">
-                {users.map((u: any) => (
-                  <tr key={u.id} className="hover:bg-zinc-50/50">
-                    <td className="px-6 py-4">
-                      <p className="font-bold text-primary text-sm">{u.name || "N/A"}</p>
-                      <p className="text-zinc-500 text-xs">{u.email}</p>
-                    </td>
-                    <td className="px-6 py-4 text-xs font-bold">
-                      <span className={`px-2 py-1 rounded bg-zinc-100 ${u.role === 'ADMIN' ? 'text-rose-600' : 'text-zinc-600'}`}>{u.role}</span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-zinc-500">{new Date(u.createdAt).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 text-right">
-                      {u.role !== 'ADMIN' && (
-                        <button onClick={() => handleAction("DELETE_USER", { userId: u.id })} className="text-red-500 hover:text-red-700">
-                          <Trash2 size={16} />
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
 
-        {/* VENDORS */}
-        {activeTab === 'vendors' && (
-          <div className="bg-white rounded-3xl shadow-sm border border-zinc-100 overflow-hidden">
-            <table className="w-full text-left">
-              <thead className="bg-zinc-50 border-b border-zinc-100 text-xs font-bold uppercase tracking-widest text-zinc-500">
-                <tr>
-                  <th className="px-6 py-4">Store Name</th>
-                  <th className="px-6 py-4">Registered Email</th>
-                  <th className="px-6 py-4">Approval Status</th>
-                  <th className="px-6 py-4">Email Status</th>
-                  <th className="px-6 py-4 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-100">
-                {vendors.map((v: any) => (
-                  <tr key={v.id} className="hover:bg-zinc-50/50">
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-primary text-sm">{v.businessName || "N/A"}</div>
-                      {v.status === 'APPROVED' && (
-                        <Link 
-                          href={`/shops/${v.slug || v.id}`} 
-                          target="_blank"
-                          className="text-[11px] text-zinc-400 hover:text-primary hover:underline"
-                        >
-                          /shops/{v.slug || v.id} &rarr;
-                        </Link>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-zinc-500">{v.user?.email || v.email}</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded text-xs font-bold ${v.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>{v.status}</span>
-                    </td>
-                    <td className="px-6 py-4 text-xs">
-                      {v.approvalEmailSent ? (
-                        <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-1 rounded font-medium">
-                          &#10003; Sent {v.approvalEmailSentAt ? new Date(v.approvalEmailSentAt).toLocaleDateString() : ''}
-                        </span>
-                      ) : v.approvalEmailError ? (
-                        <span className="inline-flex items-center gap-1 text-rose-700 bg-rose-50 px-2 py-1 rounded font-medium" title={v.approvalEmailError}>
-                          &#9888; Failed
-                        </span>
-                      ) : (
-                        <span className="text-zinc-400 italic">Not sent</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      {v.status !== 'APPROVED' ? (
-                        <button 
-                          onClick={() => handleAction("APPROVE_VENDOR", { vendorId: v.id })} 
-                          className="text-emerald-600 font-bold text-xs uppercase tracking-widest hover:underline cursor-pointer"
-                        >
-                          Approve
-                        </button>
-                      ) : (
-                        <button 
-                          onClick={() => handleAction("APPROVE_VENDOR", { vendorId: v.id, retryEmail: true })} 
-                          className="text-zinc-400 hover:text-primary font-bold text-[11px] uppercase tracking-wider hover:underline cursor-pointer"
-                          title="Resend approval notification email"
-                        >
-                          Resend Email
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+          {/* TAB 4: ORDERS MANAGEMENT (ADVANCED TABLE) */}
+          {activeTab === 'orders' && (
+            <AdminOrdersManagement
+              orders={orders}
+              onAction={handleAction}
+            />
+          )}
 
-        {/* PRODUCTS */}
-        {activeTab === 'products' && (
-          <div>
-            <div className="flex justify-end mb-4">
-              <button onClick={() => setShowProductForm(!showProductForm)} className="bg-primary text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-primary transition">
-                <Plus size={16}/> {showProductForm ? "Cancel" : "Add Product"}
-              </button>
-            </div>
+          {/* TAB 5: PERSONAL STYLISTS */}
+          {(activeTab === 'personal-stylists' || activeTab === 'service-vendors') && (
+            <AdminPersonalStylists
+              stylists={stylists}
+              onAction={handleAction}
+            />
+          )}
 
-            {showProductForm && (
-              <form onSubmit={async (e) => {
-                e.preventDefault();
-                const target = e.target as any;
-                const name = target.name.value;
-                const price = target.price.value;
-                const category = target.category.value;
-                const stock = target.stock.value;
-                const image = target.image.value;
-                if(!name || !price) return;
-                await handleAction("CREATE_PRODUCT", { name, price, category, stock, image });
-                target.reset();
-                setShowProductForm(false);
-              }} className="mb-6 bg-white p-6 rounded-3xl shadow-sm border border-zinc-100 flex flex-col gap-4">
-                <h3 className="font-bold text-primary">Add Native Product</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <input required name="name" type="text" placeholder="Product Name" className="rounded-xl border px-4 py-3 text-sm focus:border-primary col-span-2" />
-                  <input required name="price" type="number" placeholder="Price (₹)" className="rounded-xl border px-4 py-3 text-sm focus:border-primary" />
-                  <input required name="stock" type="number" placeholder="Stock" className="rounded-xl border px-4 py-3 text-sm focus:border-primary" />
-                  <input name="category" type="text" placeholder="Category (e.g. Kurtis)" className="rounded-xl border px-4 py-3 text-sm focus:border-primary col-span-2" />
-                  
-                  <div className="col-span-2 flex items-center gap-2">
-                    <input name="image" type="text" placeholder="Image URL (or upload)" className="rounded-xl border px-4 py-3 text-sm focus:border-primary flex-1" id="admin-product-img" />
-                    <label className="cursor-pointer bg-zinc-100 px-4 py-3 rounded-xl font-bold text-xs hover:bg-zinc-200 transition shrink-0 whitespace-nowrap">
-                      {uploadingImage ? "Uploading..." : "Upload File"}
-                      <input type="file" accept="image/*" className="hidden" disabled={uploadingImage} onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        setUploadingImage(true);
-                        const data = new FormData();
-                        data.append("file", file);
-                        const res = await fetch("/api/upload", { method: "POST", body: data });
-                        const result = await res.json();
-                        setUploadingImage(false);
-                        if (result.url) {
-                          const imgInput = document.getElementById("admin-product-img") as HTMLInputElement;
-                          if(imgInput) imgInput.value = result.url;
-                        }
-                      }} />
-                    </label>
-                  </div>
-                </div>
-                <button type="submit" className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-primary-dark transition w-max mt-2">Publish Product</button>
-              </form>
-            )}
+          {/* TAB 6: STYLIST BOOKINGS (ADVANCED TABLE) */}
+          {activeTab === 'bookings' && (
+            <AdminStylistBookings
+              bookings={bookings}
+              onAction={handleAction}
+            />
+          )}
 
-            <div className="bg-white rounded-3xl shadow-sm border border-zinc-100 overflow-hidden">
-              <table className="w-full text-left">
-              <thead className="bg-zinc-50 border-b border-zinc-100 text-xs font-bold uppercase tracking-widest text-zinc-500">
-                <tr>
-                  <th className="px-6 py-4">Product</th>
-                  <th className="px-6 py-4">Price</th>
-                  <th className="px-6 py-4">Vendor</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-100">
-                {products.map((p: any) => (
-                  <tr key={p.id} className="hover:bg-zinc-50/50">
-                    <td className="px-6 py-4 flex items-center gap-3">
-                      <img src={p.image} className="w-10 h-10 rounded object-cover" />
-                      <span className="font-bold text-primary text-sm truncate max-w-[200px]">{p.name}</span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-zinc-500">₹{p.price}</td>
-                    <td className="px-6 py-4 text-sm text-zinc-500">{p.vendor?.name || `Vendor #${p.vendorId}`}</td>
-                    <td className="px-6 py-4 text-xs font-bold">
-                      <span className={`px-2 py-1 rounded ${p.approvalStatus === 'APPROVED' ? 'bg-emerald-50 text-emerald-600' : p.approvalStatus === 'REJECTED' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'}`}>
-                        {p.approvalStatus}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right space-x-3">
-                      {p.approvalStatus !== 'APPROVED' && (
-                        <button onClick={() => handleAction("APPROVE_PRODUCT", { productId: p.id })} className="text-emerald-600 hover:text-emerald-700"><CheckCircle size={18}/></button>
-                      )}
-                      {p.approvalStatus !== 'REJECTED' && (
-                        <button onClick={() => handleAction("REJECT_PRODUCT", { productId: p.id })} className="text-red-500 hover:text-red-700"><XCircle size={18}/></button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+          {/* TAB 7: CUSTOMERS */}
+          {activeTab === 'customers' && (
+            <AdminCustomers
+              users={users}
+              orders={orders}
+              bookings={bookings}
+              onAction={handleAction}
+            />
+          )}
 
-      {/* CATEGORIES */}
-        {activeTab === 'categories' && (
-          <div>
-            <form onSubmit={handleAddCategory} className="mb-6 flex gap-3">
-              <input 
-                type="text" 
-                placeholder="New Category Name (e.g. Footwear)" 
-                value={newCatName} 
-                onChange={e => setNewCatName(e.target.value)}
-                className="rounded-xl border border-zinc-200 px-4 py-3 text-sm focus:border-primary flex-1"
-              />
-              <button type="submit" className="bg-primary text-white px-6 rounded-xl font-bold text-sm hover:bg-primary transition">Add</button>
-            </form>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {categories.map((c: any) => (
-                <div key={c.id} className="bg-white p-4 rounded-2xl border border-zinc-100 flex justify-between items-center shadow-sm">
-                  <span className="font-bold text-primary">{c.name}</span>
-                  <button onClick={() => handleAction("DELETE_CATEGORY", { categoryId: c.id })} className="text-red-400 hover:text-red-600"><Trash2 size={16}/></button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+          {/* TAB 8: MARKETPLACE ANALYTICS */}
+          {activeTab === 'analytics' && (
+            <AdminMarketplaceAnalytics
+              orders={orders}
+              bookings={bookings}
+              vendors={vendors}
+              stylists={stylists}
+              products={products}
+              categories={categories}
+            />
+          )}
 
-        {/* ORDERS & BOOKINGS (Read-Only for Admin overview) */}
-        {activeTab === 'orders' && (
-          <div className="bg-white rounded-3xl shadow-sm border border-zinc-100 overflow-hidden">
-            <table className="w-full text-left">
-              <thead className="bg-zinc-50 border-b border-zinc-100 text-xs font-bold uppercase tracking-widest text-zinc-500">
-                <tr>
-                  <th className="px-6 py-4">Order ID</th>
-                  <th className="px-6 py-4">Customer</th>
-                  <th className="px-6 py-4">Total</th>
-                  <th className="px-6 py-4">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-100">
-                {orders.map((o: any) => (
-                  <tr key={o.id}>
-                    <td className="px-6 py-4 font-mono text-sm text-zinc-600">#{o.id}</td>
-                    <td className="px-6 py-4 font-bold text-primary text-sm">{o.user.email}</td>
-                    <td className="px-6 py-4 text-sm text-zinc-500">₹{o.total}</td>
-                    <td className="px-6 py-4 text-xs font-bold"><span className="px-2 py-1 rounded bg-blue-50 text-blue-600">{o.status}</span></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* SERVICES */}
-        {activeTab === 'services' && (
-          <div>
-            <form onSubmit={async (e) => {
-              e.preventDefault();
-              const target = e.target as any;
-              const name = target.name.value;
-              const description = target.description.value;
-              const price = target.price.value;
-              const duration = target.duration.value;
-              const image = target.image.value;
-              if(!name) return;
-              await handleAction("CREATE_SERVICE", { name, description, price, duration, image });
-              target.reset();
-            }} className="mb-6 bg-white p-6 rounded-3xl shadow-sm border border-zinc-100 flex flex-col gap-4">
-              <h3 className="font-bold text-primary">Add New Service</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <input required name="name" type="text" placeholder="Service Name" className="rounded-xl border px-4 py-3 text-sm focus:border-primary" />
-                <input name="price" type="number" placeholder="Price (₹)" className="rounded-xl border px-4 py-3 text-sm focus:border-primary" />
-                <input name="duration" type="number" placeholder="Duration (mins)" className="rounded-xl border px-4 py-3 text-sm focus:border-primary" />
-                <input name="image" type="text" placeholder="Image URL" className="rounded-xl border px-4 py-3 text-sm focus:border-primary" />
-                <textarea name="description" placeholder="Description" className="rounded-xl border px-4 py-3 text-sm focus:border-primary col-span-2 resize-none" rows={2} />
-              </div>
-              <button type="submit" className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-primary transition w-max">Create Service</button>
-            </form>
-
-            <div className="bg-white rounded-3xl shadow-sm border border-zinc-100 overflow-hidden">
-              <table className="w-full text-left">
-                <thead className="bg-zinc-50 border-b border-zinc-100 text-xs font-bold uppercase tracking-widest text-zinc-500">
-                  <tr>
-                    <th className="px-6 py-4">Service</th>
-                    <th className="px-6 py-4">Price / Duration</th>
-                    <th className="px-6 py-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-100">
-                  {services?.map((s: any) => (
-                    <tr key={s.id}>
-                      <td className="px-6 py-4 flex items-center gap-3">
-                        <img src={s.image || "/images/placeholder.jpg"} className="w-10 h-10 rounded object-cover" />
-                        <div>
-                          <p className="font-bold text-primary text-sm">{s.name}</p>
-                          <p className="text-xs text-zinc-500 truncate max-w-sm">{s.description}</p>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-zinc-500">₹{s.price} / {s.duration} mins</td>
-                      <td className="px-6 py-4 text-right">
-                        <button onClick={() => handleAction("DELETE_SERVICE", { serviceId: s.id })} className="text-red-500 hover:text-red-700">
-                          <Trash2 size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* BOOKINGS */}
-        {activeTab === 'bookings' && (
-          <div className="bg-white rounded-3xl shadow-sm border border-zinc-100 overflow-hidden">
-            <table className="w-full text-left">
-              <thead className="bg-zinc-50 border-b border-zinc-100 text-xs font-bold uppercase tracking-widest text-zinc-500">
-                <tr>
-                  <th className="px-6 py-4">Service</th>
-                  <th className="px-6 py-4">Customer</th>
-                  <th className="px-6 py-4">Date/Time</th>
-                  <th className="px-6 py-4">Provider</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-zinc-100">
-                {bookings.map((b: any) => (
-                  <tr key={b.id}>
-                    <td className="px-6 py-4 font-bold text-primary text-sm">{b.service?.name}</td>
-                    <td className="px-6 py-4 text-sm text-zinc-500">{b.user?.email}</td>
-                    <td className="px-6 py-4 text-sm text-zinc-500">{b.date} {b.time}</td>
-                    <td className="px-6 py-4 text-sm text-zinc-500">{b.provider?.name || "Unassigned"}</td>
-                    <td className="px-6 py-4 text-xs font-bold">
-                      <span className={`px-2 py-1 rounded ${b.status === 'CONFIRMED' ? 'bg-emerald-50 text-emerald-600' : b.status === 'CANCELLED' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'}`}>
-                        {b.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right space-x-2">
-                      {b.status !== 'CONFIRMED' && (
-                        <button onClick={() => handleAction("UPDATE_BOOKING_STATUS", { bookingId: b.id, status: 'CONFIRMED' })} className="text-emerald-600 text-xs font-bold uppercase tracking-widest hover:underline">Confirm</button>
-                      )}
-                      {b.status !== 'CANCELLED' && (
-                        <button onClick={() => handleAction("UPDATE_BOOKING_STATUS", { bookingId: b.id, status: 'CANCELLED' })} className="text-red-600 text-xs font-bold uppercase tracking-widest hover:underline">Cancel</button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-      </main>
+        </main>
       </div>
+
     </div>
   );
 }

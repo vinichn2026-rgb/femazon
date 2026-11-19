@@ -3,17 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 
-const categories = ["All Services", "Beauty", "Styling", "Wedding", "Events", "Shopping"];
+const categories = ["All Services", "Beauty", "Styling", "Shopping"];
 
 const allServices = [
-  { 
-    id: 1, 
-    title: 'Bridal Makeup', 
-    category: 'Wedding', 
-    desc: 'Expert bridal artistry with luxury finishes for your special day.', 
-    img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=1200&auto=format&fit=crop', 
-    size: 'large' 
-  },
   { 
     id: 2, 
     title: 'Personal Styling', 
@@ -29,14 +21,6 @@ const allServices = [
     desc: 'Handcrafted designs featuring intricate traditional florals.', 
     img: 'https://images.unsplash.com/photo-1560031802-9a741366b26c?q=80&w=800&auto=format&fit=crop', 
     size: 'medium' 
-  },
-  { 
-    id: 4, 
-    title: 'Event Photography', 
-    category: 'Events', 
-    desc: 'Professional editorial coverage for your special moments.', 
-    img: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1200&auto=format&fit=crop', 
-    size: 'large' 
   },
   { 
     id: 5, 

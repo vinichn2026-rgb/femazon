@@ -20,7 +20,7 @@ const createPrismaClient = () => {
     ssl: { rejectUnauthorized: false },
     max: 5,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 10000,
+    connectionTimeoutMillis: 3000,
   });
 
   // Prevent idle connection drops from becoming unhandled errors
@@ -41,4 +41,5 @@ export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;
 }
+
 

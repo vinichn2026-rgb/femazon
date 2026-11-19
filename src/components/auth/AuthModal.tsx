@@ -283,7 +283,7 @@ export function AuthModal() {
     }, 700);
   };
 
-  const completeLoginSuccess = (userName: string, userData?: any) => {
+  const completeLoginSuccess = async (userName: string, userData?: any) => {
     setIsLoading(false);
     const firstName = userName.split(' ')[0] || 'Member';
     setLoginSuccessUser(firstName);
@@ -298,6 +298,17 @@ export function AuthModal() {
       role: userData?.role || 'CUSTOMER',
       avatar: userData?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200'
     };
+
+    // Establish server-side session cookie
+    try {
+      await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formattedUser)
+      });
+    } catch (e) {
+      console.warn('Failed to set server session:', e);
+    }
 
     setUser(formattedUser);
 

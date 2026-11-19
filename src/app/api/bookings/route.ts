@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getApiAuthEmail } from '@/lib/auth';
-import { getBookingsCache, getInFlightRequests, clearBookingsCache } from '@/lib/bookingsCache';
-
-const CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
+import { getBookingsCache, getInFlightRequests, CACHE_TTL_MS, clearBookingsCache } from '@/lib/bookingsCache';
 
 export async function GET(request: Request) {
   try {
@@ -66,6 +64,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { 
       serviceId, 
+      providerId,
       date, 
       time, 
       location, 
@@ -81,24 +80,33 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
 
-    const service = await prisma.service.findUnique({ where: { id: Number(serviceId) } });
+    const parsedServiceId = Number(serviceId);
+    if (!Number.isInteger(parsedServiceId) || parsedServiceId <= 0) {
+      return NextResponse.json({ error: 'Please select a valid service.' }, { status: 400 });
+    }
+
+    const service = await prisma.service.findUnique({ where: { id: parsedServiceId } });
     if (!service) return NextResponse.json({ error: 'Selected service not found' }, { status: 404 });
 
-    // Find default Femazon operations provider or create one
-    let provider = await prisma.provider.findFirst({
-      where: { serviceId: service.id }
-    });
+    let provider;
+    if (providerId !== undefined && providerId !== null) {
+      const parsedProviderId = Number(providerId);
+      if (!Number.isInteger(parsedProviderId) || parsedProviderId <= 0) {
+        return NextResponse.json({ error: 'Please select a valid provider.' }, { status: 400 });
+      }
+
+      provider = await prisma.provider.findFirst({
+        where: { id: parsedProviderId, serviceId: service.id }
+      });
+    } else {
+      provider = await prisma.provider.findFirst({
+        where: { serviceId: service.id },
+        orderBy: { rating: 'desc' }
+      });
+    }
 
     if (!provider) {
-      provider = await prisma.provider.create({
-        data: {
-          name: 'Femazon Operations Team',
-          bio: 'Femazon internal operations team coordinating professional support.',
-          rating: 5.0,
-          reviewCount: 1,
-          serviceId: service.id
-        }
-      });
+      return NextResponse.json({ error: 'No provider is currently listed for this service.' }, { status: 404 });
     }
 
     const calculatedTotal = service.basePrice * (duration ? Number(duration) : 1);

@@ -232,7 +232,20 @@ export function AdminProductVendors({ vendors, onAction }: AdminProductVendorsPr
 
                       {/* Boutique & Owner */}
                       <td className="px-5 py-4">
-                        <p className="font-bold text-stone-900 text-sm">{v.businessName || "Unnamed Boutique"}</p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="font-bold text-stone-900 text-sm">{v.businessName || "Unnamed Boutique"}</p>
+                          {isApproved && (
+                            <a
+                              href={`/shops/${v.slug || v.id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-stone-400 hover:text-[#4A1513] text-[10px] font-semibold underline"
+                              title="View Public Storefront"
+                            >
+                              Store ↗
+                            </a>
+                          )}
+                        </div>
                         <p className="text-stone-500 text-[11px] mt-0.5">{v.ownerName || "Boutique Representative"}</p>
                       </td>
 
@@ -277,10 +290,21 @@ export function AdminProductVendors({ vendors, onAction }: AdminProductVendorsPr
                       {/* Status Badges */}
                       <td className="px-5 py-4">
                         {isApproved && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                            <CheckCircle2 size={12} />
-                            Approved
-                          </span>
+                          <div className="flex flex-col gap-1 items-start">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                              <CheckCircle2 size={12} />
+                              Approved
+                            </span>
+                            {v.approvalEmailSent ? (
+                              <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-medium">
+                                <Mail size={10} /> Email Sent
+                              </span>
+                            ) : v.approvalEmailError ? (
+                              <span className="inline-flex items-center gap-1 text-[10px] text-amber-700 font-medium" title={v.approvalEmailError}>
+                                <AlertTriangle size={10} /> Email Failed
+                              </span>
+                            ) : null}
+                          </div>
                         )}
                         {isPending && (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200 animate-pulse">
@@ -353,14 +377,24 @@ export function AdminProductVendors({ vendors, onAction }: AdminProductVendorsPr
 
                           {/* Suspend / Activate toggle */}
                           {isApproved && (
-                            <button
-                              type="button"
-                              onClick={() => onAction("SUSPEND_VENDOR", { vendorId: v.id })}
-                              title="Suspend Vendor Account"
-                              className="px-2 py-1 rounded-lg bg-stone-100 hover:bg-amber-100 text-stone-700 hover:text-amber-800 font-bold text-[11px] transition cursor-pointer"
-                            >
-                              Suspend
-                            </button>
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => onAction("RESEND_APPROVAL_EMAIL", { vendorId: v.id })}
+                                title="Resend Approval Email"
+                                className="p-1.5 rounded-lg text-stone-500 hover:text-emerald-700 hover:bg-stone-100 transition cursor-pointer"
+                              >
+                                <Mail size={15} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => onAction("SUSPEND_VENDOR", { vendorId: v.id })}
+                                title="Suspend Vendor Account"
+                                className="px-2 py-1 rounded-lg bg-stone-100 hover:bg-amber-100 text-stone-700 hover:text-amber-800 font-bold text-[11px] transition cursor-pointer"
+                              >
+                                Suspend
+                              </button>
+                            </>
                           )}
 
                           {isSuspended && (

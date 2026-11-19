@@ -2,37 +2,52 @@ import { prisma } from "@/lib/prisma";
 import SearchClient from "./SearchClient";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
+import { getApprovedProducts } from "@/lib/catalog";
+import { getApprovedPartnerDirectory } from "@/lib/partnerDirectory";
+import type { PartnerDirectoryListing } from "@/lib/partnerDirectory";
 
 export const dynamic = "force-dynamic";
 
-export default async function SearchPage({ searchParams }: { searchParams: { q?: string; productId?: string } | Promise<{ q?: string; productId?: string }> }) {
-  const resolvedParams = await Promise.resolve(searchParams);
+export default async function SearchPage({ searchParams }: { searchParams?: Promise<{ q?: string; productId?: string }> }) {
+  const resolvedParams = (await searchParams) || {};
   const query = resolvedParams.q || "";
   const productId = resolvedParams.productId ? Number(resolvedParams.productId) : null;
 
-  // Fetch session to get wishlist
-  const session = await getServerSession(authOptions);
+  // Fetch session to get wishlist safely
   let wishlistIds: number[] = [];
-  
-  if (session?.user?.email) {
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      include: {
-        wishlist: { include: { items: true } }
+  try {
+    const session = await getServerSession(authOptions);
+    if (session?.user?.email) {
+      const user = await prisma.user.findUnique({
+        where: { email: session.user.email },
+        include: {
+          wishlist: { include: { items: true } }
+        }
+      });
+      if (user?.wishlist) {
+        wishlistIds = user.wishlist.items.map((item: any) => item.productId);
       }
-    });
-    if (user?.wishlist) {
-      wishlistIds = user.wishlist.items.map((item: any) => item.productId);
     }
+  } catch (err) {
+    console.warn('[SearchPage] Wishlist fetch error, skipping:', err);
   }
 
-  // Fetch products matching query
-  const dbProducts = await prisma.product.findMany({
-    where: { 
-      approvalStatus: 'APPROVED'
-    },
-    orderBy: { createdAt: 'desc' }
-  });
+  // Fetch products matching query with resilient catalog fallback
+  let dbProducts: any[] = [];
+  try {
+    dbProducts = await prisma.product.findMany({
+      where: { 
+        approvalStatus: 'APPROVED'
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+  } catch (err) {
+    console.warn('[SearchPage] DB unreachable, falling back to cached catalog snapshot:', err);
+  }
+
+  if (!dbProducts || dbProducts.length === 0) {
+    dbProducts = await getApprovedProducts();
+  }
 
   // If specific productId requested from visual search, produce ONLY that exact product
   if (productId) {
@@ -44,8 +59,8 @@ export default async function SearchPage({ searchParams }: { searchParams: { q?:
         let sizes = ["S", "M", "L"];
         let colors = ["Black", "Red"];
         try {
-          if (p.sizes) sizes = JSON.parse(p.sizes as string);
-          if (p.colors) colors = JSON.parse(p.colors as string);
+          if (p.sizes) sizes = typeof p.sizes === 'string' ? JSON.parse(p.sizes) : p.sizes;
+          if (p.colors) colors = typeof p.colors === 'string' ? JSON.parse(p.colors) : p.colors;
         } catch (e) {}
         let images: string[] = [];
         try {
@@ -184,6 +199,60 @@ export default async function SearchPage({ searchParams }: { searchParams: { q?:
     matchedProducts = dbProducts.slice(0, 8);
   }
 
+  let serviceResults: {
+    id: number;
+    slug: string;
+    name: string;
+    description: string | null;
+    basePrice: number;
+    image: string | null;
+    providers: { id: number; name: string; rating: number; reviewCount: number }[];
+  }[] = [];
+  let partnerResults: PartnerDirectoryListing[] = [];
+  let partnerDirectoryError: string | null = null;
+
+  if (lowerQuery && !productId) {
+    try {
+      const services = await prisma.service.findMany({
+        where: {
+          OR: [
+            { name: { contains: query.trim(), mode: "insensitive" } },
+            { slug: { contains: query.trim(), mode: "insensitive" } },
+            { description: { contains: query.trim(), mode: "insensitive" } },
+            {
+              providers: {
+                some: {
+                  OR: [
+                    { name: { contains: query.trim(), mode: "insensitive" } },
+                    { bio: { contains: query.trim(), mode: "insensitive" } },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+        include: {
+          providers: {
+            orderBy: { rating: "desc" },
+            take: 3,
+            select: { id: true, name: true, rating: true, reviewCount: true },
+          },
+        },
+        orderBy: { name: "asc" },
+        take: 12,
+      });
+      serviceResults = services;
+    } catch (error) {
+      console.error("[SearchPage] Service search failed:", error);
+    }
+    try {
+      partnerResults = await getApprovedPartnerDirectory({ query });
+    } catch (error) {
+      console.error("[SearchPage] Partner search failed:", error);
+      partnerDirectoryError = "Boutique and professional search is temporarily unavailable.";
+    }
+  }
+
   const formattedProducts = matchedProducts.map((p: any) => {
     const isSale = p.discountPrice && p.discountPrice < p.price;
     const discountPercent = isSale && p.discountPrice ? Math.round(((p.price - p.discountPrice) / p.price) * 100) : 0;
@@ -191,24 +260,33 @@ export default async function SearchPage({ searchParams }: { searchParams: { q?:
     let sizes = ["S", "M", "L"];
     let colors = ["Black", "Red"];
     try {
-      if (p.sizes) sizes = JSON.parse(p.sizes as string);
-      if (p.colors) colors = JSON.parse(p.colors as string);
+      if (p.sizes) sizes = typeof p.sizes === 'string' ? JSON.parse(p.sizes) : p.sizes;
+      if (p.colors) colors = typeof p.colors === 'string' ? JSON.parse(p.colors) : p.colors;
     } catch (e) {}
+
+    let images: string[] = [];
+    try {
+      images = typeof p.images === 'string' ? JSON.parse(p.images) : (p.images || []);
+    } catch (e) {
+      images = [p.image];
+    }
+    const primaryImage = p.image || (images.length > 0 ? images[0] : "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop");
 
     return {
       id: p.id.toString(),
       name: p.name,
-      brand: "Femazon", 
+      slug: p.slug,
+      brand: p.brandName || "Femazon Luxe", 
       price: p.discountPrice ? p.discountPrice : p.price,
       originalPrice: p.price,
       discount: discountPercent,
       category: p.category || "Dresses",
-      subCategory: p.category || "Dresses", 
-      image: p.image || "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop",
-      hoverImage: p.image || "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop",
-      rating: 4.5,
-      reviewCount: Math.floor(Math.random() * 200) + 10,
-      isTrending: Math.random() > 0.5,
+      subCategory: p.subcategory || p.category || "Dresses", 
+      image: primaryImage,
+      hoverImage: images[1] || primaryImage,
+      rating: 4.8,
+      reviewCount: 38,
+      isTrending: p.category === 'Co-ord Sets' || p.category === 'Kurta Sets',
       isNew: true,
       inStock: p.stock > 0,
       sizes,
@@ -221,6 +299,9 @@ export default async function SearchPage({ searchParams }: { searchParams: { q?:
       query={query} 
       initialProducts={formattedProducts} 
       initialWishlistIds={wishlistIds} 
+      serviceResults={serviceResults}
+      partnerResults={partnerResults}
+      partnerDirectoryError={partnerDirectoryError}
     />
   );
 }
