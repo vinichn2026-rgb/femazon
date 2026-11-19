@@ -128,11 +128,15 @@ export async function sendTransactionalEmail({
         data = { message: responseText };
       }
 
-      if (!res.ok || data.success === false) {
-        console.error('❌ [Google Apps Script Error]:', data);
+      if (!res.ok || data.success === false || responseText.includes('<!DOCTYPE html>') || responseText.includes('<html')) {
+        let cleanErr = data?.error || data?.message;
+        if (typeof cleanErr === 'string' && (cleanErr.includes('Access Denied') || cleanErr.includes('<!DOCTYPE html>') || cleanErr.includes('<html'))) {
+          cleanErr = 'Google Apps Script Access Denied. In Google Apps Script, click Deploy > Manage deployments > Edit > set "Who has access" to "Anyone" and redeploy.';
+        }
+        console.error('❌ [Google Apps Script Error]:', cleanErr);
         return {
           success: false,
-          error: data?.error || data?.message || 'Google Apps Script dispatch failed'
+          error: cleanErr || 'Google Apps Script email dispatch failed'
         };
       }
 
