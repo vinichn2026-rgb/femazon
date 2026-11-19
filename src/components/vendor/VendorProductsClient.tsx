@@ -14,6 +14,7 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { AddProductWithVariants } from './AddProductWithVariants';
+import { VendorPortalHeader } from './VendorPortalHeader';
 
 export function VendorProductsClient({
   initialProducts = []
@@ -28,8 +29,10 @@ export function VendorProductsClient({
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F5] py-8">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 space-y-6">
+    <div className="min-h-screen bg-[#FAF7F5] flex flex-col font-sans">
+      <VendorPortalHeader storeHref="/shop" />
+      <div className="flex-1 py-8">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 space-y-6">
         
         {/* Navigation & Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -199,5 +202,6 @@ export function VendorProductsClient({
 
       </div>
     </div>
-  );
+  </div>
+);
 }

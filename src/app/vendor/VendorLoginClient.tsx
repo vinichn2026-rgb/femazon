@@ -15,6 +15,7 @@ import {
   ChevronLeft
 } from "lucide-react";
 import { BrandLogo } from "@/components/common/BrandLogo";
+import { VendorPortalHeader } from "@/components/vendor/VendorPortalHeader";
 
 export default function VendorLoginClient() {
   const router = useRouter();
@@ -81,26 +82,8 @@ export default function VendorLoginClient() {
   return (
     <div className="min-h-screen bg-[#FAF7F5] flex flex-col justify-between selection:bg-[#4A1513] selection:text-white font-sans">
       
-      {/* Top Header */}
-      <header className="w-full bg-white border-b border-stone-200/80 py-4">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <BrandLogo />
-            <div className="h-5 w-[1px] bg-stone-300 hidden sm:block" />
-            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#4A1513] bg-[#FAF7F5] px-2.5 py-1 rounded-full border border-stone-200 hidden sm:inline-block">
-              Vendor Portal
-            </span>
-          </div>
-
-          <Link
-            href="/shop"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-[#4A1513] transition"
-          >
-            <ChevronLeft size={14} />
-            <span>Return to Store</span>
-          </Link>
-        </div>
-      </header>
+      {/* Minimal Vendor Portal Header */}
+      <VendorPortalHeader storeHref="/shop" />
 
       {/* Main Login Box */}
       <main className="flex-1 flex items-center justify-center p-4 sm:p-8">

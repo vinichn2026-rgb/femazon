@@ -991,12 +991,8 @@ export function SiteLayout({
   // Exclude public landing pages like /seller/register (Become a Seller) so they render the full header & footer
   const isPortalOrAuthPage = 
     pathname?.startsWith('/admin') || 
+    pathname?.startsWith('/vendor') ||
     pathname?.startsWith('/seller/dashboard') ||
-    pathname?.startsWith('/vendor/dashboard') ||
-    pathname?.startsWith('/vendor/bookings') ||
-    pathname?.startsWith('/vendor/products') ||
-    pathname?.startsWith('/vendor/services') ||
-    pathname === '/vendor' ||
     pathname === '/login' || 
     pathname === '/register';
 
