@@ -1636,6 +1636,7 @@ export function SiteLayout({
             <div className="flex flex-col items-center gap-4 text-center md:items-start md:text-left">
               <h4 className="font-serif text-sm font-bold tracking-widest uppercase text-[#4A1513] mb-2">Company</h4>
               <Link href="/about" className="text-xs font-medium text-stone-500 hover:text-[#4A1513] transition">About Femazon</Link>
+              <Link href="/vendor/login" className="text-xs font-medium text-stone-500 hover:text-[#4A1513] transition">Vendor Portal Login</Link>
               <Link href="/vendor/register" className="text-xs font-medium text-stone-500 hover:text-[#4A1513] transition">Become a Seller</Link>
               <Link href="/services/provider/register" className="text-xs font-medium text-stone-500 hover:text-[#4A1513] transition">Become a Service Provider</Link>
               <Link href="/services/shopping-assistant/become-assistant" className="text-xs font-medium text-stone-500 hover:text-[#4A1513] transition">Become a Shopping Assistant</Link>

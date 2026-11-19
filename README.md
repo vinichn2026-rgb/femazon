@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Femazon — Luxury Indian Couture & Designer Marketplace
 
-## Getting Started
+Femazon is a unified luxury e-commerce platform blending premium fashion, curated designer collections, women-focused at-home services, and AI-powered styling for the modern woman.
 
-First, run the development server:
+---
 
+## 🌟 Latest Updates & Features
+
+### 1. Automatic Vendor Approval Email Integration
+- **Server-Side Trigger**: When an Admin approves a vendor registration in the Admin Dashboard (`/admin`), the backend automatically dispatches a branded luxury approval email to the vendor's verified registered address.
+- **Dynamic Content**: Dynamically populates vendor name, shop name, registration ID, and direct login URL (`/vendor/login`).
+- **Resilient Multi-Provider Email Service**: Native support for **Resend** (`EMAIL_API_KEY`), **Google Apps Script** (`GOOGLE_SCRIPT_URL`), and **SMTP** (`nodemailer`), with automatic database logging of delivery timestamps and errors.
+- **Duplicate Prevention**: Subsequent approval requests detect existing email status and prevent duplicate notifications.
+
+### 2. Common Vendor Portal & Multi-Tenant Isolation
+- **Common Vendor Login**: `/vendor/login`
+- **Common Vendor Dashboard**: `/vendor/dashboard`
+- **Strict Server-Side Security**: Verifies vendor role and approval status (`APPROVED`) before granting access to dashboard or API endpoints. Suspended or pending vendors are restricted.
+- **Multi-Tenant Data Isolation**: Vendors only access and manage their own products, inventory, and order items.
+
+### 3. Dynamic Public Vendor Shop Pages
+- **Dynamic Storefronts**: `/shops/[slug]` (e.g. `/shops/jewellery-shop`, `/shops/priya-boutique`).
+- **PostgreSQL Driven**: Generates public storefronts dynamically by unique vendor slug or ID.
+- **Approval Filtering**: Excludes suspended vendors and displays only approved products (`approvalStatus: 'APPROVED'`).
+
+### 4. Standardized Layout Spacing & Padding
+- **Global Layout Standard**: `max-w-[1400px] mx-auto px-4 sm:px-6` applied consistently across all 48 pages (Header, Catalog, Product Details, Category/Dresses, Cart, Checkout, Account views, Services, Virtual Try-On, AI Concierge, Admin & Vendor Dashboards).
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+ or 20+
+- PostgreSQL database (Supabase or standard Postgres)
+
+### Installation
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Clone the repository
+git clone https://github.com/vinichn2026-rgb/femazon.git
+cd femazon
+
+# Install dependencies
+npm install
+
+# Generate Prisma Client
+npx prisma generate
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment Configuration
+Copy `.env.example` to `.env` and configure your credentials:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```env
+DATABASE_URL="postgresql://..."
+DIRECT_URL="postgresql://..."
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-nextauth-secret-key"
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Email Provider (Resend recommended)
+EMAIL_PROVIDER="resend"
+EMAIL_API_KEY="re_..."
+EMAIL_FROM="Femazon <onboarding@resend.dev>"
+SUPPORT_EMAIL="support@femazon.com"
+```
 
-## Learn More
+### Run Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📂 Key Application Routes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Route | Description |
+| :--- | :--- |
+| `/` | Luxury Home Page & Hero Carousel |
+| `/shop` | Full Product Catalog & Filter Drawer |
+| `/shops/[slug]` | Dynamic Public Vendor Boutique Storefront |
+| `/vendor/login` | Common Vendor Partner Login Portal |
+| `/vendor/dashboard` | Common Vendor Inventory & Orders Dashboard |
+| `/seller/register` | Become a Seller Registration Form |
+| `/admin` | Admin Management Dashboard |
+| `/services` | At-Home Women's Services & Booking |
+| `/vton` | Virtual Try-On Experience |
+| `/ai-wardrobe` | AI-Powered Digital Wardrobe Assistant |
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🧪 Testing
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Run the automated integration test suite:
+```bash
+npx tsx scripts/test-vendor-approval-email.ts
+```
+
+---
+
+## 📄 License
+Private & Proprietary — Femazon Luxury Couture Inc.
