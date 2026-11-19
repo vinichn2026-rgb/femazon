@@ -62,11 +62,15 @@ export async function POST(request: Request) {
     if (cleanEmail) {
       const emailResult = await sendOtpEmail({ to: cleanEmail, name, otp });
       if (!emailResult.success) {
-        console.error('[OTP Email Dispatch Error]:', emailResult.error);
+        let errMsg = emailResult.error || 'Unable to deliver verification email.';
+        if (typeof errMsg === 'string' && (errMsg.includes('<') || errMsg.includes('Access Denied') || errMsg.includes('html'))) {
+          errMsg = 'Google Apps Script Access Denied: In Google Apps Script, click Deploy > Manage deployments > Edit > set "Who has access" to "Anyone" and redeploy. Alternatively, configure RESEND_API_KEY in Vercel.';
+        }
+        console.error('[OTP Email Dispatch Error]:', errMsg);
         return NextResponse.json(
           { 
             success: false, 
-            message: emailResult.error || 'Unable to deliver verification email. Please check your email address or try again.' 
+            message: errMsg 
           },
           { status: 502 }
         );
