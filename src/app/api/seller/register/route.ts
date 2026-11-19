@@ -2,7 +2,18 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getApiAuthEmail } from '@/lib/auth';
 import { createPartnerApplication } from '@/lib/partnerApplications';
+import bcrypt from 'bcryptjs';
 import { z } from 'zod';
+
+function slugify(text: string): string {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
 
 const sellerRegistrationSchema = z.object({
   businessName: z.string().trim().min(1).max(200),
@@ -51,42 +62,68 @@ export async function POST(request: Request) {
       user = await prisma.user.findUnique({ where: { email: registration.email.toLowerCase() } });
     }
 
-    // 1. If we have a user, upsert VendorProfile
-    let profile = null;
-    if (user) {
-      profile = await prisma.vendorProfile.upsert({
-        where: { userId: user.id },
-        update: {
-          businessName: registration.businessName,
-          ownerName: registration.ownerName,
-          email: registration.email,
+    // If no user account exists at all, create one for the new seller so they have credentials for /vendor/login
+    if (!user) {
+      const defaultPasswordHash = await bcrypt.hash('Femazon@123', 10);
+      user = await prisma.user.create({
+        data: {
+          email: registration.email.toLowerCase(),
+          name: registration.ownerName,
           phone: registration.phone,
-          address: registration.city 
-            ? `${registration.address}, ${registration.city} - ${registration.pincode}` 
-            : registration.address,
-          businessCategory: registration.businessCategory,
-          description: registration.description,
-          gstNumber: registration.gstNumber || null,
-          status: 'PENDING',
-        },
-        create: {
-          userId: user.id,
-          businessName: registration.businessName,
-          ownerName: registration.ownerName,
-          email: registration.email,
-          phone: registration.phone,
-          address: registration.city 
-            ? `${registration.address}, ${registration.city} - ${registration.pincode}` 
-            : registration.address,
-          businessCategory: registration.businessCategory,
-          description: registration.description,
-          gstNumber: registration.gstNumber || null,
-          status: 'PENDING',
+          password: defaultPasswordHash,
+          role: 'CUSTOMER', // Promoted to VENDOR upon Admin approval
         },
       });
     }
 
-    // 2. Always create a PartnerApplication so Admin can review and approve it under /admin/partner-applications
+    // Generate unique shop slug
+    const baseSlug = slugify(registration.businessName) || `vendor-${user.id}`;
+    let shopSlug = baseSlug;
+    let count = 1;
+    while (true) {
+      const existingSlug = await prisma.vendorProfile.findFirst({
+        where: { slug: shopSlug, NOT: { userId: user.id } },
+        select: { id: true },
+      });
+      if (!existingSlug) break;
+      shopSlug = `${baseSlug}-${count++}`;
+    }
+
+    // Upsert VendorProfile linked to this user account
+    const fullAddress = registration.city
+      ? `${registration.address}, ${registration.city} - ${registration.pincode}`
+      : registration.address;
+
+    const profile = await prisma.vendorProfile.upsert({
+      where: { userId: user.id },
+      update: {
+        businessName: registration.businessName,
+        slug: shopSlug,
+        ownerName: registration.ownerName,
+        email: registration.email,
+        phone: registration.phone,
+        address: fullAddress,
+        businessCategory: registration.businessCategory,
+        description: registration.description,
+        gstNumber: registration.gstNumber || null,
+        status: 'PENDING',
+      },
+      create: {
+        userId: user.id,
+        businessName: registration.businessName,
+        slug: shopSlug,
+        ownerName: registration.ownerName,
+        email: registration.email,
+        phone: registration.phone,
+        address: fullAddress,
+        businessCategory: registration.businessCategory,
+        description: registration.description,
+        gstNumber: registration.gstNumber || null,
+        status: 'PENDING',
+      },
+    });
+
+    // Create a PartnerApplication for Admin review
     const combinedServiceInfo = [
       registration.businessType ? `Type: ${registration.businessType}` : '',
       registration.gstNumber ? `GST: ${registration.gstNumber}` : 'GST: Unregistered / Exempt',
@@ -96,7 +133,7 @@ export async function POST(request: Request) {
     ].filter(Boolean).join(' | ');
 
     const application = await createPartnerApplication({
-      userId: user?.id,
+      userId: user.id,
       name: registration.ownerName,
       email: registration.email,
       phone: registration.phone,
@@ -104,9 +141,7 @@ export async function POST(request: Request) {
       applicantType: 'SELLER',
       categories: registration.businessCategory,
       description: registration.description,
-      location: registration.city 
-        ? `${registration.address}, ${registration.city} - ${registration.pincode}` 
-        : registration.address,
+      location: fullAddress,
       serviceInfo: combinedServiceInfo || undefined,
       portfolio: registration.portfolioUrl || undefined,
     });
