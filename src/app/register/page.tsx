@@ -158,6 +158,13 @@ function RegisterForm() {
 
       const data = await res.json().catch(() => ({}));
 
+      if (!res.ok || !data.success) {
+        setFormError(data?.message || 'Unable to send verification code. Please check your email or phone.');
+        setStep('form');
+        setIsSubmittingForm(false);
+        return;
+      }
+
       // Short delay for fluid transition
       await new Promise(r => setTimeout(r, 700));
 
@@ -235,6 +242,14 @@ function RegisterForm() {
           name: `${firstName.trim()} ${lastName.trim()}`
         })
       });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || !data.success) {
+        setOtpError(data?.message || 'Failed to resend code. Please try again.');
+        setOtpSendStatus('idle');
+        return;
+      }
 
       setOtpSendStatus('sent');
       setCanResend(false);

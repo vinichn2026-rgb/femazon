@@ -1,10 +1,19 @@
 import { NextResponse } from 'next/server';
-import { generateOtp, storeOtp, createOtpChallenge, sendOtpSms } from '@/lib/sms';
+import { generateOtp, storeOtp, createOtpChallenge, sendOtpSms, checkRateLimit } from '@/lib/sms';
 import { sendOtpEmail } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    let body: any = {};
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { success: false, message: 'Invalid request body.' },
+        { status: 400 }
+      );
+    }
+
     const { phone, email, name } = body;
 
     if (!phone && !email) {
@@ -14,51 +23,76 @@ export async function POST(request: Request) {
       );
     }
 
-    const cleanEmail = email ? email.trim().toLowerCase() : null;
-    const cleanPhone = phone ? phone.trim().toLowerCase() : null;
+    const cleanEmail = email ? String(email).trim().toLowerCase() : null;
+    const cleanPhone = phone ? String(phone).trim().toLowerCase() : null;
     const primaryId = cleanEmail || cleanPhone!;
+
+    // 1. Enforce 30-second rate limiting cooldown
+    const cookieHeader = request.headers.get('cookie') || '';
+    const match = cookieHeader.match(/femazon_otp_challenge=([^;]+)/);
+    const existingChallenge = match ? decodeURIComponent(match[1]) : undefined;
+
+    const rateCheck = checkRateLimit(primaryId, existingChallenge);
+    if (!rateCheck.allowed) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          message: `Please wait ${rateCheck.remainingSecs || 30} seconds before requesting a new verification code.` 
+        },
+        { status: 429 }
+      );
+    }
+
+    // 2. Generate secure 6-digit random OTP
     const otp = generateOtp();
 
-    // Store in-memory for BOTH email and phone if provided
+    // 3. Store hashed OTP in server-side memory
     if (cleanEmail) storeOtp(cleanEmail, otp);
     if (cleanPhone) storeOtp(cleanPhone, otp);
 
-    // Create serverless-safe HMAC challenge
+    // 4. Create signed, serverless-safe HMAC challenge
     const challenge = createOtpChallenge(primaryId, otp);
 
-    console.log(`[OTP Request] Generating OTP for identifier: ${primaryId}`);
-
-    // Dispatch via SMS if phone
+    // 5. Dispatch via SMS if phone
     if (cleanPhone) {
       await sendOtpSms({ phone: cleanPhone, otp });
     }
 
-    // Dispatch via Google Apps Script if email
+    // 6. Dispatch via Transactional Email service if email
     if (cleanEmail) {
       const emailResult = await sendOtpEmail({ to: cleanEmail, name, otp });
       if (!emailResult.success) {
-        console.error('Failed to send OTP email:', emailResult.error);
+        console.error('[OTP Email Dispatch Error]:', emailResult.error);
+        return NextResponse.json(
+          { 
+            success: false, 
+            message: emailResult.error || 'Unable to deliver verification email. Please check your email address or try again.' 
+          },
+          { status: 502 }
+        );
       }
     }
 
+    const isHttps = request.url.startsWith('https://') || request.headers.get('x-forwarded-proto') === 'https';
+
     const res = NextResponse.json({
       success: true,
-      message: 'OTP sent successfully ✓',
+      message: 'Verification code sent successfully ✓',
       identifier: primaryId
     });
 
-    // Set serverless challenge cookie
+    // 7. Set secure serverless challenge cookie (5-minute TTL)
     res.cookies.set('femazon_otp_challenge', challenge, {
       httpOnly: true,
       sameSite: 'lax',
       path: '/',
-      maxAge: 600,
-      secure: process.env.NODE_ENV === 'production'
+      maxAge: 300, // 5 minutes
+      secure: isHttps
     });
 
     return res;
-  } catch (error) {
-    console.error('[OTP Send Error]', error);
+  } catch (error: any) {
+    console.error('[OTP Send Exception]:', error?.message || error);
     return NextResponse.json(
       { success: false, message: 'Unable to send verification code. Please try again.' },
       { status: 500 }

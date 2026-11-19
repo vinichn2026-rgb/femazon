@@ -50,12 +50,21 @@ export async function sendTransactionalEmail({
 }: SendEmailPayload): Promise<{ success: boolean; messageId?: string; error?: string }> {
   const fromAddress = from || process.env.EMAIL_FROM || 'Femazon <onboarding@resend.dev>';
   const resendApiKey = process.env.EMAIL_API_KEY || process.env.RESEND_API_KEY;
-  const googleScriptUrl = process.env.GOOGLE_SCRIPT_URL || process.env.GMAIL_APP_SCRIPT_URL;
+  const rawGoogleScriptUrl = process.env.GOOGLE_SCRIPT_URL || process.env.GMAIL_APP_SCRIPT_URL;
+
+  // Validate Google Script URL to ensure it is not a placeholder or unconfigured
+  const isGoogleScriptConfigured = 
+    Boolean(rawGoogleScriptUrl) && 
+    rawGoogleScriptUrl!.startsWith('https://script.google.com/') && 
+    !rawGoogleScriptUrl!.includes('...') && 
+    !rawGoogleScriptUrl!.includes('YOUR_');
 
   // 1. Transactional Provider: Resend API
   if (resendApiKey) {
     try {
-      console.log(`[Resend API] Dispatching "${subject}" to: ${to}...`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[Resend API] Dispatching "${subject}" to: ${to}...`);
+      }
       const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
@@ -67,7 +76,8 @@ export async function sendTransactionalEmail({
           to: [to],
           subject,
           html
-        })
+        }),
+        signal: AbortSignal.timeout(8000)
       });
 
       const data = await res.json().catch(() => ({}));
@@ -79,19 +89,23 @@ export async function sendTransactionalEmail({
         };
       }
 
-      console.log(`✅ [Resend Sent Successfully] ID: ${data.id} to ${to}`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`✅ [Resend Sent Successfully] ID: ${data.id} to ${to}`);
+      }
       return { success: true, messageId: data.id };
     } catch (err: any) {
-      console.error('❌ [Resend API Exception]:', err);
-      return { success: false, error: err.message };
+      console.error('❌ [Resend API Exception]:', err?.message || err);
+      return { success: false, error: err?.message || 'Resend API network timeout or failure' };
     }
   }
 
   // 2. Google Apps Script Web App (Gmail API Dispatcher)
-  if (googleScriptUrl) {
+  if (isGoogleScriptConfigured) {
     try {
-      console.log(`[Google Apps Script] Dispatching "${subject}" to: ${to}...`);
-      const res = await fetch(googleScriptUrl, {
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`[Google Apps Script] Dispatching "${subject}" to: ${to}...`);
+      }
+      const res = await fetch(rawGoogleScriptUrl!, {
         method: 'POST',
         headers: {
           'Content-Type': 'text/plain;charset=utf-8'
@@ -102,7 +116,8 @@ export async function sendTransactionalEmail({
           htmlBody: html,
           secret: process.env.GOOGLE_SCRIPT_SECRET || ''
         }),
-        redirect: 'follow'
+        redirect: 'follow',
+        signal: AbortSignal.timeout(8000)
       });
 
       const responseText = await res.text();
@@ -121,16 +136,18 @@ export async function sendTransactionalEmail({
         };
       }
 
-      console.log(`✅ [Google Apps Script Sent Successfully] to ${to}`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`✅ [Google Apps Script Sent Successfully] to ${to}`);
+      }
       return { success: true, messageId: data.messageId || `gas_${Date.now()}` };
     } catch (err: any) {
-      console.error('❌ [Google Apps Script Exception]:', err);
-      return { success: false, error: err.message };
+      console.error('❌ [Google Apps Script Exception]:', err?.message || err);
+      return { success: false, error: err?.message || 'Google Apps Script connection timeout or error' };
     }
   }
 
-  // 3. SMTP Provider (Nodemailer fallback)
-  if (process.env.SMTP_USER) {
+  // 3. SMTP Provider (Nodemailer)
+  if (process.env.SMTP_USER && (process.env.SMTP_PASS || process.env.SMTP_PASSWORD)) {
     try {
       const nodemailer = await import('nodemailer');
       const transporter = nodemailer.createTransport({
@@ -150,22 +167,33 @@ export async function sendTransactionalEmail({
         html
       });
 
-      console.log(`✅ [SMTP Email Sent Successfully] Message ID: ${info.messageId} to ${to}`);
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`✅ [SMTP Email Sent Successfully] Message ID: ${info.messageId} to ${to}`);
+      }
       return { success: true, messageId: info.messageId };
     } catch (err: any) {
-      console.error('❌ [SMTP Email Exception]:', err);
-      return { success: false, error: err.message };
+      console.error('❌ [SMTP Email Exception]:', err?.message || err);
+      return { success: false, error: err?.message || 'SMTP email delivery failed' };
     }
   }
 
-  // 4. Development mode / local testing logger
+  // 4. Production vs Development fallback
+  if (process.env.NODE_ENV === 'production') {
+    console.error('❌ [Email Dispatcher]: No valid email provider configured in production environment variables.');
+    return {
+      success: false,
+      error: 'Email service is not configured on production. Please configure RESEND_API_KEY, GOOGLE_SCRIPT_URL, or SMTP_USER in Vercel Environment Variables.'
+    };
+  }
+
+  // Local development mode logger
   console.log(`\n==================================================`);
-  console.log(`⚠️ [FEMAZON EMAIL DEV LOGGER]`);
+  console.log(`⚠️ [FEMAZON LOCAL DEV EMAIL SIMULATOR]`);
   console.log(`To: ${to}`);
   console.log(`Subject: ${subject}`);
   console.log(`From: ${fromAddress}`);
   console.log(`Timestamp: ${new Date().toISOString()}`);
-  console.log(`(Configure EMAIL_API_KEY or GOOGLE_SCRIPT_URL in .env to send real emails)`);
+  console.log(`(Configure RESEND_API_KEY, GOOGLE_SCRIPT_URL, or SMTP credentials in .env to deliver real emails)`);
   console.log(`==================================================\n`);
 
   return { success: true, messageId: `dev_${Date.now()}` };
@@ -530,7 +558,8 @@ export async function sendOtpEmail({
   otp, 
   verificationUrl 
 }: SendOtpEmailParams): Promise<{ success: boolean; messageId?: string; error?: string }> {
-  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+  const defaultBaseUrl = process.env.NODE_ENV === 'production' ? 'https://femazon-beta.vercel.app' : 'http://localhost:3000';
+  const baseUrl = process.env.NEXTAUTH_URL || defaultBaseUrl;
   const autoVerificationUrl = verificationUrl || `${baseUrl}/login?identifier=${encodeURIComponent(to)}&otp=${otp}`;
   const html = generateOtpEmailHtml({ name, otp, verificationUrl: autoVerificationUrl });
 
@@ -547,7 +576,8 @@ export async function sendOtpEmail({
 export async function sendVendorApprovalEmail(
   params: SendVendorApprovalEmailParams
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
-  const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+  const defaultBaseUrl = process.env.NODE_ENV === 'production' ? 'https://femazon-beta.vercel.app' : 'http://localhost:3000';
+  const baseUrl = process.env.NEXTAUTH_URL || defaultBaseUrl;
   const loginUrl = params.loginUrl || `${baseUrl}/vendor/login`;
   const dashboardUrl = params.dashboardUrl || `${baseUrl}/vendor/dashboard`;
   const supportEmail = params.supportEmail || process.env.SUPPORT_EMAIL || 'support@femazon.com';

@@ -107,21 +107,29 @@ function LoginForm() {
 
     try {
       const payload = isEmail ? { email: cleanInput } : { phone: cleanInput };
-      await fetch('/api/auth/otp/send', {
+      const res = await fetch('/api/auth/otp/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || !data.success) {
+        setIsLoading(false);
+        setErrorMessage(data?.message || 'Unable to send verification code. Please try again.');
+        return;
+      }
+
       setIsLoading(false);
       setIsOtpSent(true);
       setOtpCountdown(30);
-      setSuccessMessage('Verification code sent successfully! (Demo OTP: 1234)');
+      setSuccessMessage(isEmail 
+        ? `Verification code sent to ${cleanInput}! Please check your email inbox.` 
+        : `Verification code sent to ${cleanInput} via SMS.`);
     } catch (err) {
       setIsLoading(false);
-      setIsOtpSent(true);
-      setOtpCountdown(30);
-      setSuccessMessage('Verification code sent! (Demo OTP: 1234)');
+      setErrorMessage('Network connection error. Unable to send verification code. Please try again.');
     }
   };
 
@@ -157,21 +165,7 @@ function LoginForm() {
         return;
       }
 
-      if (cleanOtp === '1234' || cleanOtp.length >= 4) {
-        const userName = isEmail ? identifier.split('@')[0] : 'Femazon Member';
-        const demoUser = {
-          id: 'usr_' + Date.now(),
-          name: userName,
-          firstName: userName.split(' ')[0] || 'Member',
-          email: isEmail ? identifier : `${identifier}@femazon.luxury`,
-          phone: !isEmail ? identifier : '+91 98765 43210',
-          role: 'CUSTOMER'
-        };
-        completeLogin(userName, demoUser);
-        return;
-      }
-
-      setErrorMessage(data?.message || 'Invalid verification code. Try demo code: 1234');
+      setErrorMessage(data?.message || 'Incorrect verification code. Please check your email and try again.');
       setIsLoading(false);
     } catch (err) {
       setIsLoading(false);
@@ -441,7 +435,7 @@ function LoginForm() {
                     setOtpCode(e.target.value);
                     if (errorMessage) setErrorMessage('');
                   }}
-                  placeholder="• • • •"
+                  placeholder="• • • • • •"
                   disabled={isLoading}
                   autoFocus
                   className="w-full bg-[#FAF7F5] text-center tracking-[0.4em] font-mono text-xl rounded-xl border border-stone-200/90 focus:border-[#4A1513] focus:bg-white px-4 py-3 text-stone-900 font-bold focus:outline-none focus:ring-2 focus:ring-[#4A1513]/10 transition-all"

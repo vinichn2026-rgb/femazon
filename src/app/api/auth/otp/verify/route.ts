@@ -103,6 +103,18 @@ export async function POST(request: Request) {
       secure: isHttps,
     });
 
+    // Invalidate the challenge cookie to strictly prevent OTP reuse
+    res.cookies.set({
+      name: 'femazon_otp_challenge',
+      value: '',
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 0,
+      expires: new Date(0),
+      secure: isHttps,
+    });
+
     return res;
   } catch (error) {
     console.error('[OTP Verify Error]', error);

@@ -116,16 +116,19 @@ export function AuthModal() {
 
       const data = await res.json().catch(() => ({}));
 
+      if (!res.ok || !data.success) {
+        setIsLoading(false);
+        setErrorMessage(data?.message || 'Unable to send verification code. Please try again.');
+        return;
+      }
+
       setIsLoading(false);
       setIsOtpSent(true);
       setOtpCountdown(30);
-      setSuccessMessage('Verification code sent to your email! (Demo OTP: 1234)');
+      setSuccessMessage(`Verification code sent to ${cleanEmail}! Please check your email inbox.`);
     } catch (err) {
       setIsLoading(false);
-      // Demo fallback so user is never blocked
-      setIsOtpSent(true);
-      setOtpCountdown(30);
-      setSuccessMessage('Verification code sent! (Demo OTP: 1234)');
+      setErrorMessage('Network connection error. Unable to send verification code. Please try again.');
     }
   };
 
@@ -136,7 +139,7 @@ export function AuthModal() {
     const cleanOtp = otpCode.trim();
 
     if (!cleanOtp) {
-      setErrorMessage('Please enter the 4-digit verification code.');
+      setErrorMessage('Please enter the 6-digit verification code.');
       return;
     }
 
@@ -156,23 +159,7 @@ export function AuthModal() {
         return;
       }
 
-      // Demo fallback validation
-      if (cleanOtp === '1234' || cleanOtp.length >= 4) {
-        const userName = email.split('@')[0] || 'Femazon Member';
-        const demoUser = {
-          id: 'usr_' + Date.now(),
-          name: userName,
-          firstName: userName.split(' ')[0] || 'Member',
-          email: email.trim(),
-          phone: '+91 98765 43210',
-          role: 'CUSTOMER',
-          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200'
-        };
-        completeLoginSuccess(userName, demoUser);
-        return;
-      }
-
-      setErrorMessage(data?.message || 'Invalid verification code. Try demo code: 1234');
+      setErrorMessage(data?.message || 'Incorrect verification code. Please check your email and try again.');
       setIsLoading(false);
     } catch (err) {
       setIsLoading(false);
@@ -454,14 +441,14 @@ export function AuthModal() {
                     <form onSubmit={handleVerifyEmailOtp} className="space-y-3">
                       <div>
                         <label className="block text-xs font-medium text-stone-600 mb-1 text-center">
-                          Enter 4-Digit Verification Code
+                          Enter 6-Digit Verification Code
                         </label>
                         <input
                           type="text"
                           maxLength={6}
                           value={otpCode}
                           onChange={(e) => setOtpCode(e.target.value)}
-                          placeholder="• • • •"
+                          placeholder="• • • • • •"
                           className="w-full bg-[#FAF7F5] text-center tracking-[0.4em] font-mono text-xl rounded-lg border border-stone-300 focus:border-[#4A1513] focus:bg-white px-4 py-2.5 text-stone-900 placeholder:text-stone-300 focus:outline-none focus:ring-1 focus:ring-[#4A1513] transition-all font-bold"
                           disabled={isLoading}
                           autoFocus
