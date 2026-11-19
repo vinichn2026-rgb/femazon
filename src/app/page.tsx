@@ -1,228 +1,142 @@
-import Link from "next/link";
-import { ChevronRight, ArrowRight } from "lucide-react";
+import React from "react";
 import { HeroCarousel } from "@/components/home/HeroCarousel";
-import { ShopByCategory } from "@/components/home/ShopByCategory";
-import { NewArrivalsSpotlight } from "@/components/home/NewArrivalsSpotlight";
-import { CuratedTrendingSection } from "@/components/home/CuratedTrendingSection";
+import { ExploreCategorySection } from "@/components/home/ExploreCategorySection";
+import { DiscoverBrandsAroundYou } from "@/components/home/DiscoverBrandsAroundYou";
+import { WomensCollectionsSection } from "@/components/home/WomensCollectionsSection";
+import { PersonalStylistSection } from "@/components/home/PersonalStylistSection";
+import { GiftsOccasionsSection } from "@/components/home/GiftsOccasionsSection";
 import { ServiceCarousel } from "@/components/home/ServiceCarousel";
-import { HomeReviewsSection } from "@/components/home/HomeReviewsSection";
+import { DiscoverWhatsNewSection } from "@/components/home/DiscoverWhatsNewSection";
 import { InstagramFeed } from "@/components/home/InstagramFeed";
-import { getApprovedProducts } from "@/lib/catalog";
+import { NewsletterSection } from "@/components/home/NewsletterSection";
+import { HomeReviewsSection } from "@/components/home/HomeReviewsSection";
 
 export default async function Home() {
-
-  // 2. Wedding Collection Data
-  const weddingCollection = [
-    { title: 'Bridal Edit', desc: 'Make your special day unforgettable.', img: 'https://images.unsplash.com/photo-1610047614301-13c63f00c032?q=80&w=800&h=1000&auto=format&fit=crop&crop=top' },
-    { title: 'Bridesmaid Edit', desc: 'Soft & elegant styles for the squad.', img: 'https://images.unsplash.com/photo-1599746146388-a7ec2004b67a?q=80&w=800&h=1000&auto=format&fit=crop&crop=top' },
-    { title: 'Wedding Guest', desc: 'Stand out in sophisticated silhouettes.', img: 'https://images.unsplash.com/photo-1600685890506-593fdf55949b?q=80&w=800&h=1000&auto=format&fit=crop&crop=top' },
-    { title: 'Festive Edit', desc: 'Vibrant colors for every celebration.', img: 'https://images.unsplash.com/photo-1610047614301-13c63f00c032?q=80&w=800&h=1000&auto=format&fit=crop&crop=top' },
-  ];
-
-  // 4. Trending Products (Carousel Products) - Instantly fetched from Catalog Cache
-  const allApproved = await getApprovedProducts();
-  const dbProducts = allApproved.slice(0, 10);
-
-  const trendingProducts = dbProducts.length > 0 ? dbProducts.map(p => ({
-    name: p.name,
-    category: p.category || 'Casual',
-    price: `₹${p.price.toLocaleString('en-IN')}`,
-    img: p.image || 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&h=750&auto=format&fit=crop&crop=top',
-    slug: p.slug
-  })) : [
-    // Fallback if DB is empty
-    { name: 'Floral Midi Dress', category: 'Western / Casual', price: '₹1,899', img: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=600&h=750&auto=format&fit=crop&crop=top' },
-    { name: 'Linen Co-ord Set', category: 'Casual / Summer', price: '₹2,499', img: '/categories/linen_coord.png' },
-    { name: 'Chikankari Kurta Set', category: 'Ethnic', price: '₹1,799', img: '/categories/chikankari_kurta.png' },
-    { name: 'Satin Blouse', category: 'Western / Party', price: '₹1,499', img: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&h=750&auto=format&fit=crop&crop=top' }
-  ];
-
-  // 5. Women's Services Data
-  const services = [
-    { title: 'Personal Styling', desc: 'Find a look that feels like you.', img: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=800&auto=format&fit=crop' },
-    { title: 'Makeup', desc: 'Expert application for any occasion.', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=800&auto=format&fit=crop' },
-    { title: 'Mehndi', desc: 'Intricate traditional henna art.', img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?q=80&w=800&auto=format&fit=crop' },
-    { title: 'Hair Styling', desc: 'From classic blowouts to bridal updos.', img: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?q=80&w=800&auto=format&fit=crop' },
-    { title: 'Event Planning', desc: 'Curating unforgettable moments.', img: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=800&auto=format&fit=crop' },
-    { title: 'Fashion Consultation', desc: 'Elevate your entire wardrobe.', img: 'https://images.unsplash.com/photo-1509319117193-57bab727e09d?q=80&w=800&auto=format&fit=crop' },
-    { title: 'Shopping Assistant', desc: 'Get personal help while you shop.', img: 'https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?q=80&w=800&auto=format&fit=crop' },
+  const favourites = [
+    {
+      category: "Women's Wear",
+      title: "Royal Banarasi Silk Zari Saree",
+      desc: "Opulent handwoven crimson silk saree featuring pure gold zari brocade work.",
+      price: "₹4,999",
+      originalPrice: "₹7,999",
+      discount: "38% OFF",
+      badge: "BESTSELLER",
+      img: "https://images.unsplash.com/photo-1610047614301-13c63f00c032?auto=format&fit=crop&q=85&w=800",
+      actionText: "Shop Now",
+      href: "/womens-wear",
+    },
+    {
+      category: "Beauty & Self-Care",
+      title: "Luxury Glow & Radiance Beauty Set",
+      desc: "Curated botanical serum, rose water mist, and 24K gold nourishing cream.",
+      price: "₹1,899",
+      originalPrice: "₹2,699",
+      discount: "30% OFF",
+      badge: "TOP RATED",
+      img: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&q=85&w=800",
+      actionText: "Shop Now",
+      href: "/beauty",
+    },
+    {
+      category: "Fine Jewellery",
+      title: "Heritage Kundan & Pearl Choker Set",
+      desc: "Handcrafted 22K gold-plated bridal necklace with emerald drops & matching jhumkas.",
+      price: "₹3,499",
+      originalPrice: "₹5,499",
+      discount: "36% OFF",
+      badge: "SIGNATURE PIECE",
+      img: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&q=85&w=800",
+      actionText: "Shop Now",
+      href: "/shop?category=Jewellery",
+    },
+    {
+      category: "Curated Gifts",
+      title: "The Royal Celebration Luxury Hamper",
+      desc: "Artisanal saffron sweets, scented soy candles & personalized festive surprises.",
+      price: "₹2,199",
+      originalPrice: "₹3,299",
+      discount: "33% OFF",
+      badge: "POPULAR GIFT",
+      img: "https://images.unsplash.com/photo-1513885535751-8b9238bd345a?auto=format&fit=crop&q=85&w=800",
+      actionText: "Explore Gifts",
+      href: "/gifts",
+    },
+    {
+      category: "Personal Styling",
+      title: "1-on-1 Bespoke Styling Session",
+      desc: "60-min personalized consultation, body-silhouette mapping & custom lookbook.",
+      price: "₹1,999",
+      originalPrice: "₹3,500",
+      discount: "43% OFF",
+      badge: "VERIFIED STYLIST",
+      img: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=85&w=800",
+      actionText: "Book Now",
+      href: "/personal-styling",
+    },
   ];
 
   return (
-    <div className="bg-surface text-text-main font-sans overflow-hidden">
-      
-      {/* 1. Hero Banner Carousel */}
+    <div className="bg-white min-h-screen text-text-main font-sans overflow-x-hidden">
+      {/* 1. Main Hero Banner (Aza Fashions Luxury Edge-to-Edge Slider) */}
       <HeroCarousel />
 
-      {/* 2. Shop by Category */}
-      <ShopByCategory />
+      {/* 2. Shop By Category (4 Main Shopping Departments Preview) */}
+      <ExploreCategorySection />
 
-      {/* 3. New Arrivals & Everyday Style (Styled exactly matching reference screenshot) */}
-      <NewArrivalsSpotlight />
+      {/* 3. Trending Collections (Women's Wear Rich Interactive Carousel) */}
+      <WomensCollectionsSection />
 
-      {/* 4. Curated by Aza Style -> Curated For You / Trending Now Section */}
-      <CuratedTrendingSection />
+      {/* 4. Gifts for Every Occasion (Curated Hampers & Surprises) */}
+      <GiftsOccasionsSection />
 
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
+      {/* 5. Discover Your Personal Stylist (Book Verified Professionals) */}
+      <div id="stylists">
+        <PersonalStylistSection />
+      </div>
 
-        {/* 5. Wedding Stories & Celebration Edits */}
-        <section className="py-8 md:py-12 border-b border-stone-100">
-          <div className="text-center mb-6 md:mb-8">
-            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.25em] text-primary block mb-1.5">
-              The Grand Celebration
-            </span>
-            <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-normal text-text-main tracking-wide">
-              Wedding Stories by Femazon
-            </h2>
-            <p className="mt-1.5 text-text-muted text-xs sm:text-sm font-sans italic">
-              From bridal grandeur to reception chic — explore regal silhouettes.
-            </p>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5 md:gap-7">
-            {weddingCollection.map((item, idx) => (
-              <Link key={idx} href={`/shop?category=Ethnic&occasion=${encodeURIComponent(item.title.replace(' Edit', ''))}`} className="group flex flex-col items-center">
-                <div className="aspect-[3/4] w-full overflow-hidden bg-accent/5 mb-2.5 sm:mb-4 rounded-xl sm:rounded-2xl shadow-sm relative border border-stone-200/60">
-                  <img 
-                    src={item.img} 
-                    alt={item.title} 
-                    className="w-full h-full object-cover transition duration-1000 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-700"></div>
-                  <div className="absolute bottom-3 sm:bottom-4 inset-x-2 sm:inset-x-4 text-white text-center">
-                    <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-[#E5C3A6] block mb-0.5 sm:mb-1">
-                      Explore Edit
-                    </span>
-                    <h4 className="font-serif text-sm sm:text-lg text-white font-normal line-clamp-1">{item.title}</h4>
-                  </div>
-                </div>
-                <h3 className="font-serif text-sm sm:text-lg md:text-xl text-text-main mb-0.5 sm:mb-1 line-clamp-1">
-                  {item.title}
-                </h3>
-                <p className="text-center text-[10.5px] sm:text-xs text-text-muted mb-1.5 sm:mb-2 px-1 font-sans line-clamp-2">
-                  {item.desc}
-                </p>
-                <div className="mt-1">
-                  <span className="inline-flex items-center gap-1 sm:gap-1.5 px-3.5 sm:px-4 py-1 sm:py-1.5 rounded-full border border-[#4A1513]/40 text-[#4A1513] group-hover:bg-[#4A1513] group-hover:text-white font-sans text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.18em] transition-all duration-300 shadow-xs">
-                    <span>Explore</span>
-                    <ArrowRight size={10} className="transition-transform duration-300 group-hover:translate-x-1" />
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-      </div> {/* Close container */}
-
-      {/* 6. Women's Exclusive Services Carousel */}
-      <section className="w-full bg-[#fbf9f6] py-8 sm:py-10 md:py-14 my-3 sm:my-4 md:my-6 relative overflow-hidden border-y border-accent/20">
-        <div className="absolute top-1/2 -translate-y-1/2 -left-10 hidden 2xl:block -rotate-90 origin-center opacity-25 select-none pointer-events-none">
-          <span className="text-[120px] font-serif font-bold text-accent whitespace-nowrap uppercase tracking-tighter leading-none">
-            FOR HER
-          </span>
-        </div>
-        
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 relative z-10">
-          <div className="flex flex-col items-center text-center mb-6 sm:mb-8 mx-auto">
-            <span className="text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.25em] text-primary block mb-1">
-              At-Home Glamour & Styling
-            </span>
-            <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-normal text-text-main tracking-wide mb-1.5 sm:mb-2">
-              Services Made for Her
-            </h2>
-            <p className="font-sans text-xs sm:text-sm text-text-muted max-w-xl leading-relaxed px-2">
-              Book verified makeup artists, mehndi specialists, and personal styling assistants at your convenience.
-            </p>
-          </div>
-          
-          <ServiceCarousel services={services} />
-        </div>
-      </section>
-
-      {/* 7. AI Smart Wardrobe Experience */}
-      <section className="mx-auto max-w-[1400px] px-4 sm:px-6 my-6 sm:my-8 md:my-12">
-        <div className="w-full relative rounded-2xl sm:rounded-3xl overflow-hidden bg-[#FDFBF7] flex flex-col lg:flex-row items-stretch shadow-sm border border-accent/20">
-          {/* Image Side */}
-          <div className="w-full lg:w-1/2 h-[220px] sm:h-[340px] lg:h-auto relative min-h-0">
-            <img 
-              src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1200&h=1400&auto=format&fit=crop&crop=center" 
-              alt="AI Wardrobe Experience" 
-              className="w-full h-full object-cover"
-            />
-          </div>
-          {/* Text Side */}
-          <div className="w-full lg:w-1/2 p-5 sm:p-8 md:p-12 lg:p-16 flex flex-col justify-center">
-            <span className="text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.25em] text-primary block mb-1.5 sm:mb-2">
-              Digital Closet Intelligence
-            </span>
-            <h2 className="font-serif text-xl sm:text-3xl md:text-4xl lg:text-5xl font-normal text-text-main tracking-wide mb-3 sm:mb-4 leading-tight">
-              Your Style. Your Wardrobe. <br className="hidden sm:block"/><span className="italic font-light text-primary">Powered by AI.</span>
-            </h2>
-            <p className="font-sans text-xs sm:text-sm text-text-muted leading-relaxed mb-4 sm:mb-6 max-w-md">
-              Discover curated daily outfit ideas based on what you already own and find the missing designer pieces to complete your signature look.
-            </p>
+      {/* 8. Beauty & Self-care Highlights (Femazon's Favourites Carousel) */}
+      <section className="w-full bg-white py-3 sm:py-5 select-none">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
+          <div className="w-full bg-[#fbf9f6] rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10 border border-accent/20 relative overflow-hidden shadow-2xs">
+            <div className="absolute top-1/2 -translate-y-1/2 -left-10 hidden 2xl:block -rotate-90 origin-center opacity-25 select-none pointer-events-none">
+              <span className="text-[120px] font-serif font-bold text-accent whitespace-nowrap uppercase tracking-tighter leading-none">
+                FAVOURITES
+              </span>
+            </div>
             
-            {/* 4-Step Visual */}
-            <div className="flex flex-col gap-2.5 sm:gap-3 mb-5 sm:mb-6">
-              <div className="flex items-center group">
-                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border border-primary text-primary flex items-center justify-center font-bold text-[11px] sm:text-xs mr-2.5 sm:mr-3 group-hover:bg-primary group-hover:text-white transition-colors duration-300 shrink-0">1</div>
-                <span className="font-sans font-bold text-text-main text-[10px] sm:text-xs uppercase tracking-widest">Upload Your Outfits</span>
+            <div className="relative w-full z-10">
+              <div className="flex flex-col items-center text-center mb-6 sm:mb-8 mx-auto">
+                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.25em] text-[#4A1513] block mb-1.5">
+                  HANDPICKED &amp; BESTSELLING
+                </span>
+                <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-normal text-stone-900 tracking-wide leading-tight">
+                  Femazon&apos;s Favourites
+                </h2>
+                <p className="mt-1.5 text-stone-500 text-xs sm:text-sm font-sans italic max-w-xl mx-auto">
+                  Explore our most-loved women&apos;s wear, luxury beauty, bridal jewellery, gifts and personal styling.
+                </p>
               </div>
-              <div className="flex items-center group">
-                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border border-primary text-primary flex items-center justify-center font-bold text-[11px] sm:text-xs mr-2.5 sm:mr-3 group-hover:bg-primary group-hover:text-white transition-colors duration-300 shrink-0">2</div>
-                <span className="font-sans font-bold text-text-main text-[10px] sm:text-xs uppercase tracking-widest">Organize Digital Closet</span>
-              </div>
-              <div className="flex items-center group">
-                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border border-primary text-primary flex items-center justify-center font-bold text-[11px] sm:text-xs mr-2.5 sm:mr-3 group-hover:bg-primary group-hover:text-white transition-colors duration-300 shrink-0">3</div>
-                <span className="font-sans font-bold text-text-main text-[10px] sm:text-xs uppercase tracking-widest">Get Daily AI Recommendations</span>
-              </div>
-              <div className="flex items-center group">
-                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border border-primary text-primary flex items-center justify-center font-bold text-[11px] sm:text-xs mr-2.5 sm:mr-3 group-hover:bg-primary group-hover:text-white transition-colors duration-300 shrink-0">4</div>
-                <span className="font-sans font-bold text-text-main text-[10px] sm:text-xs uppercase tracking-widest">Shop Missing Designer Pieces</span>
-              </div>
-            </div>
-
-            <div>
-              <Link href="/ai-wardrobe" className="group inline-flex items-center gap-2 bg-[#3D110F] hover:bg-[#2A0B09] text-white text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] py-2.5 sm:py-3 px-6 sm:px-8 transition-all duration-300 rounded-full shadow-md hover:shadow-lg active:scale-95">
-                <span>Explore AI Wardrobe</span>
-                <ArrowRight size={12} className="transition-transform duration-300 group-hover:translate-x-1" />
-              </Link>
+              
+              <ServiceCarousel services={favourites} />
             </div>
           </div>
         </div>
       </section>
 
-      {/* 8. Instagram / Social Editorial Feed */}
+      {/* 8. Discover What's New & Video Highlights */}
+      <DiscoverWhatsNewSection />
+
+      {/* 9. Discover Brands Around You (Shop by Location: Coimbatore, Chennai, Bangalore, etc.) */}
+      <DiscoverBrandsAroundYou />
+
+      {/* 10. Instagram Editorial Feed (Follow Our Journey) */}
       <InstagramFeed />
 
-      {/* 9. Stay in Her Style - Newsletter Section */}
-      <section className="mx-auto max-w-3xl px-4 sm:px-6 my-8 md:my-12 text-center">
-        <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-normal text-text-main tracking-wide mb-2.5">
-          Stay in Her Style
-        </h2>
-        <p className="font-sans text-xs sm:text-sm text-text-muted mb-6 max-w-md mx-auto">
-          Discover the latest fashion, curated designer collections and exclusive Femazon updates.
-        </p>
-        <form className="flex flex-col sm:flex-row justify-center items-center gap-3.5 max-w-md mx-auto">
-          <input 
-            type="email" 
-            placeholder="Enter your email" 
-            className="w-full sm:w-auto flex-grow bg-transparent border-b border-text-muted/40 pb-2 text-text-main placeholder-text-muted/60 focus:outline-none focus:border-text-main transition font-sans text-sm"
-            required
-          />
-          <button 
-            type="submit" 
-            className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#3D110F] hover:bg-[#2A0B09] text-white text-[11px] font-bold uppercase tracking-[0.2em] py-2.5 px-7 transition-all duration-300 rounded-full shadow-sm hover:shadow-md cursor-pointer active:scale-95"
-          >
-            <span>Join Femazon</span>
-            <ArrowRight size={13} className="transition-transform duration-300 group-hover:translate-x-1" />
-          </button>
-        </form>
-      </section>
+      {/* 11. Grow Your Business / Newsletter Section */}
+      <NewsletterSection />
 
-      {/* 11. Rate & Review Section (Client Love & Verified Testimonials) - Placed after Stay in Her Style */}
+      {/* 13. Rate & Review Section (Client Love & Verified Testimonials) */}
       <HomeReviewsSection />
-
     </div>
   );
 }

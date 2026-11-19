@@ -76,8 +76,7 @@ export function AdminNavbar({
   return (
     <>
       {/* Top Header Bar */}
-      <header className="sticky top-0 z-40 bg-white border-b border-stone-200 shadow-2xs">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-white border-b border-stone-200 shadow-2xs px-4 sm:px-8 py-3.5 flex items-center justify-between">
         
         {/* Left: Mobile Toggle + Brand Logo + Admin Context Pill */}
         <div className="flex items-center gap-3 sm:gap-4">
@@ -124,16 +123,6 @@ export function AdminNavbar({
         {/* Center: Meaningful Quick Insights (Hidden on small mobile) */}
         {stats && (
           <div className="hidden xl:flex items-center gap-2 bg-stone-50/80 border border-stone-200/80 rounded-full px-3 py-1">
-            {stats.productsCount !== undefined && (
-              <Link
-                href="/admin/products"
-                className="flex items-center gap-1 text-[11px] font-semibold text-stone-600 hover:text-[#4A1513] px-2 py-0.5 rounded-full hover:bg-white transition"
-              >
-                <Package size={12} className="text-[#4A1513]" />
-                <span>{stats.productsCount} Products</span>
-              </Link>
-            )}
-
             {stats.ordersCount !== undefined && (
               <button
                 type="button"
@@ -148,7 +137,7 @@ export function AdminNavbar({
             {stats.vendorsCount !== undefined && (
               <button
                 type="button"
-                onClick={() => onTabChange?.("vendors")}
+                onClick={() => onTabChange?.("product-vendors")}
                 className="flex items-center gap-1 text-[11px] font-semibold text-stone-600 hover:text-[#4A1513] px-2 py-0.5 rounded-full hover:bg-white transition cursor-pointer"
               >
                 <Store size={12} className="text-[#4A1513]" />
@@ -160,16 +149,6 @@ export function AdminNavbar({
 
         {/* Right: Shortcuts + Live Store + Admin Profile + Logout */}
         <div className="flex items-center gap-2.5 sm:gap-4">
-          {/* Ready to Ship Catalog Quick Link */}
-          <Link
-            href="/vendor/products"
-            className="hidden lg:inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-[#4A1513] transition py-2 px-3 rounded-lg hover:bg-stone-50 border border-transparent hover:border-stone-200"
-            title="Manage Ready-to-Ship Variant Catalog"
-          >
-            <Truck size={13} />
-            <span>Ready to Ship</span>
-          </Link>
-
           {/* Live Storefront Link */}
           <Link
             href="/shop"
@@ -200,7 +179,6 @@ export function AdminNavbar({
             <span className="hidden sm:inline">Admin Logout</span>
             <span className="sm:hidden">Logout</span>
           </button>
-        </div>
         </div>
       </header>
 

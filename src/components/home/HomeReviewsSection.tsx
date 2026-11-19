@@ -131,140 +131,141 @@ export function HomeReviewsSection() {
   };
 
   return (
-    <section className="py-10 md:py-14 bg-[#FDFBF7] border-y border-stone-200/70 relative">
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
-        {/* Header Block */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-10 gap-6">
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#4A1513]/5 text-primary text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] mb-2">
-              <Sparkles size={12} className="text-primary" />
-              <span>Verified Client Love</span>
-            </div>
-            <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-normal text-text-main tracking-tight leading-tight">
-              Loved by Thousands of Women
-            </h2>
-            <p className="text-xs sm:text-sm text-text-muted mt-1.5 max-w-xl font-sans">
-              Discover real reviews and styling experiences from our verified clients worldwide.
-            </p>
-          </div>
-
-          {/* Rating Summary & Write Review Button */}
-          <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-6 bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-sm border border-stone-200/80 w-full sm:w-auto">
-            <div className="flex items-center gap-2.5 sm:gap-3 pr-3 sm:pr-6 border-r border-stone-200">
-              <div className="font-serif text-2xl sm:text-3xl font-bold text-text-main">
-                4.9
-              </div>
-              <div>
-                <div className="flex text-amber-500 mb-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={12} fill="currentColor" />
-                  ))}
-                </div>
-                <p className="text-[9.5px] sm:text-[11px] font-semibold text-text-muted uppercase tracking-wider">
-                  12,450+ Reviews
-                </p>
-              </div>
+    <section className="w-full bg-white py-3 sm:py-5 relative">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
+        <div className="w-full bg-[#FDFBF7] rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10 border border-stone-200/70 shadow-2xs">
+          {/* Header Block */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-10 gap-6">
+            <div>
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.25em] text-[#4A1513] block mb-1.5">
+                VERIFIED CLIENT LOVE
+              </span>
+              <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-normal text-stone-900 tracking-wide leading-tight">
+                Loved by Thousands of Women
+              </h2>
+              <p className="mt-1.5 text-stone-500 text-xs sm:text-sm font-sans italic">
+                Real experiences from brides, party-goers &amp; fashion lovers across India.
+              </p>
             </div>
 
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="group inline-flex items-center gap-1.5 sm:gap-2 bg-[#3D110F] hover:bg-[#2A0B09] text-white text-[10px] sm:text-xs font-bold uppercase tracking-[0.18em] px-4 sm:px-6 py-2 sm:py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 active:scale-95 cursor-pointer shrink-0"
-            >
-              <span>Rate & Review</span>
-              <ArrowRight size={12} className="transition-transform duration-300 group-hover:translate-x-1" />
-            </button>
-          </div>
-        </div>
-
-        {/* Reviews Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-6">
-          {reviews.slice(0, 4).map((item) => (
-            <div
-              key={item.id}
-              className="bg-white rounded-sm p-4 sm:p-6 shadow-sm hover:shadow-md border border-stone-200/80 transition-all duration-300 flex flex-col justify-between"
-            >
-              <div>
-                {/* User Info & Rating */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={item.avatar}
-                      alt={item.name}
-                      className="w-11 h-11 rounded-full object-cover border border-stone-200"
-                    />
-                    <div>
-                      <h3 className="font-sans text-[13px] font-bold text-text-main flex items-center gap-1.5">
-                        {item.name}
-                        {item.verified && (
-                          <span title="Verified Buyer" className="inline-flex items-center">
-                            <CheckCircle2
-                              size={14}
-                              className="text-emerald-600 inline"
-                            />
-                          </span>
-                        )}
-                      </h3>
-                      <p className="text-[11px] text-text-muted">{item.location}</p>
-                    </div>
-                  </div>
+            {/* Rating Summary & Write Review Button */}
+            <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-6 bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-sm border border-stone-200/80 w-full sm:w-auto">
+              <div className="flex items-center gap-2.5 sm:gap-3 pr-3 sm:pr-6 border-r border-stone-200">
+                <div className="font-serif text-2xl sm:text-3xl font-bold text-text-main">
+                  4.9
                 </div>
-
-                {/* Stars & Title */}
-                <div className="flex items-center gap-2 mb-2.5">
-                  <div className="flex text-amber-500">
-                    {[...Array(item.rating)].map((_, i) => (
-                      <Star key={i} size={13} fill="currentColor" />
+                <div>
+                  <div className="flex text-amber-500 mb-0.5">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={12} fill="currentColor" />
                     ))}
                   </div>
-                  <span className="text-[10px] font-semibold text-text-muted">
-                    {item.date}
-                  </span>
+                  <p className="text-[9.5px] sm:text-[11px] font-semibold text-text-muted uppercase tracking-wider">
+                    12,450+ Reviews
+                  </p>
                 </div>
-
-                <h4 className="font-serif text-base font-normal text-text-main mb-2 leading-snug">
-                  {item.title}
-                </h4>
-
-                <p className="font-sans text-xs text-text-muted leading-relaxed line-clamp-4 mb-4">
-                  &ldquo;{item.review}&rdquo;
-                </p>
               </div>
 
-              {/* Purchased Tag & Likes */}
-              <div className="pt-4 border-t border-stone-100 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2 overflow-hidden pr-2">
-                  {item.itemImage && (
-                    <img
-                      src={item.itemImage}
-                      alt={item.purchasedItem}
-                      className="w-7 h-7 rounded-xs object-cover shrink-0"
-                    />
-                  )}
-                  <span className="text-[11px] font-medium text-text-muted truncate">
-                    {item.purchasedItem}
-                  </span>
-                </div>
-
-                <button
-                  onClick={() => handleLike(item.id)}
-                  className="flex items-center gap-1 text-[11px] text-stone-500 hover:text-primary transition-colors shrink-0"
-                >
-                  <ThumbsUp size={12} />
-                  <span>{item.likes}</span>
-                </button>
-              </div>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="group inline-flex items-center gap-1.5 sm:gap-2 bg-[#4A1513] hover:bg-[#350B0A] text-white text-[10px] sm:text-xs font-bold uppercase tracking-[0.18em] px-4 sm:px-6 py-2 sm:py-3 rounded-full shadow-md hover:shadow-lg transition-all duration-300 active:scale-95 cursor-pointer shrink-0"
+              >
+                <span>Rate & Review</span>
+                <ArrowRight size={12} className="transition-transform duration-300 group-hover:translate-x-1" />
+              </button>
             </div>
-          ))}
+          </div>
+
+          {/* Reviews Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-6">
+            {reviews.slice(0, 4).map((item) => (
+              <div
+                key={item.id}
+                className="bg-white rounded-xl p-4 sm:p-6 shadow-xs hover:shadow-md border border-stone-200/80 transition-all duration-300 flex flex-col justify-between"
+              >
+                <div>
+                  {/* User Info & Rating */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={item.avatar}
+                        alt={item.name}
+                        className="w-11 h-11 rounded-full object-cover border border-stone-200"
+                      />
+                      <div>
+                        <h3 className="font-sans text-[13px] font-bold text-text-main flex items-center gap-1.5">
+                          {item.name}
+                          {item.verified && (
+                            <span title="Verified Buyer" className="inline-flex items-center">
+                              <CheckCircle2
+                                size={14}
+                                className="text-emerald-600 inline"
+                              />
+                            </span>
+                          )}
+                        </h3>
+                        <p className="text-[11px] text-text-muted">{item.location}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Stars & Title */}
+                  <div className="flex items-center gap-2 mb-2.5">
+                    <div className="flex text-amber-500">
+                      {[...Array(item.rating)].map((_, i) => (
+                        <Star key={i} size={13} fill="currentColor" />
+                      ))}
+                    </div>
+                    <span className="text-[10px] font-semibold text-text-muted">
+                      {item.date}
+                    </span>
+                  </div>
+
+                  <h4 className="font-serif text-base font-normal text-text-main mb-2 leading-snug">
+                    {item.title}
+                  </h4>
+
+                  <p className="font-sans text-xs text-text-muted leading-relaxed line-clamp-4 mb-4">
+                    &ldquo;{item.review}&rdquo;
+                  </p>
+                </div>
+
+                {/* Purchased Tag & Likes */}
+                <div className="pt-4 border-t border-stone-100 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2 overflow-hidden pr-2">
+                    {item.itemImage && (
+                      <img
+                        src={item.itemImage}
+                        alt={item.purchasedItem}
+                        className="w-7 h-7 rounded-xs object-cover shrink-0"
+                      />
+                    )}
+                    <span className="text-[11px] font-medium text-text-muted truncate">
+                      {item.purchasedItem}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => handleLike(item.id)}
+                    className="flex items-center gap-1 text-[11px] text-stone-500 hover:text-primary transition-colors shrink-0"
+                  >
+                    <ThumbsUp size={12} />
+                    <span>{item.likes}</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Modal: Write a Review / Rate & Review */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white rounded-sm max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-stone-200 relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-stone-200 relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-5 right-5 text-stone-400 hover:text-text-main p-1"
+              className="absolute top-5 right-5 text-stone-400 hover:text-text-main p-1 cursor-pointer"
             >
               <X size={20} />
             </button>
@@ -392,7 +393,7 @@ export function HomeReviewsSection() {
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    className="w-full bg-primary hover:bg-[#3D110F] text-white font-bold text-xs uppercase tracking-[0.2em] py-3.5 rounded-lg shadow-lg transition-all cursor-pointer"
+                    className="w-full bg-[#4A1513] hover:bg-[#350B0A] text-white font-bold text-xs uppercase tracking-[0.2em] py-3.5 rounded-full shadow-lg transition-all cursor-pointer"
                   >
                     Submit Review
                   </button>

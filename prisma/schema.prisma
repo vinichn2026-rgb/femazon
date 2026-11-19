@@ -28,6 +28,10 @@ model User {
   wardrobeItems WardrobeItem[]
   notifications Notification[]
   reviews       Review[]
+  partnerApplications PartnerApplication[]
+  stylistProfile      StylistProfile?
+  stylistBookings     StylistBooking[]
+  stylistReviews      StylistReview[]
 }
 
 enum UserRole {
@@ -71,6 +75,7 @@ model Product {
   wishlistItems WishlistItem[]
   reviews       Review[]
   colorVariants ColorVariant[]
+  giftProduct   GiftProduct?
 }
 
 model Order {
@@ -87,6 +92,11 @@ model Order {
   shippingCity  String?
   shippingState String?
   shippingPin   String?
+
+  // Delivery & Tracking
+  dueDate       DateTime?
+  deliveredOn   DateTime?
+  remarks       String?
 
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
@@ -344,4 +354,251 @@ model SizeInventory {
 
   @@unique([colorVariantId, size])
   @@index([colorVariantId])
+}
+
+
+model PartnerApplication {
+  id             Int      @id @default(autoincrement())
+  userId         Int?
+  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  name           String
+  email          String
+  phone          String
+  businessName   String?
+  applicantType  String
+  categories     String
+  description    String?
+  experience     String?
+  location       String?
+  serviceInfo    String?
+  pricingInfo    String?
+  portfolio      String?
+  documents      String?
+  status         String   @default("PENDING")
+  notes          String?
+  rejectionReason String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([status])
+  @@index([applicantType])
+}
+
+model ServiceCategory {
+  id          Int      @id @default(autoincrement())
+  name        String
+  slug        String   @unique
+  parentType  String
+  description String?
+  image       String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model StylistProfile {
+  id                   Int              @id @default(autoincrement())
+  userId               Int?             @unique
+  user                 User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  slug                 String           @unique
+  fullName             String
+  email                String
+  phone                String
+  profileImage         String?
+  city                 String
+  location             String
+  preferredLocations   String?          // JSON array or comma-separated locations
+  experience           String           // e.g. "6+ Years"
+  experienceYears      Int              @default(0)
+  bio                  String
+  specializations      String           // JSON array of specializations
+  portfolioImages      String?          // JSON array of image URLs
+  socialLinks          String?          // JSON object { instagram, linkedin, website }
+  consultationModes    String           // JSON array e.g. ["Online", "In-Person"]
+  qualifications       String?
+  availabilitySchedule String?          // e.g. "Mon - Sat, 10:00 AM - 7:00 PM"
+  status               String           @default("PENDING") // PENDING, UNDER_REVIEW, APPROVED, REJECTED
+  rejectionReason      String?
+  verified             Boolean          @default(false)
+  featured             Boolean          @default(false)
+  commissionRate       Float            @default(15.0)
+  isActive             Boolean          @default(true)
+  packages             StylistPackage[]
+  bookings             StylistBooking[]
+  reviews              StylistReview[]
+  portfolios           StylistPortfolio[]
+  availabilities       StylistAvailability[]
+  applications         StylistApplication[]
+  commissions          Commission[]
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  @@index([status])
+  @@index([city])
+  @@index([featured])
+}
+
+model StylistPackage {
+  id               Int              @id @default(autoincrement())
+  stylistId        Int
+  stylist          StylistProfile   @relation(fields: [stylistId], references: [id], onDelete: Cascade)
+  title            String
+  packageType      String
+  description      String
+  price            Int
+  duration         String
+  includedServices String           // JSON array of included service items
+  sessionsCount    Int              @default(1)
+  deliveryMode     String           @default("Online & Offline") // Online, Offline, Online & Offline
+  location         String?
+  addOns           String?          // JSON array of { name: string, price: number }
+  availability     String?
+  images           String?          // JSON array of package image URLs
+  isActive         Boolean          @default(true)
+  bookings         StylistBooking[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([stylistId])
+}
+
+model StylistBooking {
+  id              Int             @id @default(autoincrement())
+  stylistId       Int
+  stylist         StylistProfile  @relation(fields: [stylistId], references: [id], onDelete: Cascade)
+  packageId       Int?
+  package         StylistPackage? @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  userId          Int?
+  user            User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  customerName    String
+  customerEmail   String
+  customerPhone   String
+  bookingDate     String
+  bookingTime     String
+  deliveryMode    String          @default("Online")
+  location        String?
+  selectedAddOns  String?         // JSON array of { name: string, price: number }
+  notes           String?
+  totalAmount     Int
+  commissionAmount Int            @default(0)
+  stylistEarnings Int             @default(0)
+  paymentStatus   String          @default("PENDING") // PENDING, PAID, PAY_AT_SESSION
+  status          String          @default("PENDING") // PENDING, ACCEPTED, CONFIRMED, COMPLETED, REJECTED, CANCELLED
+  commission      Commission?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([stylistId])
+  @@index([userId])
+  @@index([status])
+}
+
+model StylistReview {
+  id              Int            @id @default(autoincrement())
+  stylistId       Int
+  stylist         StylistProfile @relation(fields: [stylistId], references: [id], onDelete: Cascade)
+  userId          Int?
+  user            User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  customerName    String
+  rating          Int
+  comment         String?
+  isComplaint     Boolean        @default(false)
+  complaintStatus String         @default("NONE") // NONE, OPEN, RESOLVED, DISMISSED
+  isVisible       Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+
+  @@index([stylistId])
+}
+
+model StylistPortfolio {
+  id           Int            @id @default(autoincrement())
+  stylistId    Int
+  stylist      StylistProfile @relation(fields: [stylistId], references: [id], onDelete: Cascade)
+  imageUrl     String
+  caption      String?
+  category     String?
+  displayOrder Int            @default(1)
+  createdAt    DateTime       @default(now())
+
+  @@index([stylistId])
+}
+
+model StylistAvailability {
+  id          Int            @id @default(autoincrement())
+  stylistId   Int
+  stylist     StylistProfile @relation(fields: [stylistId], references: [id], onDelete: Cascade)
+  dayOfWeek   String         // e.g. "Monday", "Saturday"
+  startTime   String         // e.g. "10:00 AM"
+  endTime     String         // e.g. "07:00 PM"
+  mode        String         @default("Online & In-Person")
+  isAvailable Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([stylistId])
+}
+
+model StylistApplication {
+  id              Int            @id @default(autoincrement())
+  stylistId       Int
+  stylist         StylistProfile @relation(fields: [stylistId], references: [id], onDelete: Cascade)
+  status          String         @default("PENDING") // PENDING, UNDER_REVIEW, APPROVED, REJECTED
+  notes           String?
+  rejectionReason String?
+  reviewedBy      String?
+  reviewedAt      DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([stylistId])
+  @@index([status])
+}
+
+model GiftCategory {
+  id           Int           @id @default(autoincrement())
+  name         String
+  slug         String        @unique
+  occasion     String?
+  description  String?
+  image        String?
+  isActive     Boolean       @default(true)
+  giftProducts GiftProduct[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model GiftProduct {
+  id               Int           @id @default(autoincrement())
+  productId        Int           @unique
+  product          Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  giftCategoryId   Int?
+  giftCategory     GiftCategory? @relation(fields: [giftCategoryId], references: [id], onDelete: SetNull)
+  occasion         String?
+  recipient        String?
+  isPersonalizable Boolean       @default(true)
+  allowsGiftWrap   Boolean       @default(true)
+  allowsGiftCard   Boolean       @default(true)
+  deliveryEstimate String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([giftCategoryId])
+}
+
+model Commission {
+  id               Int             @id @default(autoincrement())
+  stylistId        Int?
+  stylist          StylistProfile? @relation(fields: [stylistId], references: [id], onDelete: SetNull)
+  bookingId        Int?            @unique
+  booking          StylistBooking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  grossAmount      Int
+  commissionRate   Float
+  commissionAmount Int
+  netPayout        Int
+  status           String          @default("PENDING") // PENDING, SETTLED
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([stylistId])
+  @@index([status])
 }
