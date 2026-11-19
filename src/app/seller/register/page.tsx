@@ -91,30 +91,34 @@ const SELLER_BENEFITS = [
 const PROCESS_STEPS = [
   {
     step: "STEP 01",
-    num: 1,
+    num: "01",
     title: "Register Your Brand",
     desc: "Complete our simple 3-minute application with your brand name, category focus, and studio pickup location.",
+    highlight: "Instant 3-Min Form",
     icon: Store,
   },
   {
     step: "STEP 02",
-    num: 2,
+    num: "02",
     title: "Curation & Store Setup",
     desc: "Our curation team reviews your details within 24–48 hours and helps configure your branded luxury storefront.",
+    highlight: "24–48h Review",
     icon: ShieldCheck,
   },
   {
     step: "STEP 03",
-    num: 3,
+    num: "03",
     title: "Setup Payment Gateway",
     desc: "Setup your payment gateway with your bank account details to receive automated weekly payouts seamlessly.",
+    highlight: "Weekly Direct Payouts",
     icon: CreditCard,
   },
   {
     step: "STEP 04",
-    num: 4,
+    num: "04",
     title: "Add Products & Go Live",
     desc: "Upload high-resolution photos of your sarees, dresses, beauty products, or gift hampers. Start receiving orders immediately!",
+    highlight: "Live Orders & Express Pickup",
     icon: PackageCheck,
   },
 ];
@@ -500,73 +504,114 @@ export default function SellerRegistrationPage() {
         </div>
       </section>
 
-      {/* 3. HOW IT WORKS / TIMELINE (Exact Concept from Yuukke Frame 00:01) */}
-      <section className="py-20 px-4 sm:px-6 bg-white border-y border-stone-200">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#4A1513] block mb-2">
-              How It Works
-            </span>
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-stone-900">
+      {/* 3. HOW IT WORKS / HORIZONTAL CLASSY PROGRESSION */}
+      <section className="py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-white border-y border-stone-200/80 relative overflow-hidden">
+        {/* Subtle Luxury Gradient Glows */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#4A1513]/[0.02] rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#D4AF37]/[0.03] rounded-full blur-3xl pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          {/* Section Header */}
+          <div className="text-center mb-16 sm:mb-20">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FAF7F5] border border-stone-200/80 mb-3.5 shadow-2xs">
+              <Sparkles size={13} className="text-[#D4AF37]" />
+              <span className="text-[11px] font-bold uppercase tracking-[0.25em] text-[#4A1513]">
+                How It Works
+              </span>
+            </div>
+            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-stone-900 leading-tight">
               Four Simple Steps to Start Selling
             </h2>
-            <div className="w-16 h-1 bg-[#4A1513] mx-auto mt-4 mb-3 rounded-full" />
-            <p className="text-sm text-stone-600 max-w-xl mx-auto">
-              From application to your first payout, our seamless process supports you at every milestone.
+            <div className="w-16 h-0.5 bg-gradient-to-r from-transparent via-[#4A1513] to-transparent mx-auto mt-4 mb-4" />
+            <p className="text-stone-600 text-sm sm:text-base max-w-2xl mx-auto font-normal leading-relaxed">
+              From instant registration to weekly direct payouts, our seamless process supports your boutique at every milestone.
             </p>
           </div>
 
-          {/* Vertical Alternating Timeline with Center Maroon Line */}
+          {/* Horizontal Stepper Grid */}
           <div className="relative">
-            {/* Center Vertical Red/Maroon Accent Line */}
-            <div className="hidden md:block absolute left-1/2 top-4 bottom-8 -translate-x-1/2 w-0.5 bg-[#4A1513]/25" />
+            {/* Desktop Horizontal Connecting Line */}
+            <div 
+              className="hidden lg:block absolute top-[52px] left-[12%] right-[12%] h-[2px] -z-0 bg-gradient-to-r from-[#4A1513]/15 via-[#D4AF37]/40 to-[#4A1513]/15" 
+              aria-hidden="true"
+            />
 
-            <div className="space-y-12 md:space-y-16">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-7 relative z-10">
               {PROCESS_STEPS.map((s, idx) => {
                 const Icon = s.icon;
-                const isEven = idx % 2 === 1;
+                const isLast = idx === PROCESS_STEPS.length - 1;
 
                 return (
-                  <div 
-                    key={s.step} 
-                    className={`relative flex flex-col md:flex-row items-center gap-6 md:gap-12 ${
-                      isEven ? "md:flex-row-reverse" : ""
-                    }`}
+                  <div
+                    key={s.step}
+                    className="group relative flex flex-col justify-between bg-[#FAF7F5] hover:bg-white rounded-3xl p-6 sm:p-7 border border-stone-200/80 hover:border-[#4A1513]/30 shadow-[0_4px_20px_rgba(74,21,19,0.02)] hover:shadow-[0_16px_36px_rgba(74,21,19,0.08)] hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
                   >
-                    {/* Content Card (Alternating left/right) */}
-                    <div className="w-full md:w-1/2">
-                      <div className={`bg-[#FAF7F5] rounded-3xl p-6 sm:p-8 border border-stone-200 shadow-2xs hover:shadow-xs transition ${
-                        isEven ? "md:text-left" : "md:text-right"
-                      }`}>
-                        <div className={`flex items-center gap-2 mb-2 ${
-                          isEven ? "md:justify-start" : "md:justify-end"
-                        }`}>
-                          <span className="text-[11px] font-bold uppercase tracking-widest text-[#4A1513]">
-                            {s.step}
-                          </span>
+                    {/* Top Accent Gradient on Hover */}
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#4A1513] via-[#D4AF37] to-[#4A1513] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                    {/* Faint Watermark Step Numeral */}
+                    <span 
+                      className="absolute right-4 top-3 font-serif text-6xl font-bold text-stone-900/[0.04] group-hover:text-[#4A1513]/[0.08] transition-colors select-none pointer-events-none"
+                      aria-hidden="true"
+                    >
+                      {s.num}
+                    </span>
+
+                    <div>
+                      {/* Top Step Icon Node & Step Pill */}
+                      <div className="flex items-center justify-between mb-6">
+                        {/* Elegant Icon Badge */}
+                        <div className="w-14 h-14 rounded-2xl bg-white border border-stone-200 shadow-xs flex items-center justify-center text-[#4A1513] group-hover:bg-[#4A1513] group-hover:text-white group-hover:border-[#4A1513] group-hover:shadow-md transition-all duration-300 shrink-0">
+                          <Icon size={24} className="stroke-[1.8]" />
                         </div>
-                        <h3 className="font-serif text-xl font-bold text-stone-900 mb-2">
-                          {s.title}
-                        </h3>
-                        <p className="text-xs sm:text-[13px] text-stone-600 leading-relaxed">
-                          {s.desc}
-                        </p>
+
+                        {/* Step Pill */}
+                        <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#4A1513] bg-white px-2.5 py-1 rounded-full border border-stone-200/90 shadow-2xs font-mono">
+                          {s.step}
+                        </span>
                       </div>
+
+                      {/* Title & Description */}
+                      <h3 className="font-serif text-lg sm:text-xl font-bold text-stone-900 group-hover:text-[#4A1513] transition-colors mb-2.5 leading-snug">
+                        {s.title}
+                      </h3>
+
+                      <p className="text-xs sm:text-[13px] text-stone-600 leading-relaxed font-normal">
+                        {s.desc}
+                      </p>
                     </div>
 
-                    {/* Central Icon Node Badge */}
-                    <div className="relative z-10 flex items-center justify-center shrink-0">
-                      <div className="w-12 h-12 rounded-full bg-white border-2 border-[#4A1513] text-[#4A1513] flex items-center justify-center shadow-md">
-                        <Icon size={20} />
-                      </div>
+                    {/* Bottom Micro Highlight Tag */}
+                    <div className="mt-6 pt-4 border-t border-stone-200/60 flex items-center justify-between">
+                      <span className="text-[10.5px] font-bold uppercase tracking-wider text-[#D4AF37] group-hover:text-[#4A1513] transition-colors">
+                        {s.highlight || "Step Milestone"}
+                      </span>
+                      {!isLast && (
+                        <div className="hidden lg:flex items-center text-stone-300 group-hover:text-[#4A1513] transition-colors">
+                          <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+                        </div>
+                      )}
                     </div>
-
-                    {/* Empty Spacer on Opposite Side */}
-                    <div className="hidden md:block w-1/2" />
                   </div>
                 );
               })}
             </div>
+          </div>
+
+          {/* Bottom Trust Assurance Strip */}
+          <div className="mt-14 pt-8 border-t border-stone-100 flex flex-wrap items-center justify-center gap-6 sm:gap-10 text-xs text-stone-500 font-medium">
+            <span className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              Zero Upfront Onboarding Fee
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              24–48 Hour Application Approval
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              Automated 7-Day Bank Payouts
+            </span>
           </div>
         </div>
       </section>
