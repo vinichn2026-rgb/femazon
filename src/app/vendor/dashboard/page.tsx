@@ -31,9 +31,9 @@ export default async function VendorDashboardPage() {
     }
   }
 
-  // 2. Strict Protection: If no authenticated session exists, redirect to /vendor
+  // 2. Strict Protection: If no authenticated session exists, redirect to /vendor/login
   if (!userEmail) {
-    redirect("/vendor");
+    redirect("/vendor/login");
   }
 
   // 3. Strict Role Separation: Validate user in database
@@ -44,23 +44,15 @@ export default async function VendorDashboardPage() {
     }
   });
 
-  // If user does not exist or user role is NOT VENDOR (e.g. CUSTOMER or ADMIN), block and redirect to /vendor
+  // If user does not exist or user role is NOT VENDOR, block and redirect to /vendor/login
   if (!user || user.role !== 'VENDOR') {
-    redirect("/vendor");
+    redirect("/vendor/login");
   }
 
-  // 4. Ensure Vendor Profile exists
-  let vendorProfile = user.vendorProfile;
-  if (!vendorProfile) {
-    vendorProfile = await prisma.vendorProfile.create({
-      data: {
-        userId: user.id,
-        businessName: user.name || "Femazon Boutique Partner",
-        email: user.email,
-        phone: user.phone || "",
-        status: "APPROVED"
-      }
-    });
+  // 4. Verify vendor approval status on the server before granting dashboard access
+  const vendorProfile = user.vendorProfile;
+  if (!vendorProfile || vendorProfile.status !== 'APPROVED') {
+    redirect(`/vendor/login?error=${encodeURIComponent(vendorProfile?.status || 'PENDING')}`);
   }
 
   return (

@@ -223,23 +223,59 @@ export default function AdminClient({ user, users, vendors, products, categories
               <thead className="bg-zinc-50 border-b border-zinc-100 text-xs font-bold uppercase tracking-widest text-zinc-500">
                 <tr>
                   <th className="px-6 py-4">Store Name</th>
-                  <th className="px-6 py-4">Owner</th>
-                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4">Registered Email</th>
+                  <th className="px-6 py-4">Approval Status</th>
+                  <th className="px-6 py-4">Email Status</th>
                   <th className="px-6 py-4 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-100">
                 {vendors.map((v: any) => (
                   <tr key={v.id} className="hover:bg-zinc-50/50">
-                    <td className="px-6 py-4 font-bold text-primary text-sm">{v.businessName || "N/A"}</td>
-                    <td className="px-6 py-4 text-sm text-zinc-500">{v.user.email}</td>
+                    <td className="px-6 py-4">
+                      <div className="font-bold text-primary text-sm">{v.businessName || "N/A"}</div>
+                      {v.status === 'APPROVED' && (
+                        <Link 
+                          href={`/shops/${v.slug || v.id}`} 
+                          target="_blank"
+                          className="text-[11px] text-zinc-400 hover:text-primary hover:underline"
+                        >
+                          /shops/{v.slug || v.id} &rarr;
+                        </Link>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-zinc-500">{v.user?.email || v.email}</td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-1 rounded text-xs font-bold ${v.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>{v.status}</span>
                     </td>
+                    <td className="px-6 py-4 text-xs">
+                      {v.approvalEmailSent ? (
+                        <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 px-2 py-1 rounded font-medium">
+                          &#10003; Sent {v.approvalEmailSentAt ? new Date(v.approvalEmailSentAt).toLocaleDateString() : ''}
+                        </span>
+                      ) : v.approvalEmailError ? (
+                        <span className="inline-flex items-center gap-1 text-rose-700 bg-rose-50 px-2 py-1 rounded font-medium" title={v.approvalEmailError}>
+                          &#9888; Failed
+                        </span>
+                      ) : (
+                        <span className="text-zinc-400 italic">Not sent</span>
+                      )}
+                    </td>
                     <td className="px-6 py-4 text-right">
-                      {v.status !== 'APPROVED' && (
-                        <button onClick={() => handleAction("APPROVE_VENDOR", { vendorId: v.id })} className="text-emerald-600 font-bold text-xs uppercase tracking-widest hover:underline">
+                      {v.status !== 'APPROVED' ? (
+                        <button 
+                          onClick={() => handleAction("APPROVE_VENDOR", { vendorId: v.id })} 
+                          className="text-emerald-600 font-bold text-xs uppercase tracking-widest hover:underline cursor-pointer"
+                        >
                           Approve
+                        </button>
+                      ) : (
+                        <button 
+                          onClick={() => handleAction("APPROVE_VENDOR", { vendorId: v.id, retryEmail: true })} 
+                          className="text-zinc-400 hover:text-primary font-bold text-[11px] uppercase tracking-wider hover:underline cursor-pointer"
+                          title="Resend approval notification email"
+                        >
+                          Resend Email
                         </button>
                       )}
                     </td>

@@ -22,8 +22,12 @@ async function getVendorUser(request: Request) {
 
   if (!userEmail) return null;
 
-  const user = await prisma.user.findUnique({ where: { email: userEmail } });
+  const user = await prisma.user.findUnique({ 
+    where: { email: userEmail },
+    include: { vendorProfile: true }
+  });
   if (!user || user.role !== 'VENDOR') return null;
+  if (!user.vendorProfile || user.vendorProfile.status !== 'APPROVED') return null;
 
   return user;
 }

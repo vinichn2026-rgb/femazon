@@ -26,7 +26,7 @@ export default async function VendorStorePage({ params }: { params: Promise<{ ve
     }
   });
 
-  if (!vendor || !vendor.vendorProfile) {
+  if (!vendor || !vendor.vendorProfile || vendor.vendorProfile.status !== 'APPROVED') {
     notFound();
   }
 

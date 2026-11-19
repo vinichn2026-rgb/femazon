@@ -79,23 +79,30 @@ export async function POST(request: Request) {
     return invalidAuthResponse;
   }
 
-  // 4. Strict Role Separation: Must be VENDOR role
+  // 4. Strict Role Separation & Approval Verification
+  const vendorProfile = user.vendorProfile;
+
   if (user.role !== 'VENDOR') {
+    if (vendorProfile?.status === 'PENDING') {
+      return NextResponse.json(
+        { success: false, message: 'Your vendor account is pending admin approval. You will receive an email once approved.' },
+        { status: 403 }
+      );
+    }
     return invalidAuthResponse;
   }
 
-  // 5. Ensure vendor profile exists or create standard profile
-  let vendorProfile = user.vendorProfile;
-  if (!vendorProfile) {
-    vendorProfile = await prisma.vendorProfile.create({
-      data: {
-        userId: user.id,
-        businessName: user.name || 'Femazon Partner Boutique',
-        email: user.email,
-        phone: user.phone || '',
-        status: 'APPROVED'
-      }
-    });
+  // 5. Verify vendor approval status on the server before granting access
+  if (!vendorProfile || vendorProfile.status !== 'APPROVED') {
+    const statusMsg = vendorProfile?.status === 'REJECTED'
+      ? 'Your vendor application has been rejected. Please contact Femazon support.'
+      : vendorProfile?.status === 'SUSPENDED'
+      ? 'Your vendor account has been suspended. Please contact Femazon support.'
+      : 'Your vendor account is pending admin approval. You will receive an email once approved.';
+    return NextResponse.json(
+      { success: false, message: statusMsg },
+      { status: 403 }
+    );
   }
 
   // 6. Generate signed HMAC token with VENDOR role

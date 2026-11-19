@@ -20,13 +20,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Business name is required' }, { status: 400 });
     }
 
+    const baseSlug = businessName
+      .toString()
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    const slug = `${baseSlug}-${user.id}`;
+
     // Upsert VendorProfile (Status is PENDING by default in Prisma schema)
     const profile = await prisma.vendorProfile.upsert({
       where: { userId: user.id },
       update: {
         businessName,
+        slug: baseSlug,
         ownerName,
-        email,
+        email: email || user.email,
         phone,
         address,
         businessCategory,
@@ -36,8 +46,9 @@ export async function POST(request: Request) {
       create: {
         userId: user.id,
         businessName,
+        slug: baseSlug,
         ownerName,
-        email,
+        email: email || user.email,
         phone,
         address,
         businessCategory,

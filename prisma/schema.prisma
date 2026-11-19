@@ -232,6 +232,7 @@ model VendorProfile {
   id               Int      @id @default(autoincrement())
   userId           Int      @unique
   businessName     String
+  slug             String?  @unique
   ownerName        String?
   email            String?
   phone            String?
@@ -240,6 +241,11 @@ model VendorProfile {
   description      String?
   gstNumber        String?
   status           String   @default("PENDING") // Requires Admin approval
+  
+  // Automatic approval email tracking
+  approvalEmailSent   Boolean   @default(false)
+  approvalEmailSentAt DateTime?
+  approvalEmailError  String?
   
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt        DateTime @default(now())

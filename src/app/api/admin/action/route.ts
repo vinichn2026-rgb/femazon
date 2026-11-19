@@ -2,6 +2,17 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/authOptions';
+import { sendVendorApprovalEmail } from '@/lib/email';
+
+function slugify(text: string): string {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
 
 export async function POST(request: Request) {
   try {
@@ -15,16 +26,116 @@ export async function POST(request: Request) {
     const { action, payload } = body;
 
     switch (action) {
-      case 'APPROVE_VENDOR':
-        const vp = await prisma.vendorProfile.update({
-          where: { id: payload.vendorId },
-          data: { status: 'APPROVED' }
+      case 'APPROVE_VENDOR': {
+        const vendorId = Number(payload?.vendorId || body?.vendorId);
+        if (!vendorId || isNaN(vendorId)) {
+          return NextResponse.json({ error: 'Valid vendorId is required' }, { status: 400 });
+        }
+
+        // 1. Fetch vendor and verified user credentials directly from PostgreSQL (Never trust frontend-supplied email)
+        const existingProfile = await prisma.vendorProfile.findUnique({
+          where: { id: vendorId },
+          include: { user: true }
         });
+
+        if (!existingProfile) {
+          return NextResponse.json({ error: 'Vendor profile not found' }, { status: 404 });
+        }
+
+        // 2. Generate clean URL slug for public shop page if not present
+        const generatedSlug = existingProfile.slug || 
+          slugify(existingProfile.businessName || `vendor-${existingProfile.id}`);
+
+        // 3. Update Vendor Status to APPROVED in database & promote User role to VENDOR
+        const vp = await prisma.vendorProfile.update({
+          where: { id: existingProfile.id },
+          data: { 
+            status: 'APPROVED',
+            slug: generatedSlug
+          }
+        });
+
         await prisma.user.update({
           where: { id: vp.userId },
           data: { role: 'VENDOR' }
         });
-        return NextResponse.json({ success: true });
+
+        // 4. Determine verified registered email address
+        const recipientEmail = existingProfile.user?.email || existingProfile.email;
+        let emailDispatched = false;
+        let emailErrorMsg: string | null = null;
+
+        // 5. Duplicate Prevention & Automatic Email Dispatch
+        // If already sent and not an explicit retry request, prevent duplicate email
+        const shouldSendEmail = Boolean(recipientEmail) && (!existingProfile.approvalEmailSent || payload.retryEmail === true);
+
+        if (shouldSendEmail && recipientEmail) {
+          try {
+            const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+            const emailResult = await sendVendorApprovalEmail({
+              to: recipientEmail,
+              vendorName: existingProfile.ownerName || existingProfile.user?.name || undefined,
+              shopName: existingProfile.businessName || 'Femazon Partner Boutique',
+              vendorId: existingProfile.id,
+              loginUrl: `${baseUrl}/vendor/login`,
+              dashboardUrl: `${baseUrl}/vendor/dashboard`,
+              supportEmail: process.env.SUPPORT_EMAIL || 'support@femazon.com'
+            });
+
+            if (emailResult.success) {
+              emailDispatched = true;
+              // Record successful email timestamp in database
+              await prisma.vendorProfile.update({
+                where: { id: existingProfile.id },
+                data: {
+                  approvalEmailSent: true,
+                  approvalEmailSentAt: new Date(),
+                  approvalEmailError: null
+                }
+              });
+            } else {
+              emailErrorMsg = emailResult.error || 'Email dispatch failed';
+              // Record failure in database without reverting approved vendor status
+              await prisma.vendorProfile.update({
+                where: { id: existingProfile.id },
+                data: {
+                  approvalEmailError: emailErrorMsg
+                }
+              });
+            }
+          } catch (err: any) {
+            console.error('[Vendor Approval Email Dispatch Exception]:', err);
+            emailErrorMsg = err?.message || 'Unexpected exception during email dispatch';
+            await prisma.vendorProfile.update({
+              where: { id: existingProfile.id },
+              data: {
+                approvalEmailError: emailErrorMsg
+              }
+            }).catch(() => {});
+          }
+        } else if (!recipientEmail) {
+          console.warn(`[Vendor Approval Warning] Vendor #${existingProfile.id} has no registered email.`);
+          await prisma.vendorProfile.update({
+            where: { id: existingProfile.id },
+            data: {
+              approvalEmailError: 'No registered email found on account'
+            }
+          }).catch(() => {});
+        }
+
+        return NextResponse.json({ 
+          success: true,
+          vendor: {
+            id: vp.id,
+            businessName: vp.businessName,
+            status: vp.status,
+            slug: vp.slug,
+            email: recipientEmail,
+            approvalEmailSent: emailDispatched || existingProfile.approvalEmailSent,
+            emailError: emailErrorMsg
+          }
+        });
+      }
 
       case 'APPROVE_PRODUCT':
         await prisma.product.update({
