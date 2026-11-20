@@ -40,7 +40,13 @@ import { WhatsAppFloatingButton } from '@/components/common/WhatsAppFloatingButt
 import { FemazonAIChatDrawer } from '@/components/chat/FemazonAIChatDrawer';
 import { BrandLogo } from '@/components/common/BrandLogo';
 import { ImageSearchModal } from '@/components/shop/ImageSearchModal';
-import { MegaDropdownMenu } from './MegaDropdownMenu';
+import { 
+  ShopDropdown, 
+  DiscoverDropdown, 
+  PersonalStylingDropdown, 
+  BrandsDropdown, 
+  PartnerDropdown 
+} from './NavbarDropdowns';
 
 type AuthSession = {
   id: string;
@@ -1109,17 +1115,30 @@ export function SiteLayout({
             >
               <Link 
                 href="/discover" 
-                className={`py-2 transition-colors hover:text-[#4A1513] flex items-center gap-1 cursor-pointer ${
+                onClick={(e) => {
+                  if (activeDropdown !== 'discover') {
+                    // Clicking opens the dropdown if not already open
+                    setActiveDropdown('discover');
+                  }
+                }}
+                className={`py-2 transition-colors hover:text-[#4A1513] flex items-center gap-1 cursor-pointer select-none ${
                   pathname === '/discover' || activeDropdown === 'discover' ? 'text-[#4A1513] font-semibold' : ''
                 }`}
               >
                 <span>Discover</span>
                 <span className="px-1.5 py-0.2 rounded-full bg-rose-100 text-[#4A1513] text-[9.5px] font-bold">New</span>
-                <ChevronDown 
-                  size={12} 
-                  className={`transition-transform duration-200 ${activeDropdown === 'discover' ? 'rotate-180 text-[#4A1513]' : 'text-stone-400'}`} 
-                />
+                <span className={`text-[7.5px] transition-transform duration-200 inline-block ml-0.5 ${
+                  activeDropdown === 'discover' ? 'rotate-180 text-[#4A1513]' : 'text-stone-400'
+                }`}>
+                  ▼
+                </span>
               </Link>
+              <DiscoverDropdown
+                isOpen={activeDropdown === 'discover'}
+                onClose={() => setActiveDropdown(null)}
+                onMouseEnter={handleDropdownMouseEnter}
+                onMouseLeave={handleDropdownMouseLeave}
+              />
             </div>
 
             {/* 2. Shop */}
@@ -1130,18 +1149,30 @@ export function SiteLayout({
             >
               <Link 
                 href="/shop" 
-                className={`py-2 transition-colors hover:text-[#4A1513] flex items-center gap-1 cursor-pointer ${
+                onClick={(e) => {
+                  if (activeDropdown !== 'shop') {
+                    setActiveDropdown('shop');
+                  }
+                }}
+                className={`py-2 transition-colors hover:text-[#4A1513] flex items-center gap-1 cursor-pointer select-none ${
                   pathname === '/shop' || pathname?.startsWith('/shop') || pathname?.startsWith('/womens-wear') || activeDropdown === 'shop' 
                     ? 'text-[#4A1513] font-semibold' 
                     : ''
                 }`}
               >
                 <span>Shop</span>
-                <ChevronDown 
-                  size={12} 
-                  className={`transition-transform duration-200 ${activeDropdown === 'shop' ? 'rotate-180 text-[#4A1513]' : 'text-stone-400'}`} 
-                />
+                <span className={`text-[7.5px] transition-transform duration-200 inline-block ml-0.5 ${
+                  activeDropdown === 'shop' ? 'rotate-180 text-[#4A1513]' : 'text-stone-400'
+                }`}>
+                  ▼
+                </span>
               </Link>
+              <ShopDropdown
+                isOpen={activeDropdown === 'shop'}
+                onClose={() => setActiveDropdown(null)}
+                onMouseEnter={handleDropdownMouseEnter}
+                onMouseLeave={handleDropdownMouseLeave}
+              />
             </div>
 
             {/* 3. Personal Styling */}
@@ -1152,16 +1183,28 @@ export function SiteLayout({
             >
               <Link 
                 href="/personal-styling" 
-                className={`py-2 transition-colors hover:text-[#4A1513] flex items-center gap-1 cursor-pointer ${
+                onClick={(e) => {
+                  if (activeDropdown !== 'personal-styling') {
+                    setActiveDropdown('personal-styling');
+                  }
+                }}
+                className={`py-2 transition-colors hover:text-[#4A1513] flex items-center gap-1 cursor-pointer select-none ${
                   pathname === '/personal-styling' || activeDropdown === 'personal-styling' ? 'text-[#4A1513] font-semibold' : ''
                 }`}
               >
                 <span>Personal Styling</span>
-                <ChevronDown 
-                  size={12} 
-                  className={`transition-transform duration-200 ${activeDropdown === 'personal-styling' ? 'rotate-180 text-[#4A1513]' : 'text-stone-400'}`} 
-                />
+                <span className={`text-[7.5px] transition-transform duration-200 inline-block ml-0.5 ${
+                  activeDropdown === 'personal-styling' ? 'rotate-180 text-[#4A1513]' : 'text-stone-400'
+                }`}>
+                  ▼
+                </span>
               </Link>
+              <PersonalStylingDropdown
+                isOpen={activeDropdown === 'personal-styling'}
+                onClose={() => setActiveDropdown(null)}
+                onMouseEnter={handleDropdownMouseEnter}
+                onMouseLeave={handleDropdownMouseLeave}
+              />
             </div>
 
             {/* 4. Our Brands */}
@@ -1172,16 +1215,28 @@ export function SiteLayout({
             >
               <Link 
                 href="/brands" 
-                className={`py-2 transition-colors hover:text-[#4A1513] flex items-center gap-1 cursor-pointer ${
+                onClick={(e) => {
+                  if (activeDropdown !== 'brands') {
+                    setActiveDropdown('brands');
+                  }
+                }}
+                className={`py-2 transition-colors hover:text-[#4A1513] flex items-center gap-1 cursor-pointer select-none ${
                   pathname === '/brands' || activeDropdown === 'brands' ? 'text-[#4A1513] font-semibold' : ''
                 }`}
               >
                 <span>Our Brands</span>
-                <ChevronDown 
-                  size={12} 
-                  className={`transition-transform duration-200 ${activeDropdown === 'brands' ? 'rotate-180 text-[#4A1513]' : 'text-stone-400'}`} 
-                />
+                <span className={`text-[7.5px] transition-transform duration-200 inline-block ml-0.5 ${
+                  activeDropdown === 'brands' ? 'rotate-180 text-[#4A1513]' : 'text-stone-400'
+                }`}>
+                  ▼
+                </span>
               </Link>
+              <BrandsDropdown
+                isOpen={activeDropdown === 'brands'}
+                onClose={() => setActiveDropdown(null)}
+                onMouseEnter={handleDropdownMouseEnter}
+                onMouseLeave={handleDropdownMouseLeave}
+              />
             </div>
 
             {/* 5. Partner With Femazon */}
@@ -1192,16 +1247,28 @@ export function SiteLayout({
             >
               <Link 
                 href="/partner" 
-                className={`py-2 transition-colors hover:text-[#4A1513] flex items-center gap-1 cursor-pointer ${
+                onClick={(e) => {
+                  if (activeDropdown !== 'partner') {
+                    setActiveDropdown('partner');
+                  }
+                }}
+                className={`py-2 transition-colors hover:text-[#4A1513] flex items-center gap-1 cursor-pointer select-none ${
                   pathname === '/partner' || activeDropdown === 'partner' ? 'text-[#4A1513] font-semibold' : ''
                 }`}
               >
                 <span>Partner With Femazon</span>
-                <ChevronDown 
-                  size={12} 
-                  className={`transition-transform duration-200 ${activeDropdown === 'partner' ? 'rotate-180 text-[#4A1513]' : 'text-stone-400'}`} 
-                />
+                <span className={`text-[7.5px] transition-transform duration-200 inline-block ml-0.5 ${
+                  activeDropdown === 'partner' ? 'rotate-180 text-[#4A1513]' : 'text-stone-400'
+                }`}>
+                  ▼
+                </span>
               </Link>
+              <PartnerDropdown
+                isOpen={activeDropdown === 'partner'}
+                onClose={() => setActiveDropdown(null)}
+                onMouseEnter={handleDropdownMouseEnter}
+                onMouseLeave={handleDropdownMouseLeave}
+              />
             </div>
           </nav>
 
@@ -1583,14 +1650,6 @@ export function SiteLayout({
 
           </div>
         </div>
-
-        {/* Desktop Mega Dropdown Menu (Manova-inspired smooth dropdown) */}
-        <MegaDropdownMenu
-          activeDropdown={activeDropdown}
-          onClose={() => setActiveDropdown(null)}
-          onMouseEnter={handleDropdownMouseEnter}
-          onMouseLeave={handleDropdownMouseLeave}
-        />
       </header>
 
       {/* Mobile Sliding Drawer & Backdrop (comes upon the header section while open) */}
