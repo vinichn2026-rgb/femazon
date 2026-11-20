@@ -338,38 +338,40 @@ export function ExploreCategorySection() {
           {/* Continuous Left-moving animated track */}
           <div
             key={currentSection.id}
-            className="animate-marquee-left flex gap-4 sm:gap-5"
+            className="animate-marquee-left flex gap-3.5 sm:gap-4.5"
           >
             {movingItems.map((sample, index) => (
               <Link
                 key={`${sample.id}-${index}`}
                 href={sample.href}
-                className="group shrink-0 w-[140px] sm:w-[160px] md:w-[175px] transition-all duration-300 flex flex-col"
+                className="group shrink-0 w-[150px] sm:w-[170px] md:w-[185px] rounded-[22px] sm:rounded-[26px] bg-white p-2.5 sm:p-3 border border-stone-200/80 shadow-2xs hover:border-[#4A1513]/40 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
               >
-                {/* Square Sample Picture with Rounded Corners */}
-                <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-stone-100 mb-2.5">
-                  <img
-                    src={sample.image}
-                    alt={sample.title}
-                    className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
-                  />
+                {/* Square Sample Picture with Rounded Corners (Yuukke Style) */}
+                <div>
+                  <div className="relative aspect-square w-full rounded-[16px] sm:rounded-[20px] overflow-hidden bg-stone-100 mb-2.5">
+                    <img
+                      src={sample.image}
+                      alt={sample.title}
+                      className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
+                    />
 
-                  {/* Gradient overlay for hover polish */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    {/* Gradient overlay for hover polish */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                  {/* Minimal Badge on Sample Pic (e.g. "UP TO 20% OFF") */}
-                  {sample.badge && (
-                    <span className="absolute top-2 right-2 rounded-full bg-[#4A1513] px-2 py-0.5 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-white shadow-xs">
-                      {sample.badge}
-                    </span>
-                  )}
-                </div>
+                    {/* Minimal Badge on Sample Pic (e.g. "UP TO 20% OFF") */}
+                    {sample.badge && (
+                      <span className="absolute top-2 right-2 rounded-full bg-[#4A1513] px-2 py-0.5 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-white shadow-xs">
+                        {sample.badge}
+                      </span>
+                    )}
+                  </div>
 
-                {/* Clean Centered Title */}
-                <div className="text-center px-1">
-                  <h3 className="font-sans text-xs sm:text-[13px] font-medium text-stone-700 group-hover:text-[#4A1513] transition-colors leading-tight line-clamp-1">
-                    {sample.title}
-                  </h3>
+                  {/* Clean Centered Title */}
+                  <div className="text-center px-1 pb-1">
+                    <h3 className="font-sans text-xs sm:text-[13px] font-medium text-stone-700 group-hover:text-[#4A1513] transition-colors leading-tight line-clamp-1">
+                      {sample.title}
+                    </h3>
+                  </div>
                 </div>
               </Link>
             ))}
