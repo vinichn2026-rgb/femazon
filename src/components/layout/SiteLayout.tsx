@@ -40,6 +40,7 @@ import { WhatsAppFloatingButton } from '@/components/common/WhatsAppFloatingButt
 import { FemazonAIChatDrawer } from '@/components/chat/FemazonAIChatDrawer';
 import { BrandLogo } from '@/components/common/BrandLogo';
 import { ImageSearchModal } from '@/components/shop/ImageSearchModal';
+import { MegaDropdownMenu } from './MegaDropdownMenu';
 
 type AuthSession = {
   id: string;
@@ -918,6 +919,44 @@ export function SiteLayout({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
 
+  // Desktop Mega Dropdown State
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const navContainerRef = useRef<HTMLElement>(null);
+
+  const handleNavMouseEnter = (menuId: string) => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setActiveDropdown(menuId);
+  };
+
+  const handleNavMouseLeave = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+    }
+    closeTimeoutRef.current = setTimeout(() => {
+      setActiveDropdown(null);
+    }, 180);
+  };
+
+  const handleDropdownMouseEnter = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+  };
+
+  const handleDropdownMouseLeave = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+    }
+    closeTimeoutRef.current = setTimeout(() => {
+      setActiveDropdown(null);
+    }, 180);
+  };
+
   // Search State & Refs
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProductsOpen, setIsProductsOpen] = useState(false);
@@ -944,7 +983,7 @@ export function SiteLayout({
   const role = user?.role || authSession?.role;
   const userFirstName = user?.firstName || (user?.name ? user.name.split(' ')[0] : 'Member');
 
-  // Handle Click Outside Profile Dropdown & Search Bar
+  // Handle Click Outside Profile Dropdown, Search Bar & Mega Dropdown
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
@@ -953,18 +992,25 @@ export function SiteLayout({
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
         setIsSearchOpen(false);
       }
+      if (
+        navContainerRef.current && 
+        !navContainerRef.current.contains(event.target as Node)
+      ) {
+        setActiveDropdown(null);
+      }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Handle ESC Key to Close Profile Dropdown & Search Bar
+  // Handle ESC Key to Close Profile Dropdown, Mobile Menu, Search Bar & Mega Dropdown
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         setIsProfileMenuOpen(false);
         setIsMobileMenuOpen(false);
         setIsSearchOpen(false);
+        setActiveDropdown(null);
       }
     }
     document.addEventListener('keydown', handleKeyDown);
@@ -976,7 +1022,17 @@ export function SiteLayout({
     setIsProfileMenuOpen(false);
     setIsMobileMenuOpen(false);
     setIsSearchOpen(false);
+    setActiveDropdown(null);
   }, [pathname]);
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const toggleAccordion = (name: string) => {
     setActiveAccordion(prev => prev === name ? null : name);
@@ -1039,44 +1095,114 @@ export function SiteLayout({
           </div>
 
           {/* Center: Clean Modern Navigation Links (Refined compact size) */}
-          <nav className={`hidden lg:flex items-center gap-3.5 xl:gap-5 text-[12.5px] xl:text-[13px] font-medium text-stone-700 tracking-tight transition-all duration-300 ease-in-out ${
-            isSearchOpen ? 'opacity-0 max-w-0 overflow-hidden pointer-events-none' : 'opacity-100 max-w-full'
-          }`}>
-            <Link 
-              href="/discover" 
-              className={`py-2 transition-colors hover:text-[#4A1513] flex items-center gap-1 ${pathname === '/discover' ? 'text-[#4A1513] font-semibold' : ''}`}
+          <nav 
+            ref={navContainerRef}
+            className={`hidden lg:flex items-center gap-3.5 xl:gap-5 text-[12.5px] xl:text-[13px] font-medium text-stone-700 tracking-tight transition-all duration-300 ease-in-out ${
+              isSearchOpen ? 'opacity-0 max-w-0 overflow-hidden pointer-events-none' : 'opacity-100 max-w-full'
+            }`}
+          >
+            {/* 1. Discover */}
+            <div
+              className="relative py-2"
+              onMouseEnter={() => handleNavMouseEnter('discover')}
+              onMouseLeave={handleNavMouseLeave}
             >
-              <span>Discover</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-rose-100 text-[#4A1513] text-[9.5px] font-bold">New</span>
-            </Link>
+              <Link 
+                href="/discover" 
+                className={`py-2 transition-colors hover:text-[#4A1513] flex items-center gap-1 cursor-pointer ${
+                  pathname === '/discover' || activeDropdown === 'discover' ? 'text-[#4A1513] font-semibold' : ''
+                }`}
+              >
+                <span>Discover</span>
+                <span className="px-1.5 py-0.2 rounded-full bg-rose-100 text-[#4A1513] text-[9.5px] font-bold">New</span>
+                <ChevronDown 
+                  size={12} 
+                  className={`transition-transform duration-200 ${activeDropdown === 'discover' ? 'rotate-180 text-[#4A1513]' : 'text-stone-400'}`} 
+                />
+              </Link>
+            </div>
 
-            <Link 
-              href="/shop" 
-              className={`py-2 transition-colors hover:text-[#4A1513] ${pathname === '/shop' || pathname?.startsWith('/shop') ? 'text-[#4A1513] font-semibold' : ''}`}
+            {/* 2. Shop */}
+            <div
+              className="relative py-2"
+              onMouseEnter={() => handleNavMouseEnter('shop')}
+              onMouseLeave={handleNavMouseLeave}
             >
-              Shop
-            </Link>
+              <Link 
+                href="/shop" 
+                className={`py-2 transition-colors hover:text-[#4A1513] flex items-center gap-1 cursor-pointer ${
+                  pathname === '/shop' || pathname?.startsWith('/shop') || pathname?.startsWith('/womens-wear') || activeDropdown === 'shop' 
+                    ? 'text-[#4A1513] font-semibold' 
+                    : ''
+                }`}
+              >
+                <span>Shop</span>
+                <ChevronDown 
+                  size={12} 
+                  className={`transition-transform duration-200 ${activeDropdown === 'shop' ? 'rotate-180 text-[#4A1513]' : 'text-stone-400'}`} 
+                />
+              </Link>
+            </div>
 
-            <Link 
-              href="/personal-styling" 
-              className={`py-2 transition-colors hover:text-[#4A1513] ${pathname === '/personal-styling' ? 'text-[#4A1513] font-semibold' : ''}`}
+            {/* 3. Personal Styling */}
+            <div
+              className="relative py-2"
+              onMouseEnter={() => handleNavMouseEnter('personal-styling')}
+              onMouseLeave={handleNavMouseLeave}
             >
-              Personal Styling
-            </Link>
+              <Link 
+                href="/personal-styling" 
+                className={`py-2 transition-colors hover:text-[#4A1513] flex items-center gap-1 cursor-pointer ${
+                  pathname === '/personal-styling' || activeDropdown === 'personal-styling' ? 'text-[#4A1513] font-semibold' : ''
+                }`}
+              >
+                <span>Personal Styling</span>
+                <ChevronDown 
+                  size={12} 
+                  className={`transition-transform duration-200 ${activeDropdown === 'personal-styling' ? 'rotate-180 text-[#4A1513]' : 'text-stone-400'}`} 
+                />
+              </Link>
+            </div>
 
-            <Link 
-              href="/brands" 
-              className={`py-2 transition-colors hover:text-[#4A1513] ${pathname === '/brands' ? 'text-[#4A1513] font-semibold' : ''}`}
+            {/* 4. Our Brands */}
+            <div
+              className="relative py-2"
+              onMouseEnter={() => handleNavMouseEnter('brands')}
+              onMouseLeave={handleNavMouseLeave}
             >
-              Our Brands
-            </Link>
+              <Link 
+                href="/brands" 
+                className={`py-2 transition-colors hover:text-[#4A1513] flex items-center gap-1 cursor-pointer ${
+                  pathname === '/brands' || activeDropdown === 'brands' ? 'text-[#4A1513] font-semibold' : ''
+                }`}
+              >
+                <span>Our Brands</span>
+                <ChevronDown 
+                  size={12} 
+                  className={`transition-transform duration-200 ${activeDropdown === 'brands' ? 'rotate-180 text-[#4A1513]' : 'text-stone-400'}`} 
+                />
+              </Link>
+            </div>
 
-            <Link 
-              href="/partner" 
-              className={`py-2 transition-colors hover:text-[#4A1513] ${pathname === '/partner' ? 'text-[#4A1513] font-semibold' : ''}`}
+            {/* 5. Partner With Femazon */}
+            <div
+              className="relative py-2"
+              onMouseEnter={() => handleNavMouseEnter('partner')}
+              onMouseLeave={handleNavMouseLeave}
             >
-              Partner With Femazon
-            </Link>
+              <Link 
+                href="/partner" 
+                className={`py-2 transition-colors hover:text-[#4A1513] flex items-center gap-1 cursor-pointer ${
+                  pathname === '/partner' || activeDropdown === 'partner' ? 'text-[#4A1513] font-semibold' : ''
+                }`}
+              >
+                <span>Partner With Femazon</span>
+                <ChevronDown 
+                  size={12} 
+                  className={`transition-transform duration-200 ${activeDropdown === 'partner' ? 'rotate-180 text-[#4A1513]' : 'text-stone-400'}`} 
+                />
+              </Link>
+            </div>
           </nav>
 
           {/* Right: Actions matching screenshot exactly (compact refined size) */}
@@ -1457,6 +1583,14 @@ export function SiteLayout({
 
           </div>
         </div>
+
+        {/* Desktop Mega Dropdown Menu (Manova-inspired smooth dropdown) */}
+        <MegaDropdownMenu
+          activeDropdown={activeDropdown}
+          onClose={() => setActiveDropdown(null)}
+          onMouseEnter={handleDropdownMouseEnter}
+          onMouseLeave={handleDropdownMouseLeave}
+        />
       </header>
 
       {/* Mobile Sliding Drawer & Backdrop (comes upon the header section while open) */}
