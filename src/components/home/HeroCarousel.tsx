@@ -14,6 +14,7 @@ interface HeroSlide {
   image: string;
   fallbackImage: string;
   align?: "left" | "right";
+  objectPosition?: string;
 }
 
 const AZA_HERO_SLIDES: HeroSlide[] = [
@@ -27,6 +28,7 @@ const AZA_HERO_SLIDES: HeroSlide[] = [
     image: "/banners/hero_bridal.jpg",
     fallbackImage: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&q=85&w=1920",
     align: "left",
+    objectPosition: "center 5%",
   },
   {
     id: 2,
@@ -38,6 +40,7 @@ const AZA_HERO_SLIDES: HeroSlide[] = [
     image: "/banners/hero_saree.jpg",
     fallbackImage: "https://images.unsplash.com/photo-1610047614301-13c63f00c032?auto=format&fit=crop&q=85&w=1920",
     align: "left",
+    objectPosition: "center 6%",
   },
   {
     id: 3,
@@ -49,6 +52,7 @@ const AZA_HERO_SLIDES: HeroSlide[] = [
     image: "/banners/hero_beauty_jewels.jpg",
     fallbackImage: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&q=85&w=1920",
     align: "left",
+    objectPosition: "center 22%",
   },
   {
     id: 4,
@@ -60,6 +64,7 @@ const AZA_HERO_SLIDES: HeroSlide[] = [
     image: "/banners/hero_coords.jpg",
     fallbackImage: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=85&w=1920",
     align: "left",
+    objectPosition: "center 3%",
   },
   {
     id: 5,
@@ -71,6 +76,7 @@ const AZA_HERO_SLIDES: HeroSlide[] = [
     image: "/banners/hero_gifts.jpg",
     fallbackImage: "https://images.unsplash.com/photo-1513885535751-8b9238bd345a?auto=format&fit=crop&q=85&w=1920",
     align: "left",
+    objectPosition: "center center",
   },
   {
     id: 6,
@@ -82,6 +88,7 @@ const AZA_HERO_SLIDES: HeroSlide[] = [
     image: "/banners/hero_runway.jpg",
     fallbackImage: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&q=85&w=1920",
     align: "left",
+    objectPosition: "center 6%",
   },
 ];
 
@@ -143,7 +150,7 @@ export function HeroCarousel() {
         {/* Main Hero Slider Card with Rounded Luxury Corners */}
         <section
           aria-label="Femazon Luxury Hero Banner"
-          className="relative w-full h-[250px] sm:h-[300px] md:h-[340px] lg:h-[380px] xl:h-[410px] rounded-2xl sm:rounded-3xl overflow-hidden bg-stone-900 group shadow-[0_10px_35px_rgba(0,0,0,0.1)] border border-stone-200/60"
+          className="relative w-full h-[280px] sm:h-[330px] md:h-[370px] lg:h-[420px] xl:h-[450px] rounded-2xl sm:rounded-3xl overflow-hidden bg-stone-900 group shadow-[0_10px_35px_rgba(0,0,0,0.1)] border border-stone-200/60"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
           onTouchStart={handleTouchStart}
@@ -172,7 +179,10 @@ export function HeroCarousel() {
                       e.currentTarget.src = slide.fallbackImage;
                     }
                   }}
-                  className="w-full h-full object-cover object-center"
+                  className="w-full h-full object-cover transition-all duration-700"
+                  style={{
+                    objectPosition: slide.objectPosition || "center 5%",
+                  }}
                 />
 
                 {/* Aza-Inspired Multi-Layer Gradient Overlays: Text legibility while keeping couture vivid */}
