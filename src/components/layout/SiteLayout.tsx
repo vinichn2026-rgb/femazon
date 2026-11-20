@@ -27,7 +27,9 @@ import {
   Package,
   ShieldCheck,
   User,
-  Settings
+  Settings,
+  Gift,
+  Tag
 } from 'lucide-react';
 import NotificationDropdown from './NotificationDropdown';
 import { SearchBar } from './SearchBar';
@@ -924,6 +926,11 @@ export function SiteLayout({
   const [isImageSearchModalOpen, setIsImageSearchModalOpen] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
+  // Explore More Dropdown State
+  const [isExploreMoreOpen, setIsExploreMoreOpen] = useState(false);
+  const [isMobileExploreOpen, setIsMobileExploreOpen] = useState(false);
+  const exploreMoreRef = useRef<HTMLDivElement>(null);
+
   // Profile Dropdown Controlled State
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
@@ -944,7 +951,7 @@ export function SiteLayout({
   const role = user?.role || authSession?.role;
   const userFirstName = user?.firstName || (user?.name ? user.name.split(' ')[0] : 'Member');
 
-  // Handle Click Outside Profile Dropdown & Search Bar
+  // Handle Click Outside Profile Dropdown, Search Bar & Explore Menu
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
@@ -953,18 +960,22 @@ export function SiteLayout({
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
         setIsSearchOpen(false);
       }
+      if (exploreMoreRef.current && !exploreMoreRef.current.contains(event.target as Node)) {
+        setIsExploreMoreOpen(false);
+      }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Handle ESC Key to Close Profile Dropdown & Search Bar
+  // Handle ESC Key to Close Profile Dropdown, Mobile Menu & Search Bar
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         setIsProfileMenuOpen(false);
         setIsMobileMenuOpen(false);
         setIsSearchOpen(false);
+        setIsExploreMoreOpen(false);
       }
     }
     document.addEventListener('keydown', handleKeyDown);
@@ -976,6 +987,7 @@ export function SiteLayout({
     setIsProfileMenuOpen(false);
     setIsMobileMenuOpen(false);
     setIsSearchOpen(false);
+    setIsExploreMoreOpen(false);
   }, [pathname]);
 
   const toggleAccordion = (name: string) => {
@@ -1038,45 +1050,155 @@ export function SiteLayout({
             <BrandLogo />
           </div>
 
-          {/* Center: Clean Modern Navigation Links (Refined compact size) */}
+          {/* Center: Clean Modern Navigation Links (Manova-inspired 7-item layout) */}
           <nav className={`hidden lg:flex items-center gap-3.5 xl:gap-5 text-[12.5px] xl:text-[13px] font-medium text-stone-700 tracking-tight transition-all duration-300 ease-in-out ${
             isSearchOpen ? 'opacity-0 max-w-0 overflow-hidden pointer-events-none' : 'opacity-100 max-w-full'
           }`}>
+            {/* 1. Home */}
             <Link 
-              href="/discover" 
-              className={`py-2 transition-colors hover:text-[#4A1513] flex items-center gap-1 ${pathname === '/discover' ? 'text-[#4A1513] font-semibold' : ''}`}
+              href="/" 
+              className={`py-2 transition-colors hover:text-[#4A1513] ${pathname === '/' ? 'text-[#4A1513] font-semibold' : ''}`}
             >
-              <span>Discover</span>
+              Home
+            </Link>
+
+            {/* 2. Fresh Arrivals */}
+            <Link 
+              href="/fresh-arrivals" 
+              className={`py-2 transition-colors hover:text-[#4A1513] flex items-center gap-1 ${pathname === '/fresh-arrivals' ? 'text-[#4A1513] font-semibold' : ''}`}
+            >
+              <span>Fresh Arrivals</span>
               <span className="px-1.5 py-0.2 rounded-full bg-rose-100 text-[#4A1513] text-[9.5px] font-bold">New</span>
             </Link>
 
+            {/* 3. Women's Wear */}
             <Link 
-              href="/shop" 
-              className={`py-2 transition-colors hover:text-[#4A1513] ${pathname === '/shop' || pathname?.startsWith('/shop') ? 'text-[#4A1513] font-semibold' : ''}`}
+              href="/womens-wear" 
+              className={`py-2 transition-colors hover:text-[#4A1513] ${pathname?.startsWith('/womens-wear') ? 'text-[#4A1513] font-semibold' : ''}`}
             >
-              Shop
+              Women&apos;s Wear
             </Link>
 
+            {/* 4. Girls' Wear */}
             <Link 
-              href="/personal-styling" 
-              className={`py-2 transition-colors hover:text-[#4A1513] ${pathname === '/personal-styling' ? 'text-[#4A1513] font-semibold' : ''}`}
+              href="/girls-wear" 
+              className={`py-2 transition-colors hover:text-[#4A1513] ${pathname?.startsWith('/girls-wear') ? 'text-[#4A1513] font-semibold' : ''}`}
             >
-              Personal Styling
+              Girls&apos; Wear
             </Link>
 
+            {/* 5. Beauty */}
             <Link 
-              href="/brands" 
-              className={`py-2 transition-colors hover:text-[#4A1513] ${pathname === '/brands' ? 'text-[#4A1513] font-semibold' : ''}`}
+              href="/beauty" 
+              className={`py-2 transition-colors hover:text-[#4A1513] ${pathname?.startsWith('/beauty') ? 'text-[#4A1513] font-semibold' : ''}`}
             >
-              Our Brands
+              Beauty
             </Link>
 
+            {/* 6. Gifts */}
             <Link 
-              href="/partner" 
-              className={`py-2 transition-colors hover:text-[#4A1513] ${pathname === '/partner' ? 'text-[#4A1513] font-semibold' : ''}`}
+              href="/gifts" 
+              className={`py-2 transition-colors hover:text-[#4A1513] ${pathname?.startsWith('/gifts') ? 'text-[#4A1513] font-semibold' : ''}`}
             >
-              Partner With Femazon
+              Gifts
             </Link>
+
+            {/* 7. Explore More Dropdown */}
+            <div 
+              ref={exploreMoreRef}
+              className="relative py-2 group/explore"
+              onMouseEnter={() => setIsExploreMoreOpen(true)}
+              onMouseLeave={() => setIsExploreMoreOpen(false)}
+            >
+              <button 
+                type="button"
+                onClick={() => setIsExploreMoreOpen(!isExploreMoreOpen)}
+                className={`flex items-center gap-1 transition-colors hover:text-[#4A1513] cursor-pointer ${
+                  pathname === '/gift-cards' || pathname === '/brands' || pathname === '/collections' || pathname === '/offers' ? 'text-[#4A1513] font-semibold' : ''
+                }`}
+                aria-expanded={isExploreMoreOpen}
+              >
+                <span>Explore More</span>
+                <ChevronDown size={13} className={`transition-transform duration-200 ${isExploreMoreOpen ? 'rotate-180 text-[#4A1513]' : 'text-stone-400'}`} />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isExploreMoreOpen && (
+                <div className="absolute top-full right-0 sm:left-0 sm:right-auto mt-1 w-64 bg-white rounded-xl shadow-xl border border-stone-200/90 py-2.5 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                  <Link 
+                    href="/gift-cards"
+                    onClick={() => setIsExploreMoreOpen(false)}
+                    className="flex items-start gap-3 px-4 py-2 hover:bg-stone-50 transition-colors group/item"
+                  >
+                    <div className="p-1.5 rounded-lg bg-rose-50 text-[#4A1513] group-hover/item:bg-[#4A1513] group-hover/item:text-white transition-colors mt-0.5">
+                      <Gift size={14} />
+                    </div>
+                    <div>
+                      <p className="text-[12.5px] font-semibold text-stone-800 group-hover/item:text-[#4A1513] transition-colors">Gift Cards</p>
+                      <p className="text-[11px] text-stone-500">The luxury of effortless gifting</p>
+                    </div>
+                  </Link>
+
+                  <Link 
+                    href="/brands"
+                    onClick={() => setIsExploreMoreOpen(false)}
+                    className="flex items-start gap-3 px-4 py-2 hover:bg-stone-50 transition-colors group/item"
+                  >
+                    <div className="p-1.5 rounded-lg bg-rose-50 text-[#4A1513] group-hover/item:bg-[#4A1513] group-hover/item:text-white transition-colors mt-0.5">
+                      <Crown size={14} />
+                    </div>
+                    <div>
+                      <p className="text-[12.5px] font-semibold text-stone-800 group-hover/item:text-[#4A1513] transition-colors">Shop by Brands</p>
+                      <p className="text-[11px] text-stone-500">Verified designers &amp; boutiques</p>
+                    </div>
+                  </Link>
+
+                  <Link 
+                    href="/collections"
+                    onClick={() => setIsExploreMoreOpen(false)}
+                    className="flex items-start gap-3 px-4 py-2 hover:bg-stone-50 transition-colors group/item"
+                  >
+                    <div className="p-1.5 rounded-lg bg-rose-50 text-[#4A1513] group-hover/item:bg-[#4A1513] group-hover/item:text-white transition-colors mt-0.5">
+                      <ShoppingBag size={14} />
+                    </div>
+                    <div>
+                      <p className="text-[12.5px] font-semibold text-stone-800 group-hover/item:text-[#4A1513] transition-colors">Featured Collections</p>
+                      <p className="text-[11px] text-stone-500">Curated edits &amp; occasionwear</p>
+                    </div>
+                  </Link>
+
+                  <Link 
+                    href="/offers"
+                    onClick={() => setIsExploreMoreOpen(false)}
+                    className="flex items-start gap-3 px-4 py-2 hover:bg-stone-50 transition-colors group/item"
+                  >
+                    <div className="p-1.5 rounded-lg bg-rose-50 text-[#4A1513] group-hover/item:bg-[#4A1513] group-hover/item:text-white transition-colors mt-0.5">
+                      <Tag size={14} />
+                    </div>
+                    <div>
+                      <p className="text-[12.5px] font-semibold text-stone-800 group-hover/item:text-[#4A1513] transition-colors">Special Offers</p>
+                      <p className="text-[11px] text-stone-500">Seasonal sales &amp; boutique deals</p>
+                    </div>
+                  </Link>
+
+                  <div className="border-t border-stone-100 my-1.5" />
+
+                  <Link 
+                    href="/gifts?curated=true"
+                    onClick={() => setIsExploreMoreOpen(false)}
+                    className="flex items-start gap-3 px-4 py-2 hover:bg-stone-50 transition-colors group/item"
+                  >
+                    <div className="p-1.5 rounded-lg bg-amber-50 text-amber-700 group-hover/item:bg-amber-600 group-hover/item:text-white transition-colors mt-0.5">
+                      <Heart size={14} />
+                    </div>
+                    <div>
+                      <p className="text-[12.5px] font-semibold text-stone-800 group-hover/item:text-[#4A1513] transition-colors">Curated Gift Collections</p>
+                      <p className="text-[11px] text-stone-500">Hampers &amp; personalized sets</p>
+                    </div>
+                  </Link>
+                </div>
+              )}
+            </div>
           </nav>
 
           {/* Right: Actions matching screenshot exactly (compact refined size) */}
@@ -1539,55 +1661,135 @@ export function SiteLayout({
           <SearchBar className="!max-w-full" />
         </div>
 
-        {/* Mobile Nav Links & Accordion */}
+        {/* Mobile Nav Links & Accordion (Manova-inspired 7-item structure) */}
         <div className="flex-1 overflow-y-auto px-5 py-3 divide-y divide-stone-100">
-          {/* Top Navigation Links */}
+          {/* Top Main Navigation Links */}
           <div className="pb-3 space-y-1 text-[13.5px] font-medium text-stone-800">
+            {/* 1. Home */}
             <Link 
-              href="/discover"
+              href="/"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block py-2.5 hover:text-[#4A1513] transition-colors"
+            >
+              Home
+            </Link>
+
+            {/* 2. Fresh Arrivals */}
+            <Link 
+              href="/fresh-arrivals"
               onClick={() => setIsMobileMenuOpen(false)}
               className="flex items-center justify-between py-2.5 hover:text-[#4A1513] transition-colors"
             >
-              <span>Discover</span>
+              <span>Fresh Arrivals</span>
               <span className="px-1.5 py-0.5 rounded-full bg-rose-100 text-[#4A1513] text-[10px] font-bold">New</span>
             </Link>
 
+            {/* 3. Women's Wear */}
             <Link 
-              href="/shop"
+              href="/womens-wear"
               onClick={() => setIsMobileMenuOpen(false)}
               className="block py-2.5 hover:text-[#4A1513] transition-colors"
             >
-              Shop
+              Women&apos;s Wear
             </Link>
 
+            {/* 4. Girls' Wear */}
             <Link 
-              href="/personal-styling"
+              href="/girls-wear"
               onClick={() => setIsMobileMenuOpen(false)}
               className="block py-2.5 hover:text-[#4A1513] transition-colors"
             >
-              Personal Styling
+              Girls&apos; Wear
             </Link>
+
+            {/* 5. Beauty */}
             <Link 
-              href="/brands"
+              href="/beauty"
               onClick={() => setIsMobileMenuOpen(false)}
               className="block py-2.5 hover:text-[#4A1513] transition-colors"
             >
-              Our Brands
+              Beauty
             </Link>
+
+            {/* 6. Gifts */}
             <Link 
-              href="/partner"
+              href="/gifts"
               onClick={() => setIsMobileMenuOpen(false)}
               className="block py-2.5 hover:text-[#4A1513] transition-colors"
             >
-              Partner With Femazon
+              Gifts
             </Link>
-            <Link 
-              href="/seller/register"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block py-2.5 font-semibold text-[#4A1513] hover:underline transition-colors"
-            >
-              Become a Seller →
-            </Link>
+
+            {/* 7. Explore More (Collapsible Accordion) */}
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={() => setIsMobileExploreOpen(!isMobileExploreOpen)}
+                className="w-full flex items-center justify-between py-2.5 hover:text-[#4A1513] transition-colors cursor-pointer text-left font-medium"
+              >
+                <span>Explore More</span>
+                <ChevronDown size={15} className={`transition-transform duration-200 ${isMobileExploreOpen ? 'rotate-180 text-[#4A1513]' : 'text-stone-400'}`} />
+              </button>
+
+              {isMobileExploreOpen && (
+                <div className="pl-3 py-1 space-y-1 border-l-2 border-[#4A1513]/20 ml-2 my-1">
+                  <Link 
+                    href="/gift-cards"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-2 py-2 text-[12.5px] text-stone-600 hover:text-[#4A1513] transition-colors"
+                  >
+                    <Gift size={13} className="text-[#4A1513]" />
+                    <span>Gift Cards</span>
+                  </Link>
+
+                  <Link 
+                    href="/brands"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-2 py-2 text-[12.5px] text-stone-600 hover:text-[#4A1513] transition-colors"
+                  >
+                    <Crown size={13} className="text-[#4A1513]" />
+                    <span>Shop by Brands</span>
+                  </Link>
+
+                  <Link 
+                    href="/collections"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-2 py-2 text-[12.5px] text-stone-600 hover:text-[#4A1513] transition-colors"
+                  >
+                    <ShoppingBag size={13} className="text-[#4A1513]" />
+                    <span>Featured Collections</span>
+                  </Link>
+
+                  <Link 
+                    href="/offers"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-2 py-2 text-[12.5px] text-stone-600 hover:text-[#4A1513] transition-colors"
+                  >
+                    <Tag size={13} className="text-[#4A1513]" />
+                    <span>Special Offers</span>
+                  </Link>
+
+                  <Link 
+                    href="/gifts?curated=true"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-2 py-2 text-[12.5px] text-stone-600 hover:text-[#4A1513] transition-colors"
+                  >
+                    <Heart size={13} className="text-[#4A1513]" />
+                    <span>Curated Gift Collections</span>
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            <div className="pt-2 border-t border-stone-100">
+              <Link 
+                href="/seller/register"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block py-2.5 font-semibold text-[#4A1513] hover:underline transition-colors"
+              >
+                Become a Seller →
+              </Link>
+            </div>
             <button 
               type="button"
               onClick={() => {

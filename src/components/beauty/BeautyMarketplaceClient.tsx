@@ -29,7 +29,7 @@ export function BeautyMarketplaceClient({
   beautyProducts,
   directoryError,
   productError,
-  initialView = "professionals",
+  initialView = "products",
   initialSubcategory,
 }: BeautyMarketplaceClientProps) {
   const { isInWishlist, toggleWishlist, addToCart } = useFemazonStore();
