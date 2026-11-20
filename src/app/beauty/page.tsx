@@ -141,7 +141,7 @@ export default async function BeautyPage({
     }
   }
 
-  const initialView = resolved.view === 'professionals' ? 'professionals' : 'products';
+  const initialView = resolved.view === 'products' ? 'products' : 'professionals';
 
   return (
     <BeautyMarketplaceClient
