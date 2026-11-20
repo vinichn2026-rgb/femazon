@@ -1076,16 +1076,20 @@ export function SiteLayout({
   return (
     <div className="min-h-screen bg-background text-text-main font-sans overflow-x-hidden">
       
-      {/* 1. Top Announcement Banner matching user's edited design */}
-      <div className="w-full text-white py-2 px-4 text-center relative z-40 transition-colors shadow-xs" style={{ backgroundColor: "#4A1513" }}>
-        <p className="text-[12px] sm:text-[13px] font-normal text-white tracking-wide">
-          Enjoy free shipping on orders above Rs. 3000!
-        </p>
+      {/* 1. Top Announcement Banner matching reference */}
+      <div className="w-full text-white py-1.5 px-4 text-center relative z-40 transition-colors shadow-2xs bg-black">
+        <div className="mx-auto flex max-w-[1440px] items-center justify-center gap-2.5 sm:gap-6 text-[10.5px] sm:text-[11.5px] font-medium tracking-wider uppercase text-stone-200">
+          <span>Free Shipping Above ₹3000</span>
+          <span className="text-stone-600">|</span>
+          <span>Easy 7-Day Returns</span>
+          <span className="text-stone-600 hidden xs:inline">|</span>
+          <span className="hidden xs:inline">100% Authentic Luxury</span>
+        </div>
       </div>
 
-      {/* 2. Main Navigation Header matching Yuukke single-row sleek design */}
+      {/* 2. Main Navigation Header matching reference sleek design */}
       <header className="sticky top-0 z-50 w-full bg-white transition-all shadow-xs border-b border-gray-100">
-        <div className="mx-auto flex h-[74px] sm:h-[80px] max-w-[1440px] items-center justify-between px-4 sm:px-6 lg:px-8 relative gap-4">
+        <div className="mx-auto flex h-[58px] sm:h-[64px] max-w-[1440px] items-center justify-between px-4 sm:px-6 lg:px-8 relative gap-3 sm:gap-4">
           
           {/* Left: Mobile Menu Trigger + Brand Logo */}
           <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
@@ -1329,7 +1333,34 @@ export function SiteLayout({
               )}
             </div>
 
-            {/* 3. Account / Profile with Fixed Position Frame */}
+            {/* 3. Wishlist (Heart) - placed before Profile & Cart matching Manova reference */}
+            <Link 
+              href="/wishlist" 
+              className="w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-full hover:bg-stone-50 flex items-center justify-center text-stone-700 hover:text-black transition-colors group cursor-pointer relative shrink-0"
+              title="Wishlist"
+            >
+              <Heart size={18} strokeWidth={1.8} className="group-hover:scale-105 transition-transform" />
+              {wishlistCount > 0 && (
+                <span className="absolute top-0.5 right-0.5 flex h-3.5 min-w-3.5 px-1 items-center justify-center rounded-full bg-[#4A1513] text-[9px] font-bold text-white shadow-xs">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
+
+            {/* 4. Globe / Language (EN) Icon - hidden on mobile to prevent overcrowding */}
+            <div 
+              className="hidden sm:flex relative p-1 text-stone-700 hover:text-black transition-colors cursor-pointer items-center justify-center group shrink-0"
+              title="Language: English (EN)"
+            >
+              <div className="relative">
+                <Globe size={18} strokeWidth={1.8} className="text-stone-700 group-hover:text-black" />
+                <span className="absolute -bottom-1 -right-1 text-[8px] font-bold text-stone-600 bg-stone-100 border border-stone-300 rounded px-0.5 leading-none">
+                  EN
+                </span>
+              </div>
+            </div>
+
+            {/* 5. Account / Profile with Fixed Position Frame */}
             <div className="relative flex items-center shrink-0" ref={profileDropdownRef}>
               <button
                 type="button"
@@ -1624,33 +1655,6 @@ export function SiteLayout({
               )}
             </div>
 
-            {/* 4. Globe / Language (EN) Icon - hidden on mobile to prevent overcrowding */}
-            <div 
-              className="hidden sm:flex relative p-1 text-stone-700 hover:text-black transition-colors cursor-pointer items-center justify-center group shrink-0"
-              title="Language: English (EN)"
-            >
-              <div className="relative">
-                <Globe size={18} strokeWidth={1.8} className="text-stone-700 group-hover:text-black" />
-                <span className="absolute -bottom-1 -right-1 text-[8px] font-bold text-stone-600 bg-stone-100 border border-stone-300 rounded px-0.5 leading-none">
-                  EN
-                </span>
-              </div>
-            </div>
-
-            {/* 5. Wishlist (Heart) with Fixed Frame */}
-            <Link 
-              href="/wishlist" 
-              className="w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-full hover:bg-stone-50 flex items-center justify-center text-stone-700 hover:text-black transition-colors group cursor-pointer relative shrink-0"
-              title="Wishlist"
-            >
-              <Heart size={18} strokeWidth={1.8} className="group-hover:scale-105 transition-transform" />
-              {wishlistCount > 0 && (
-                <span className="absolute top-0.5 right-0.5 flex h-3.5 min-w-3.5 px-1 items-center justify-center rounded-full bg-[#4A1513] text-[9px] font-bold text-white shadow-xs">
-                  {wishlistCount}
-                </span>
-              )}
-            </Link>
-
             {/* 6. Shopping Cart with Fixed Frame */}
             <button 
               type="button"
@@ -1668,15 +1672,60 @@ export function SiteLayout({
         </div>
       </header>
 
+      {/* 3. Horizontal Category Navigation Strip matching Reference */}
+      <nav className="w-full bg-white border-b border-stone-200/80 overflow-x-auto no-scrollbar relative z-30 shadow-2xs">
+        <div className="mx-auto flex max-w-[1440px] items-center gap-3 sm:gap-5 px-4 sm:px-6 py-2 text-[11.5px] sm:text-xs font-medium text-stone-700 whitespace-nowrap">
+          <Link href="/shop?filter=new" className="flex items-center gap-1 text-[#4A1513] font-bold hover:opacity-85 transition shrink-0">
+            <span>✨ New In</span>
+          </Link>
+          <span className="text-stone-300 shrink-0">|</span>
+          <Link href="/womens-wear" className="hover:text-[#4A1513] transition shrink-0">
+            Women
+          </Link>
+          <span className="text-stone-300 shrink-0">|</span>
+          <Link href="/shop?category=Kurta+Sets" className="hover:text-[#4A1513] transition shrink-0">
+            Kurta Sets
+          </Link>
+          <span className="text-stone-300 shrink-0">|</span>
+          <Link href="/womens-wear?category=Lehengas" className="hover:text-[#4A1513] transition shrink-0">
+            Lehengas
+          </Link>
+          <span className="text-stone-300 shrink-0">|</span>
+          <Link href="/womens-wear?category=Sarees" className="hover:text-[#4A1513] transition shrink-0">
+            Sarees
+          </Link>
+          <span className="text-stone-300 shrink-0">|</span>
+          <Link href="/shop?category=Wedding" className="hover:text-[#4A1513] transition shrink-0">
+            Wedding
+          </Link>
+          <span className="text-stone-300 shrink-0">|</span>
+          <Link href="/shop?readyToShip=true" className="hover:text-[#4A1513] transition shrink-0">
+            Ready To Ship
+          </Link>
+          <span className="text-stone-300 shrink-0">|</span>
+          <Link href="/beauty" className="hover:text-[#4A1513] transition shrink-0">
+            Beauty
+          </Link>
+          <span className="text-stone-300 shrink-0">|</span>
+          <Link href="/shop?category=Jewelry" className="hover:text-[#4A1513] transition shrink-0">
+            Jewellery
+          </Link>
+          <span className="text-stone-300 shrink-0">|</span>
+          <Link href="/shop?onSale=true" className="text-[#4A1513] font-bold hover:opacity-85 transition shrink-0">
+            ⭐ On Sale
+          </Link>
+        </div>
+      </nav>
+
       {/* Mobile Sliding Drawer & Backdrop (below header so header actions stay fixed & visible) */}
       <div 
-        className={`fixed inset-0 top-[74px] sm:top-[80px] z-40 bg-[#4A1513]/40 backdrop-blur-xs transition-opacity duration-300 lg:hidden ${
+        className={`fixed inset-0 top-[58px] sm:top-[64px] z-40 bg-[#4A1513]/40 backdrop-blur-xs transition-opacity duration-300 lg:hidden ${
           isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={() => setIsMobileMenuOpen(false)}
       />
       <div 
-        className={`fixed top-[74px] sm:top-[80px] bottom-0 left-0 z-40 w-full max-w-[320px] bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden flex flex-col ${
+        className={`fixed top-[58px] sm:top-[64px] bottom-0 left-0 z-40 w-full max-w-[320px] bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden flex flex-col ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >

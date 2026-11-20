@@ -237,17 +237,24 @@ export function HeroCarousel() {
                 {currentSlide.tagline}
               </p>
 
-              {/* Aza Benchmark Call-To-Action Button */}
-              <div>
+              {/* Action Buttons matching Reference */}
+              <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
                 <Link
                   href={currentSlide.link}
-                  className="group/btn inline-flex items-center gap-2 bg-white hover:bg-[#4A1513] text-stone-950 hover:text-white px-5 sm:px-7 py-2 sm:py-2.5 rounded-full font-sans text-[10.5px] sm:text-[11.5px] font-bold uppercase tracking-[0.2em] shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 cursor-pointer border border-white hover:border-[#4A1513]"
+                  className="group/btn inline-flex items-center gap-2 bg-white hover:bg-[#4A1513] text-stone-950 hover:text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-sans text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.18em] shadow-lg hover:shadow-xl transition-all duration-300 active:scale-95 cursor-pointer border border-white hover:border-[#4A1513]"
                 >
                   <span>{currentSlide.ctaText}</span>
                   <ArrowRight
                     size={13}
                     className="transition-transform duration-300 group-hover/btn:translate-x-1"
                   />
+                </Link>
+
+                <Link
+                  href="/seller/register"
+                  className="inline-flex items-center gap-1.5 bg-black/45 hover:bg-black/70 text-white backdrop-blur-md px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full font-sans text-[10px] sm:text-[11px] font-medium uppercase tracking-[0.15em] border border-white/40 hover:border-white transition-all duration-300 active:scale-95 cursor-pointer"
+                >
+                  <span>Sell on Femazon</span>
                 </Link>
               </div>
 
