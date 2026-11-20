@@ -27,8 +27,7 @@ import {
   Package,
   ShieldCheck,
   User,
-  Settings,
-  Loader2
+  Settings
 } from 'lucide-react';
 import NotificationDropdown from './NotificationDropdown';
 import { SearchBar } from './SearchBar';
@@ -922,23 +921,8 @@ export function SiteLayout({
   // Search State & Refs
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProductsOpen, setIsProductsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [isImageSearchModalOpen, setIsImageSearchModalOpen] = useState(false);
-  const [searchSuggestions, setSearchSuggestions] = useState<{
-    products: Array<{
-      id: number;
-      name: string;
-      slug: string;
-      price: number;
-      discountPrice?: number | null;
-      image: string;
-      brandName: string;
-    }>;
-    topSearches: Array<{ label: string; query: string }>;
-  } | null>(null);
-  const [isSearchLoading, setIsSearchLoading] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Profile Dropdown Controlled State
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -959,50 +943,6 @@ export function SiteLayout({
   const isLoggedIn = Boolean(user || authSession);
   const role = user?.role || authSession?.role;
   const userFirstName = user?.firstName || (user?.name ? user.name.split(' ')[0] : 'Member');
-
-  // Focus search input when expanded
-  useEffect(() => {
-    if (isSearchOpen) {
-      const timer = setTimeout(() => {
-        searchInputRef.current?.focus();
-      }, 60);
-      return () => clearTimeout(timer);
-    }
-  }, [isSearchOpen]);
-
-  // Live search suggestions query
-  useEffect(() => {
-    if (!isSearchOpen) return;
-
-    if (!searchQuery.trim()) {
-      if (!searchSuggestions) {
-        fetch("/api/search")
-          .then((res) => (res.ok ? res.json() : null))
-          .then((data) => {
-            if (data) setSearchSuggestions(data);
-          })
-          .catch(() => {});
-      }
-      return;
-    }
-
-    const timer = setTimeout(async () => {
-      setIsSearchLoading(true);
-      try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery.trim())}`);
-        if (res.ok) {
-          const json = await res.json();
-          setSearchSuggestions(json);
-        }
-      } catch (err) {
-        console.warn("Search error:", err);
-      } finally {
-        setIsSearchLoading(false);
-      }
-    }, 200);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery, isSearchOpen, searchSuggestions]);
 
   // Handle Click Outside Profile Dropdown & Search Bar
   useEffect(() => {
@@ -1040,15 +980,6 @@ export function SiteLayout({
 
   const toggleAccordion = (name: string) => {
     setActiveAccordion(prev => prev === name ? null : name);
-  };
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setIsSearchOpen(false);
-      setSearchQuery("");
-    }
   };
 
   // Check if current route is dedicated portal or auth page
@@ -1162,55 +1093,20 @@ export function SiteLayout({
               <span className="text-sm leading-none">→</span>
             </Link>
 
-            {/* 2. Inline Expandable Search Bar */}
+            {/* 2. Inline Expandable Search Bar using existing HeaderSearchBar */}
             <div 
               ref={searchContainerRef}
               className={`relative flex items-center transition-all duration-300 ease-in-out ${
                 isSearchOpen 
-                  ? "w-[170px] xs:w-[210px] sm:w-[280px] md:w-[380px] lg:w-[460px] xl:w-[520px]" 
+                  ? "w-[170px] xs:w-[210px] sm:w-[300px] md:w-[400px] lg:w-[460px] xl:w-[520px]" 
                   : "w-8 sm:w-8.5 shrink-0"
               }`}
             >
               {isSearchOpen ? (
-                <form 
-                  onSubmit={handleSearchSubmit}
-                  className="w-full h-[38px] sm:h-[40px] flex items-center bg-[#FAF7F5] border border-[#4A1513]/40 focus-within:border-[#4A1513] focus-within:ring-2 focus-within:ring-[#4A1513]/15 rounded-full px-2.5 sm:px-3.5 transition-all duration-200 shadow-2xs"
-                >
-                  <Search size={15} strokeWidth={2} className="text-[#4A1513] shrink-0 mr-1 sm:mr-2" />
-                  <input 
-                    ref={searchInputRef}
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search products, brands, categories..."
-                    className="w-full bg-transparent border-none focus:outline-none text-[12px] sm:text-[13px] text-stone-800 placeholder:text-stone-400 font-normal min-w-0"
-                  />
-                  {searchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSearchQuery("");
-                        searchInputRef.current?.focus();
-                      }}
-                      className="text-stone-400 hover:text-stone-700 p-0.5 rounded-full hover:bg-stone-200/50 transition-colors shrink-0 cursor-pointer mr-1"
-                      aria-label="Clear search input"
-                    >
-                      <X size={13} strokeWidth={2} />
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsSearchOpen(false);
-                      setSearchQuery("");
-                    }}
-                    className="w-6 h-6 rounded-full hover:bg-stone-200/60 text-stone-500 hover:text-[#4A1513] flex items-center justify-center transition-colors shrink-0 cursor-pointer"
-                    title="Close search"
-                    aria-label="Close search"
-                  >
-                    <X size={15} strokeWidth={2} />
-                  </button>
-                </form>
+                <HeaderSearchBar 
+                  onClose={() => setIsSearchOpen(false)}
+                  autoFocus
+                />
               ) : (
                 <button
                   type="button"
@@ -1221,115 +1117,6 @@ export function SiteLayout({
                 >
                   <Search size={15} strokeWidth={2} />
                 </button>
-              )}
-
-              {/* Live Search Quick Results Dropdown anchored below the input */}
-              {isSearchOpen && (
-                <div className="absolute right-0 top-full mt-2 w-[280px] xs:w-[320px] sm:w-[380px] md:w-[440px] bg-white rounded-2xl shadow-xl border border-stone-200 z-50 p-4 animate-in fade-in slide-in-from-top-1 duration-150 text-stone-900 max-h-[70vh] overflow-y-auto">
-                  {!searchQuery.trim() ? (
-                    <div>
-                      <p className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-2.5">
-                        Trending Searches
-                      </p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {(searchSuggestions?.topSearches || [
-                          { label: 'Corset Lehengas', query: 'Corset Lehengas' },
-                          { label: 'Anarkali Sets', query: 'Anarkali' },
-                          { label: 'Pre Draped Saree', query: 'Pre Draped Saree' },
-                          { label: 'Indo Western', query: 'Indo-Western' },
-                          { label: 'Banarasi Silk', query: 'Banarasi' },
-                        ]).map((chip, idx) => (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => {
-                              router.push(`/search?q=${encodeURIComponent(chip.query)}`);
-                              setIsSearchOpen(false);
-                              setSearchQuery("");
-                            }}
-                            className="text-[11.5px] px-2.5 py-1 rounded-full bg-stone-50 border border-stone-200 hover:border-[#4A1513] hover:text-[#4A1513] text-stone-700 transition cursor-pointer"
-                          >
-                            {chip.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      {isSearchLoading ? (
-                        <div className="py-6 flex items-center justify-center text-xs text-stone-400 gap-2">
-                          <Loader2 size={16} className="animate-spin text-[#4A1513]" />
-                          <span>Searching catalog...</span>
-                        </div>
-                      ) : searchSuggestions?.products && searchSuggestions.products.length > 0 ? (
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between pb-1 border-b border-stone-100">
-                            <p className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">
-                              Products ({searchSuggestions.products.length})
-                            </p>
-                            <button
-                              type="button"
-                              onClick={handleSearchSubmit}
-                              className="text-[11px] text-[#4A1513] font-semibold hover:underline cursor-pointer"
-                            >
-                              View all →
-                            </button>
-                          </div>
-                          <div className="divide-y divide-stone-50 max-h-[300px] overflow-y-auto pr-1">
-                            {searchSuggestions.products.slice(0, 5).map((item) => (
-                              <button
-                                key={item.id}
-                                type="button"
-                                onClick={() => {
-                                  setIsSearchOpen(false);
-                                  setSearchQuery("");
-                                  router.push(`/shop/${item.slug || item.id}`);
-                                }}
-                                className="w-full flex items-center gap-3 py-2 px-1 rounded-lg hover:bg-stone-50 transition text-left cursor-pointer group"
-                              >
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img 
-                                  src={item.image} 
-                                  alt={item.name} 
-                                  className="w-10 h-12 object-cover rounded-md bg-stone-100 shrink-0" 
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-[10px] font-semibold uppercase text-stone-400 truncate">
-                                    {item.brandName || 'Femazon Couture'}
-                                  </p>
-                                  <p className="text-xs font-medium text-stone-800 truncate group-hover:text-[#4A1513] transition-colors">
-                                    {item.name}
-                                  </p>
-                                  <p className="text-xs font-bold text-[#4A1513] mt-0.5">
-                                    ₹{(item.discountPrice || item.price).toLocaleString('en-IN')}
-                                  </p>
-                                </div>
-                              </button>
-                            ))}
-                          </div>
-                          <button
-                            type="button"
-                            onClick={handleSearchSubmit}
-                            className="w-full mt-2 py-2 text-center rounded-xl bg-stone-50 hover:bg-[#4A1513] text-stone-700 hover:text-white text-xs font-medium transition cursor-pointer"
-                          >
-                            See all results for &ldquo;{searchQuery}&rdquo; →
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="py-6 text-center text-xs text-stone-500">
-                          <p>No products found for &ldquo;{searchQuery}&rdquo;</p>
-                          <button
-                            type="button"
-                            onClick={handleSearchSubmit}
-                            className="mt-2 text-[#4A1513] font-semibold underline cursor-pointer"
-                          >
-                            Search anyway
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
               )}
             </div>
 

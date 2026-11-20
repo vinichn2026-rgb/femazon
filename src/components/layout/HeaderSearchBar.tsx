@@ -39,7 +39,17 @@ interface SearchData {
 let sharedSearchCache: SearchData | null = null;
 let sharedSearchPromise: Promise<SearchData | null> | null = null;
 
-export function HeaderSearchBar({ className = "" }: { className?: string }) {
+export interface HeaderSearchBarProps {
+  className?: string;
+  onClose?: () => void;
+  autoFocus?: boolean;
+}
+
+export function HeaderSearchBar({ 
+  className = "",
+  onClose,
+  autoFocus = false,
+}: HeaderSearchBarProps) {
   const router = useRouter();
   const { isInWishlist, toggleWishlist } = useFemazonStore();
 
@@ -49,6 +59,17 @@ export function HeaderSearchBar({ className = "" }: { className?: string }) {
   const [data, setData] = useState<SearchData | null>(sharedSearchCache);
   const [isLoading, setIsLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Auto focus input when requested
+  useEffect(() => {
+    if (autoFocus) {
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 60);
+      return () => clearTimeout(timer);
+    }
+  }, [autoFocus]);
 
   // Lazy-load initial top searches ONLY when user actually opens the search bar
   useEffect(() => {
@@ -106,33 +127,34 @@ export function HeaderSearchBar({ className = "" }: { className?: string }) {
     return () => clearTimeout(timer);
   }, [query, isOpen]);
 
-  // Handle outside clicks to close the dropdown
+  // Handle outside clicks to close the dropdown / search bar
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        onClose?.();
       }
     }
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         setIsOpen(false);
+        onClose?.();
       }
     }
 
-    if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("keydown", handleKeyDown);
-    }
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen]);
+  }, [onClose]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsOpen(false);
+    onClose?.();
     if (query.trim()) {
       router.push(`/search?q=${encodeURIComponent(query.trim())}`);
     } else {
@@ -143,11 +165,13 @@ export function HeaderSearchBar({ className = "" }: { className?: string }) {
   const handleChipClick = (chipQuery: string) => {
     setQuery(chipQuery);
     setIsOpen(false);
+    onClose?.();
     router.push(`/search?q=${encodeURIComponent(chipQuery)}`);
   };
 
   const handleProductClick = (slugOrId: string | number) => {
     setIsOpen(false);
+    onClose?.();
     router.push(`/shop/${slugOrId}`);
   };
 
@@ -166,22 +190,23 @@ export function HeaderSearchBar({ className = "" }: { className?: string }) {
         {/* Search Input Bar */}
         <form 
           onSubmit={handleSubmit}
-          className={`group relative w-full h-[42px] flex items-center px-3.5 sm:px-4 rounded-full transition-all duration-200 bg-white shadow-sm border ${
+          className={`group relative w-full h-[38px] sm:h-[40px] flex items-center px-3 sm:px-3.5 rounded-full transition-all duration-200 bg-white shadow-2xs border ${
             isOpen 
-              ? "border-amber-300 ring-2 ring-amber-300/30" 
-              : "border-transparent hover:border-amber-200/50"
+              ? "border-[#4A1513] ring-2 ring-[#4A1513]/15" 
+              : "border-[#4A1513]/30 hover:border-[#4A1513]/60 focus-within:border-[#4A1513] focus-within:ring-2 focus-within:ring-[#4A1513]/15"
           }`}
         >
           {/* Magnifying Glass Icon */}
           <Search 
-            size={18} 
+            size={16} 
             className={`shrink-0 transition-colors ${
-              isOpen ? "text-[#4A1513]" : "text-[#4A1513]/60 group-hover:text-[#4A1513]"
+              isOpen ? "text-[#4A1513]" : "text-[#4A1513]/70 group-hover:text-[#4A1513]"
             }`} 
           />
 
           {/* Search Input Field */}
           <input 
+            ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => {
@@ -189,28 +214,31 @@ export function HeaderSearchBar({ className = "" }: { className?: string }) {
               if (!isOpen) setIsOpen(true);
             }}
             onFocus={() => setIsOpen(true)}
-            placeholder="Search for products, brands and more"
-            className="w-full bg-transparent border-none focus:outline-none text-[13.5px] text-[#2B1311] px-3 placeholder:text-stone-400 font-normal"
+            placeholder="Search products, brands, categories..."
+            className="w-full bg-transparent border-none focus:outline-none text-[12.5px] sm:text-[13px] text-[#2B1311] px-2 sm:px-2.5 placeholder:text-stone-400 font-normal min-w-0"
           />
 
-          {/* Right Action Icons: Loading / Clear + Divider + Image Search */}
-          <div className="flex items-center gap-2.5 shrink-0 ml-auto">
+          {/* Right Action Icons: Loading / Clear + Divider + Image Search + Close Button */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto">
             {isLoading && (
-              <Loader2 size={15} className="animate-spin text-[#4A1513]/70" />
+              <Loader2 size={14} className="animate-spin text-[#4A1513]/70 shrink-0" />
             )}
 
             {query && (
               <button
                 type="button"
-                onClick={() => setQuery("")}
-                className="text-stone-400 hover:text-stone-700 p-0.5 rounded-full hover:bg-stone-100 transition cursor-pointer"
+                onClick={() => {
+                  setQuery("");
+                  inputRef.current?.focus();
+                }}
+                className="text-stone-400 hover:text-stone-700 p-0.5 rounded-full hover:bg-stone-100 transition cursor-pointer shrink-0"
                 aria-label="Clear query"
               >
-                <X size={15} />
+                <X size={14} />
               </button>
             )}
 
-            <div className="h-4 w-[1px] bg-stone-300/80" />
+            <div className="hidden xs:block h-3.5 w-[1px] bg-stone-300/80 shrink-0" />
 
             {/* Image Search Button */}
             <button 
@@ -219,17 +247,34 @@ export function HeaderSearchBar({ className = "" }: { className?: string }) {
                 setIsOpen(false);
                 setIsImageSearchOpen(true);
               }}
-              className="flex items-center gap-1.5 text-stone-600 hover:text-[#4A1513] hover:bg-[#4A1513]/10 px-2.5 py-1 rounded-sm transition-colors text-[12px] font-medium whitespace-nowrap cursor-pointer"
+              className="hidden xs:flex items-center gap-1 text-stone-600 hover:text-[#4A1513] hover:bg-[#4A1513]/10 px-2 py-1 rounded-sm transition-colors text-[11px] sm:text-[11.5px] font-medium whitespace-nowrap cursor-pointer shrink-0"
+              title="Search with image"
             >
-              <Camera size={16} className="text-[#4A1513]" />
+              <Camera size={14} className="text-[#4A1513]" />
               <span className="hidden sm:inline">Image Search</span>
             </button>
+
+            {/* Close (X) button to collapse the search bar */}
+            {onClose && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  onClose();
+                }}
+                className="w-6 h-6 rounded-full hover:bg-stone-100 text-stone-400 hover:text-[#4A1513] flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+                title="Close search"
+                aria-label="Close search"
+              >
+                <X size={15} strokeWidth={2} />
+              </button>
+            )}
           </div>
         </form>
 
         {/* Dropdown Popover Card (Identical to Aza Fashions Reference) */}
         {isOpen && (
-          <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-screen max-w-[920px] bg-white rounded-2xl shadow-2xl border border-stone-200/90 z-50 p-6 md:p-8 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="fixed left-3 right-3 top-[58px] sm:top-full sm:absolute sm:right-0 sm:left-auto sm:w-[680px] md:w-[780px] lg:w-[880px] max-w-[920px] bg-white rounded-2xl shadow-2xl border border-stone-200/90 z-50 p-5 md:p-7 animate-in fade-in slide-in-from-top-2 duration-200 max-h-[75vh] sm:max-h-[80vh] overflow-y-auto">
             <div className="flex flex-col md:flex-row gap-6 lg:gap-8">
               
               {/* LEFT COLUMN: Top Searches */}
