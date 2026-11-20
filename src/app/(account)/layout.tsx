@@ -22,7 +22,7 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
         
         {/* Sidebar Navigation */}
         <aside className="w-full md:w-64 shrink-0">
-          <div className="bg-white rounded-3xl p-6 border border-zinc-100 shadow-sm sticky top-24">
+          <div className="bg-white rounded-3xl p-6 border border-zinc-100 shadow-sm md:sticky md:top-24">
             <h2 className="font-serif text-2xl text-text-main mb-6">My Account</h2>
             
             <nav className="space-y-1">

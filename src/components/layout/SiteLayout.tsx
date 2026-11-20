@@ -1023,13 +1023,17 @@ export function SiteLayout({
         <div className="mx-auto flex h-[74px] sm:h-[80px] max-w-[1440px] items-center justify-between px-4 sm:px-6 lg:px-8 relative gap-4">
           
           {/* Left: Mobile Menu Trigger + Brand Logo */}
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
             <button 
-              onClick={() => setIsMobileMenuOpen(true)}
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="flex lg:hidden text-stone-800 hover:text-[#4A1513] transition p-1 cursor-pointer"
-              aria-label="Open Navigation Menu"
+              aria-label={isMobileMenuOpen ? "Close Navigation Menu" : "Open Navigation Menu"}
             >
-              <Menu size={24} strokeWidth={1.8} />
+              {isMobileMenuOpen ? (
+                <X size={24} strokeWidth={1.8} />
+              ) : (
+                <Menu size={24} strokeWidth={1.8} />
+              )}
             </button>
             <BrandLogo />
           </div>
@@ -1074,19 +1078,19 @@ export function SiteLayout({
           </nav>
 
           {/* Right: Actions matching screenshot exactly (compact refined size) */}
-          <div className="flex shrink-0 items-center justify-end gap-2.5 sm:gap-3.5">
+          <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-3.5">
             
-            {/* 1. Become a Seller Pill Button */}
+            {/* 1. Become a Seller Pill Button - visible on tablet & desktop, hidden on mobile where it lives inside the menu drawer */}
             <Link 
               href="/seller/register"
-              className="inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[#4A1513] hover:bg-[#350B0A] text-white text-[12px] sm:text-[12.5px] font-medium transition-all shadow-xs active:scale-95 whitespace-nowrap"
+              className="hidden md:inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[#4A1513] hover:bg-[#350B0A] text-white text-[12px] sm:text-[12.5px] font-medium transition-all shadow-xs active:scale-95 whitespace-nowrap"
             >
               <span>Become a Seller</span>
               <span className="text-sm leading-none">→</span>
             </Link>
 
             {/* 2. Search Icon in Circular Border Button */}
-            <div className="relative">
+            <div className="relative shrink-0">
               <button
                 type="button"
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
@@ -1105,8 +1109,8 @@ export function SiteLayout({
               )}
             </div>
 
-            {/* 3. Account / Profile with Red Dot Badge */}
-            <div className="relative flex items-center" ref={profileDropdownRef}>
+            {/* 3. Account / Profile with Fixed Position Frame */}
+            <div className="relative flex items-center shrink-0" ref={profileDropdownRef}>
               <button
                 type="button"
                 onClick={() => {
@@ -1116,16 +1120,16 @@ export function SiteLayout({
                     openAuthModal('otp');
                   }
                 }}
-                className="relative p-1 text-stone-700 hover:text-black transition-colors focus:outline-none cursor-pointer group"
+                className="w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-full hover:bg-stone-50 flex items-center justify-center text-stone-700 hover:text-black transition-colors focus:outline-none cursor-pointer group shrink-0"
                 aria-label="Account Menu"
                 title={isLoggedIn ? `Account (${userFirstName})` : "Account Login"}
               >
                 {isLoggedIn ? (
-                  <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#FAF7F5] border border-stone-300 group-hover:border-[#4A1513] text-[#4A1513] flex items-center justify-center font-serif font-bold text-[11px] transition-colors shadow-2xs">
+                  <div className="w-7 h-7 sm:w-7.5 sm:h-7.5 rounded-full bg-[#FAF7F5] border border-stone-300 group-hover:border-[#4A1513] text-[#4A1513] flex items-center justify-center font-serif font-bold text-[11px] sm:text-[12px] transition-colors shadow-2xs">
                     {userFirstName.charAt(0).toUpperCase()}
                   </div>
                 ) : (
-                  <div className="relative">
+                  <div className="relative flex items-center justify-center">
                     <User size={19} strokeWidth={1.8} className="group-hover:scale-105 transition-transform" />
                     <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-[#4A1513] ring-1.5 ring-white" />
                   </div>
@@ -1400,9 +1404,9 @@ export function SiteLayout({
               )}
             </div>
 
-            {/* 4. Globe / Language (EN) Icon */}
+            {/* 4. Globe / Language (EN) Icon - hidden on mobile to prevent overcrowding */}
             <div 
-              className="relative p-1 text-stone-700 hover:text-black transition-colors cursor-pointer flex items-center justify-center group"
+              className="hidden sm:flex relative p-1 text-stone-700 hover:text-black transition-colors cursor-pointer items-center justify-center group shrink-0"
               title="Language: English (EN)"
             >
               <div className="relative">
@@ -1413,29 +1417,29 @@ export function SiteLayout({
               </div>
             </div>
 
-            {/* 5. Wishlist (Heart) */}
+            {/* 5. Wishlist (Heart) with Fixed Frame */}
             <Link 
               href="/wishlist" 
-              className="relative p-1 text-stone-700 hover:text-black transition-colors group cursor-pointer"
+              className="w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-full hover:bg-stone-50 flex items-center justify-center text-stone-700 hover:text-black transition-colors group cursor-pointer relative shrink-0"
               title="Wishlist"
             >
               <Heart size={18} strokeWidth={1.8} className="group-hover:scale-105 transition-transform" />
               {wishlistCount > 0 && (
-                <span className="absolute -right-1.5 -top-1 flex h-3.5 min-w-3.5 px-1 items-center justify-center rounded-full bg-[#4A1513] text-[9px] font-bold text-white shadow-xs">
+                <span className="absolute top-0.5 right-0.5 flex h-3.5 min-w-3.5 px-1 items-center justify-center rounded-full bg-[#4A1513] text-[9px] font-bold text-white shadow-xs">
                   {wishlistCount}
                 </span>
               )}
             </Link>
 
-            {/* 6. Shopping Cart (Cart Icon with Maroon Badge '4' or dynamic count) */}
+            {/* 6. Shopping Cart with Fixed Frame */}
             <button 
               type="button"
               onClick={() => openCart ? openCart() : router.push('/cart')}
-              className="relative p-1 text-stone-700 hover:text-black transition-colors group cursor-pointer"
+              className="w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-full hover:bg-stone-50 flex items-center justify-center text-stone-700 hover:text-black transition-colors group cursor-pointer relative shrink-0"
               title="Shopping Cart"
             >
               <ShoppingCart size={19} strokeWidth={1.8} className="group-hover:scale-105 transition-transform" />
-              <span className="absolute -right-2 -top-1 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-[#4A1513] text-[9.5px] font-bold text-white shadow-xs animate-in zoom-in">
+              <span className="absolute top-0 right-0 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-[#4A1513] text-[9.5px] font-bold text-white shadow-xs animate-in zoom-in">
                 {cartCount > 0 ? cartCount : 4}
               </span>
             </button>
@@ -1444,33 +1448,39 @@ export function SiteLayout({
         </div>
       </header>
 
-      {/* Mobile Sliding Drawer */}
+      {/* Mobile Sliding Drawer & Backdrop (below header so header actions stay fixed & visible) */}
       <div 
-        className={`fixed inset-0 z-50 bg-[#4A1513]/60 backdrop-blur-xs transition-opacity duration-300 md:hidden ${
+        className={`fixed inset-0 top-[74px] sm:top-[80px] z-40 bg-[#4A1513]/40 backdrop-blur-xs transition-opacity duration-300 lg:hidden ${
           isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={() => setIsMobileMenuOpen(false)}
       />
       <div 
-        className={`fixed inset-y-0 right-0 z-50 w-full max-w-[340px] bg-white shadow-2xl transition-transform duration-300 ease-in-out md:hidden flex flex-col ${
-          isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed top-[74px] sm:top-[80px] bottom-0 left-0 z-40 w-full max-w-[320px] bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden flex flex-col ${
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        {/* Mobile Header */}
-        <div className="flex items-center justify-between border-b border-stone-200 px-6 py-4">
-          <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              src="/femazon-logo-cropped.png" 
-              alt="Femazon" 
-              className="h-8 sm:h-9 w-auto object-contain"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = "/femazon-logo.png";
-              }}
-            />
-          </Link>
-          <button onClick={() => setIsMobileMenuOpen(false)} className="text-stone-500 hover:text-stone-900 p-1 cursor-pointer">
-            <X size={22} strokeWidth={1.5} />
+        {/* Mobile Header User Summary Card */}
+        <div className="flex items-center justify-between border-b border-stone-200 px-5 py-3.5 bg-[#FAF7F5]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-[#4A1513] text-white flex items-center justify-center font-serif text-xs font-bold shadow-xs">
+              {isLoggedIn ? userFirstName.charAt(0).toUpperCase() : <User size={15} />}
+            </div>
+            <div>
+              <p className="text-xs font-bold text-stone-800">
+                {isLoggedIn ? `Hi, ${userFirstName}` : 'Welcome to Femazon'}
+              </p>
+              <p className="text-[10px] text-stone-500">
+                {isLoggedIn ? (user?.email || 'Femazon Privé') : 'Luxury Fashion & Couture'}
+              </p>
+            </div>
+          </div>
+          <button 
+            onClick={() => setIsMobileMenuOpen(false)} 
+            className="text-stone-400 hover:text-stone-800 p-1 cursor-pointer"
+            aria-label="Close menu"
+          >
+            <X size={18} strokeWidth={1.8} />
           </button>
         </div>
 
@@ -1481,7 +1491,7 @@ export function SiteLayout({
 
         {/* Mobile Nav Links & Accordion */}
         <div className="flex-1 overflow-y-auto px-5 py-3 divide-y divide-stone-100">
-          {/* Top 10 Navigation Links matching HelloThozhi + Femazon */}
+          {/* Top Navigation Links */}
           <div className="pb-3 space-y-1 text-[13.5px] font-medium text-stone-800">
             <Link 
               href="/discover"
@@ -1497,7 +1507,7 @@ export function SiteLayout({
               onClick={() => setIsMobileMenuOpen(false)}
               className="block py-2.5 hover:text-[#4A1513] transition-colors"
             >
-              3. Shop
+              Shop
             </Link>
 
             <Link 
@@ -1505,28 +1515,28 @@ export function SiteLayout({
               onClick={() => setIsMobileMenuOpen(false)}
               className="block py-2.5 hover:text-[#4A1513] transition-colors"
             >
-              4. Personal Styling
+              Personal Styling
             </Link>
             <Link 
               href="/brands"
               onClick={() => setIsMobileMenuOpen(false)}
               className="block py-2.5 hover:text-[#4A1513] transition-colors"
             >
-              5. Our Brands
+              Our Brands
             </Link>
             <Link 
               href="/partner"
               onClick={() => setIsMobileMenuOpen(false)}
               className="block py-2.5 hover:text-[#4A1513] transition-colors"
             >
-              6. Partner With Femazon
+              Partner With Femazon
             </Link>
             <Link 
               href="/seller/register"
               onClick={() => setIsMobileMenuOpen(false)}
               className="block py-2.5 font-semibold text-[#4A1513] hover:underline transition-colors"
             >
-              7. Become a Seller →
+              Become a Seller →
             </Link>
             <button 
               type="button"
@@ -1538,10 +1548,10 @@ export function SiteLayout({
                   openAuthModal('otp');
                 }
               }}
-              className="w-full text-left py-2.5 hover:text-[#4A1513] transition-colors flex items-center justify-between"
+              className="w-full text-left py-2.5 hover:text-[#4A1513] transition-colors flex items-center justify-between cursor-pointer"
             >
-              <span>My Account {isLoggedIn ? `(${userFirstName})` : ''}</span>
-              <User size={14} className="text-stone-400" />
+              <span>My Profile {isLoggedIn ? `(${userFirstName})` : ''}</span>
+              <User size={16} className="text-[#4A1513]" />
             </button>
             <Link 
               href="/wishlist"
