@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { getApiAuthEmail } from '@/lib/auth';
 import { createPartnerApplication } from '@/lib/partnerApplications';
@@ -62,9 +63,11 @@ export async function POST(request: Request) {
       user = await prisma.user.findUnique({ where: { email: registration.email.toLowerCase() } });
     }
 
-    // If no user account exists at all, create one for the new seller so they have credentials for /vendor/login
+    // If no user account exists at all, create one for the new seller with an unguessable placeholder password.
+    // The vendor will create their own secure password via the password setup link once approved by an admin.
     if (!user) {
-      const defaultPasswordHash = await bcrypt.hash('Femazon@123', 10);
+      const initialPlaceholderPassword = crypto.randomBytes(32).toString('hex');
+      const defaultPasswordHash = await bcrypt.hash(initialPlaceholderPassword, 10);
       user = await prisma.user.create({
         data: {
           email: registration.email.toLowerCase(),

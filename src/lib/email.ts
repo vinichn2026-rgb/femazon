@@ -27,6 +27,7 @@ export interface SendVendorApprovalEmailParams {
   vendorName?: string;
   shopName: string;
   vendorId: number | string;
+  passwordSetupUrl?: string;
   loginUrl?: string;
   dashboardUrl?: string;
   supportEmail?: string;
@@ -351,6 +352,7 @@ export function generateVendorApprovalEmailHtml({
   shopName,
   to,
   vendorId,
+  passwordSetupUrl,
   loginUrl,
   dashboardUrl,
   supportEmail
@@ -439,47 +441,79 @@ export function generateVendorApprovalEmailHtml({
                 </tr>
                 <tr>
                   <td class="detail-label" style="padding-bottom: 8px; font-size: 13px; color: #8C7B76;">
-                    Registered Email:
-                  </td>
-                  <td class="detail-value" style="padding-bottom: 8px; font-size: 14px; font-weight: 600; color: #2B1311;">
-                    ${to}
-                  </td>
-                </tr>
-                <tr>
-                  <td class="detail-label" style="padding-bottom: 8px; font-size: 13px; color: #8C7B76;">
-                    Vendor Registration ID:
+                    Registration ID:
                   </td>
                   <td class="detail-value" style="padding-bottom: 8px; font-size: 14px; font-weight: 600; font-family: monospace; color: #4A1513;">
                     #${vendorId}
                   </td>
                 </tr>
                 <tr>
-                  <td class="detail-label" style="font-size: 13px; color: #8C7B76;">
+                  <td class="detail-label" style="padding-bottom: 8px; font-size: 13px; color: #8C7B76;">
                     Account Status:
                   </td>
-                  <td class="detail-value" style="font-size: 13px; font-weight: 700; color: #047857;">
-                    APPROVED &#10003;
+                  <td class="detail-value" style="padding-bottom: 8px; font-size: 13px; font-weight: 700; color: #047857;">
+                    Approved &#10003;
+                  </td>
+                </tr>
+                <tr>
+                  <td class="detail-label" style="padding-bottom: 8px; font-size: 13px; color: #8C7B76;">
+                    Login ID:
+                  </td>
+                  <td class="detail-value" style="padding-bottom: 8px; font-size: 14px; font-weight: 600; color: #2B1311;">
+                    ${to}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="detail-label" style="font-size: 13px; color: #8C7B76;">
+                    Password:
+                  </td>
+                  <td class="detail-value" style="font-size: 13px; font-weight: 600; color: #B45309;">
+                    Not yet created
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
 
-          <!-- Primary CTA Button -->
+          <!-- Primary CTA Button: Prominent Set Your Password Button -->
           <tr>
             <td align="center" style="padding-bottom: 28px;">
+              ${passwordSetupUrl ? `
               <table role="presentation" cellspacing="0" cellpadding="0">
                 <tr>
                   <td align="center" style="border-radius: 50px; background-color: #4A1513;">
-                    <a href="${loginUrl || 'http://localhost:3000/vendor/login'}" target="_blank" style="display: inline-block; background-color: #4A1513; color: #FFFFFF; font-size: 14px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; text-decoration: none; padding: 16px 38px; border-radius: 50px; border: 1px solid #4A1513; box-shadow: 0 4px 16px rgba(74, 21, 19, 0.25);">
-                      Access Vendor Dashboard &rarr;
+                    <a href="${passwordSetupUrl}" target="_blank" style="display: inline-block; background-color: #4A1513; color: #FFFFFF; font-size: 15px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; text-decoration: none; padding: 18px 42px; border-radius: 50px; border: 1px solid #4A1513; box-shadow: 0 4px 18px rgba(74, 21, 19, 0.3);">
+                      Set Your Password &rarr;
                     </a>
                   </td>
                 </tr>
               </table>
-              <p style="font-size: 12px; color: #8C7B76; margin: 12px 0 0 0;">
-                Direct URL: <a href="${loginUrl || 'http://localhost:3000/vendor/login'}" style="color: #4A1513; text-decoration: underline;">${loginUrl || 'http://localhost:3000/vendor/login'}</a>
+              <p style="font-size: 12px; color: #8C7B76; margin: 12px 0 6px 0;">
+                Direct Setup URL: <a href="${passwordSetupUrl}" style="color: #4A1513; text-decoration: underline; word-break: break-all;">${passwordSetupUrl}</a>
               </p>
+              <p style="font-size: 11px; color: #9A8E8B; margin: 0 0 16px 0;">
+                &#9201; This secure setup link is active for 72 hours.
+              </p>
+              ` : `
+              <table role="presentation" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="center" style="border-radius: 50px; background-color: #4A1513;">
+                    <a href="${loginUrl || 'http://localhost:3000/vendor/login'}" target="_blank" style="display: inline-block; background-color: #4A1513; color: #FFFFFF; font-size: 14px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; text-decoration: none; padding: 16px 38px; border-radius: 50px; border: 1px solid #4A1513; box-shadow: 0 4px 16px rgba(74, 21, 19, 0.25);">
+                      Access Vendor Portal &rarr;
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              `}
+
+              <!-- Vendor Login URL Information Box -->
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #FAF7F5; border: 1px solid #EAE0D8; border-radius: 12px; padding: 12px 18px; margin-top: 12px; text-align: center;">
+                <tr>
+                  <td style="font-size: 13px; color: #6B5E5B;">
+                    <strong>Vendor Login URL:</strong> <a href="${loginUrl || 'http://localhost:3000/vendor/login'}" style="color: #4A1513; font-weight: 600; text-decoration: underline;">${loginUrl || 'http://localhost:3000/vendor/login'}</a>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
 
@@ -491,16 +525,16 @@ export function generateVendorApprovalEmailHtml({
               </h3>
               <ol style="margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.7; color: #6B5E5B;">
                 <li style="margin-bottom: 8px;">
-                  Open the Vendor Portal at <a href="${loginUrl || 'http://localhost:3000/vendor/login'}" style="color: #4A1513; font-weight: 600;">/vendor/login</a>.
+                  Click the <strong style="color: #4A1513;">Set Your Password</strong> button above to create your personal, confidential password.
                 </li>
                 <li style="margin-bottom: 8px;">
-                  Sign in using your registered email address (<strong style="color: #2B1311;">${to}</strong>) and your account password.
+                  After setting your password, open the Vendor Portal at <a href="${loginUrl || 'http://localhost:3000/vendor/login'}" style="color: #4A1513; font-weight: 600;">/vendor/login</a>.
                 </li>
                 <li style="margin-bottom: 8px;">
-                  Navigate to your <strong style="color: #2B1311;">Vendor Dashboard</strong> to add luxury apparel, configure color/size variants, and set pricing.
+                  Sign in using your registered Login ID (<strong style="color: #2B1311;">${to}</strong>) and your new password.
                 </li>
                 <li>
-                  Your products will be featured on Femazon once added, and customer orders will appear live in your dashboard.
+                  You will be directed straight to your <strong style="color: #2B1311;">Vendor Dashboard</strong> to add luxury apparel, manage stock, and track orders.
                 </li>
               </ol>
             </td>

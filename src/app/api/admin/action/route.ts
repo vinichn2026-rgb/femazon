@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/authOptions';
 import { getApiAuthPayload } from '@/lib/auth';
 import { sendVendorApprovalEmail } from '@/lib/email';
+import { generateVendorPasswordSetupToken } from '@/lib/vendorPasswordSetup';
 
 function slugify(text: string): string {
   return text
@@ -88,18 +89,31 @@ export async function POST(request: Request) {
         const recipientEmail = existingProfile.user?.email || existingProfile.email;
         let emailDispatched = false;
         let emailErrorMsg: string | null = null;
+        let passwordSetupUrl: string | undefined;
 
         // 5. Duplicate Prevention & Automatic Email Dispatch
         const shouldSendEmail = Boolean(recipientEmail) && (!existingProfile.approvalEmailSent || payload.retryEmail === true);
 
-        if (shouldSendEmail && recipientEmail) {
+        if (shouldSendEmail && recipientEmail && existingProfile.user) {
           try {
             const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+            
+            // Generate unique, time-limited, single-use password setup token
+            const setupToken = generateVendorPasswordSetupToken({
+              userId: existingProfile.user.id,
+              vendorId: existingProfile.id,
+              email: recipientEmail,
+              currentPasswordHash: existingProfile.user.password,
+              vendorStatus: 'APPROVED',
+            });
+            passwordSetupUrl = `${baseUrl}/vendor/set-password?token=${encodeURIComponent(setupToken)}`;
+
             const emailResult = await sendVendorApprovalEmail({
               to: recipientEmail,
               vendorName: existingProfile.ownerName || existingProfile.user?.name || undefined,
               shopName: existingProfile.businessName || 'Femazon Partner Boutique',
               vendorId: existingProfile.id,
+              passwordSetupUrl,
               loginUrl: `${baseUrl}/vendor/login`,
               dashboardUrl: `${baseUrl}/vendor/dashboard`,
               supportEmail: process.env.SUPPORT_EMAIL || 'support@femazon.com'
@@ -146,7 +160,8 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ 
           success: true,
-          message: 'Vendor approved successfully',
+          message: 'Vendor approved successfully. Approval email and password setup link dispatched.',
+          passwordSetupUrl,
           vendor: {
             id: vp.id,
             businessName: vp.businessName,
@@ -175,16 +190,28 @@ export async function POST(request: Request) {
         }
 
         const recipientEmail = vendor.user?.email || vendor.email;
-        if (!recipientEmail) {
-          return NextResponse.json({ error: 'Vendor has no registered email address' }, { status: 400 });
+        if (!recipientEmail || !vendor.user) {
+          return NextResponse.json({ error: 'Vendor has no registered user/email address' }, { status: 400 });
         }
 
         const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+        
+        // Generate a fresh setup token
+        const setupToken = generateVendorPasswordSetupToken({
+          userId: vendor.user.id,
+          vendorId: vendor.id,
+          email: recipientEmail,
+          currentPasswordHash: vendor.user.password,
+          vendorStatus: vendor.status || 'APPROVED',
+        });
+        const passwordSetupUrl = `${baseUrl}/vendor/set-password?token=${encodeURIComponent(setupToken)}`;
+
         const result = await sendVendorApprovalEmail({
           to: recipientEmail,
           vendorName: vendor.ownerName || vendor.user?.name || undefined,
           shopName: vendor.businessName || 'Femazon Partner Boutique',
           vendorId: vendor.id,
+          passwordSetupUrl,
           loginUrl: `${baseUrl}/vendor/login`,
           dashboardUrl: `${baseUrl}/vendor/dashboard`,
           supportEmail: process.env.SUPPORT_EMAIL || 'support@femazon.com'
@@ -199,7 +226,11 @@ export async function POST(request: Request) {
               approvalEmailError: null
             }
           });
-          return NextResponse.json({ success: true, message: 'Approval email dispatched successfully' });
+          return NextResponse.json({ 
+            success: true, 
+            message: 'Approval email dispatched successfully with password setup link',
+            passwordSetupUrl
+          });
         } else {
           await prisma.vendorProfile.update({
             where: { id: vendor.id },
@@ -207,6 +238,39 @@ export async function POST(request: Request) {
           });
           return NextResponse.json({ success: false, error: result.error || 'Failed to send email' }, { status: 500 });
         }
+      }
+
+      case 'GET_VENDOR_SETUP_LINK': {
+        const vendorId = Number(payload?.vendorId || body?.vendorId);
+        if (!vendorId || isNaN(vendorId)) {
+          return NextResponse.json({ error: 'Valid vendorId is required' }, { status: 400 });
+        }
+
+        const vendor = await prisma.vendorProfile.findUnique({
+          where: { id: vendorId },
+          include: { user: true }
+        });
+
+        if (!vendor || !vendor.user) {
+          return NextResponse.json({ error: 'Vendor profile or user account not found' }, { status: 404 });
+        }
+
+        const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+        const setupToken = generateVendorPasswordSetupToken({
+          userId: vendor.user.id,
+          vendorId: vendor.id,
+          email: vendor.user.email,
+          currentPasswordHash: vendor.user.password,
+          vendorStatus: vendor.status,
+        });
+        const setupUrl = `${baseUrl}/vendor/set-password?token=${encodeURIComponent(setupToken)}`;
+
+        return NextResponse.json({
+          success: true,
+          setupUrl,
+          email: vendor.user.email,
+          status: vendor.status,
+        });
       }
 
       case 'REJECT_VENDOR': {
