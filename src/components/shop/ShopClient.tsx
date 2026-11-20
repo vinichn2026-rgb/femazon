@@ -560,11 +560,10 @@ export function ShopClient({
 
   return (
     <div className="bg-surface min-h-screen text-text-main font-sans pb-24">
-      {/* Luxury Burgundy & Gold Promo Banner */}
-      <LuxuryPromoBanner />
-
       {/* Main Layout Architecture */}
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 pt-5 md:pt-7">
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 pt-2 sm:pt-3">
+        {/* Luxury Burgundy & Gold Promo Banner */}
+        <LuxuryPromoBanner />
         
         {/* Top Control Bar spanning equally above Filter Sidebar & Product section */}
         <ShopControls 

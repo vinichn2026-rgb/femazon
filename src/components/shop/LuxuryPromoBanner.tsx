@@ -6,7 +6,7 @@ import { ArrowRight } from 'lucide-react';
 
 export function LuxuryPromoBanner() {
   return (
-    <div className="w-full bg-[#F5ECE5] rounded-2xl md:rounded-3xl overflow-hidden mb-6 sm:mb-8 border border-stone-200/70 shadow-2xs">
+    <div className="w-full bg-[#F5ECE5] rounded-2xl md:rounded-3xl overflow-hidden mb-3 sm:mb-4 border border-stone-200/70 shadow-2xs">
       <div className="grid grid-cols-1 md:grid-cols-12 items-center min-h-[180px] sm:min-h-[220px]">
         {/* Left Side: Editorial Typography & Shop Now CTA */}
         <div className="md:col-span-7 lg:col-span-8 px-6 py-6 sm:px-10 sm:py-8 lg:px-12 lg:py-10 flex flex-col justify-center items-start text-left">
