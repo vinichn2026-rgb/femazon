@@ -5,7 +5,6 @@ import {
   ChevronDown,
   Sparkles,
   Tag,
-  Scissors,
   Check,
   SlidersHorizontal
 } from 'lucide-react';
@@ -71,22 +70,12 @@ export function ShopControls({
 
   const isNewArrivalsActive = selectedSort === "Latest First" || selectedSort === "New Arrivals";
   const isOnSaleActive = filters?.onSale ?? false;
-  const isCustomFitActive = filters?.sizes?.includes("Custom Fit") ?? false;
 
   const handleToggleNew = () => {
     if (isNewArrivalsActive) {
       onSortChange("Recommended");
     } else {
       onSortChange("Latest First");
-    }
-  };
-
-  const handleToggleCustomFit = () => {
-    if (!filters || !onFilterChange) return;
-    if (isCustomFitActive) {
-      onFilterChange("sizes", filters.sizes.filter(s => s !== "Custom Fit"));
-    } else {
-      onFilterChange("sizes", [...filters.sizes, "Custom Fit"]);
     }
   };
 
@@ -155,20 +144,6 @@ export function ShopControls({
           >
             <Tag size={12} className={isOnSaleActive ? "text-white" : "text-[#4A1513]"} />
             <span>On Sale</span>
-          </button>
-
-          {/* Quick Filter Pill: Custom-fit */}
-          <button
-            type="button"
-            onClick={handleToggleCustomFit}
-            className={`inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer border shrink-0 ${
-              isCustomFitActive
-                ? 'border-[#4A1513] bg-[#FAF5F0] text-[#4A1513] shadow-xs ring-1 ring-[#4A1513]'
-                : 'border-stone-200 bg-white text-stone-700 hover:border-[#4A1513] hover:text-[#4A1513]'
-            }`}
-          >
-            <Scissors size={12} className={isCustomFitActive ? "text-[#4A1513]" : "text-[#4A1513]"} />
-            <span>Custom-fit</span>
           </button>
         </div>
 
