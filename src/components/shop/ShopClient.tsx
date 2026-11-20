@@ -582,7 +582,7 @@ export function ShopClient({
           onOpenMobileFilters={() => setIsFilterDrawerOpen(true)}
         />
 
-        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 relative">
+        <div className="flex flex-col lg:flex-row items-start gap-8 lg:gap-12 relative">
           {/* Filter Sidebar (Desktop & Mobile Drawer) with Sellers & Brands right under Categories */}
           <FilterSidebar 
             categories={activeCategories}
