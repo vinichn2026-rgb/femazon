@@ -255,26 +255,16 @@ export function ExploreCategorySection() {
   ];
 
   return (
-    <section className="w-full bg-white py-3 sm:py-5 select-none">
+    <section className="w-full bg-white py-4 sm:py-6 select-none">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
         <div
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
-          className="relative overflow-hidden bg-[#FCF9F6] rounded-2xl sm:rounded-3xl border border-stone-200/60 py-8 sm:py-10 px-4 sm:px-8 md:px-10 shadow-2xs"
+          className="relative w-full"
         >
-          {/* Decorative ambient background curves */}
-          <div
-            className="pointer-events-none absolute -left-24 top-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-[#F5ECE5]/60 blur-3xl"
-            aria-hidden="true"
-          />
-          <div
-            className="pointer-events-none absolute -right-24 top-1/3 w-96 h-96 rounded-full bg-[#FAECE8]/50 blur-3xl"
-            aria-hidden="true"
-          />
-
           <div className="relative w-full">
         {/* Header Layout */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6 sm:mb-7">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-5 sm:mb-6">
           <div>
             {/* Tag / Eyebrow */}
             <div>
@@ -293,10 +283,6 @@ export function ExploreCategorySection() {
                 {currentSection.title}
               </span>
             </h2>
-
-            <p className="mt-1.5 text-xs sm:text-sm text-stone-500 font-sans max-w-xl">
-              Discover curated collections crafted with elegance and care
-            </p>
           </div>
 
           {/* Action on Right: Clean "Discover All Categories" pill button */}
@@ -346,46 +332,44 @@ export function ExploreCategorySection() {
         {/* LEFT-MOVING ELITE COMPACT SQUIRCLE CAROUSEL (Yuukke Style) */}
         <div className="relative overflow-hidden w-full py-2">
           {/* Subtle soft edge gradient masks */}
-          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-[#FCF9F6] to-transparent z-10" />
-          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-[#FCF9F6] to-transparent z-10" />
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-white to-transparent z-10" />
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-white to-transparent z-10" />
 
           {/* Continuous Left-moving animated track */}
           <div
             key={currentSection.id}
-            className="animate-marquee-left flex gap-3.5 sm:gap-4.5"
+            className="animate-marquee-left flex gap-4 sm:gap-5"
           >
             {movingItems.map((sample, index) => (
               <Link
                 key={`${sample.id}-${index}`}
                 href={sample.href}
-                className="group shrink-0 w-[150px] sm:w-[170px] md:w-[185px] rounded-[22px] sm:rounded-[26px] bg-white p-2.5 sm:p-3 border border-stone-200/80 shadow-2xs hover:border-[#4A1513]/40 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
+                className="group shrink-0 w-[140px] sm:w-[160px] md:w-[175px] transition-all duration-300 flex flex-col"
               >
-                {/* Square Sample Picture with Rounded Corners (Yuukke Style) */}
-                <div>
-                  <div className="relative aspect-square w-full rounded-[16px] sm:rounded-[20px] overflow-hidden bg-stone-100 mb-2.5">
-                    <img
-                      src={sample.image}
-                      alt={sample.title}
-                      className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
-                    />
+                {/* Square Sample Picture with Rounded Corners */}
+                <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-stone-100 mb-2.5">
+                  <img
+                    src={sample.image}
+                    alt={sample.title}
+                    className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
+                  />
 
-                    {/* Gradient overlay for hover polish */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  {/* Gradient overlay for hover polish */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                    {/* Minimal Badge on Sample Pic (e.g. "UP TO 20% OFF") */}
-                    {sample.badge && (
-                      <span className="absolute top-2 right-2 rounded-full bg-[#4A1513] px-2 py-0.5 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-white shadow-xs">
-                        {sample.badge}
-                      </span>
-                    )}
-                  </div>
+                  {/* Minimal Badge on Sample Pic (e.g. "UP TO 20% OFF") */}
+                  {sample.badge && (
+                    <span className="absolute top-2 right-2 rounded-full bg-[#4A1513] px-2 py-0.5 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-white shadow-xs">
+                      {sample.badge}
+                    </span>
+                  )}
+                </div>
 
-                  {/* Clean Elite Centered Title - Just like the reference image */}
-                  <div className="text-center px-1 pb-1">
-                    <h3 className="font-sans text-xs sm:text-[13px] font-medium text-stone-700 group-hover:text-[#4A1513] transition-colors leading-tight line-clamp-1">
-                      {sample.title}
-                    </h3>
-                  </div>
+                {/* Clean Centered Title */}
+                <div className="text-center px-1">
+                  <h3 className="font-sans text-xs sm:text-[13px] font-medium text-stone-700 group-hover:text-[#4A1513] transition-colors leading-tight line-clamp-1">
+                    {sample.title}
+                  </h3>
                 </div>
               </Link>
             ))}
