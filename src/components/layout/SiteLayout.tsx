@@ -27,7 +27,8 @@ import {
   Package,
   ShieldCheck,
   User,
-  Settings
+  Settings,
+  Loader2
 } from 'lucide-react';
 import NotificationDropdown from './NotificationDropdown';
 import { SearchBar } from './SearchBar';
@@ -918,11 +919,26 @@ export function SiteLayout({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeAccordion, setActiveAccordion] = useState<string | null>(null);
 
-  // Search State
+  // Search State & Refs
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isImageSearchModalOpen, setIsImageSearchModalOpen] = useState(false);
+  const [searchSuggestions, setSearchSuggestions] = useState<{
+    products: Array<{
+      id: number;
+      name: string;
+      slug: string;
+      price: number;
+      discountPrice?: number | null;
+      image: string;
+      brandName: string;
+    }>;
+    topSearches: Array<{ label: string; query: string }>;
+  } | null>(null);
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Profile Dropdown Controlled State
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -944,33 +960,82 @@ export function SiteLayout({
   const role = user?.role || authSession?.role;
   const userFirstName = user?.firstName || (user?.name ? user.name.split(' ')[0] : 'Member');
 
-  // Handle Click Outside Profile Dropdown
+  // Focus search input when expanded
+  useEffect(() => {
+    if (isSearchOpen) {
+      const timer = setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 60);
+      return () => clearTimeout(timer);
+    }
+  }, [isSearchOpen]);
+
+  // Live search suggestions query
+  useEffect(() => {
+    if (!isSearchOpen) return;
+
+    if (!searchQuery.trim()) {
+      if (!searchSuggestions) {
+        fetch("/api/search")
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => {
+            if (data) setSearchSuggestions(data);
+          })
+          .catch(() => {});
+      }
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearchLoading(true);
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery.trim())}`);
+        if (res.ok) {
+          const json = await res.json();
+          setSearchSuggestions(json);
+        }
+      } catch (err) {
+        console.warn("Search error:", err);
+      } finally {
+        setIsSearchLoading(false);
+      }
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, isSearchOpen, searchSuggestions]);
+
+  // Handle Click Outside Profile Dropdown & Search Bar
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
         setIsProfileMenuOpen(false);
+      }
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setIsSearchOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Handle ESC Key to Close Profile Dropdown
+  // Handle ESC Key to Close Profile Dropdown & Search Bar
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         setIsProfileMenuOpen(false);
         setIsMobileMenuOpen(false);
+        setIsSearchOpen(false);
       }
     }
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Close dropdown on route change
+  // Close dropdowns on route change
   useEffect(() => {
     setIsProfileMenuOpen(false);
     setIsMobileMenuOpen(false);
+    setIsSearchOpen(false);
   }, [pathname]);
 
   const toggleAccordion = (name: string) => {
@@ -1039,7 +1104,9 @@ export function SiteLayout({
           </div>
 
           {/* Center: Clean Modern Navigation Links (Refined compact size) */}
-          <nav className="hidden lg:flex items-center gap-3.5 xl:gap-5 text-[12.5px] xl:text-[13px] font-medium text-stone-700 tracking-tight">
+          <nav className={`hidden lg:flex items-center gap-3.5 xl:gap-5 text-[12.5px] xl:text-[13px] font-medium text-stone-700 tracking-tight transition-all duration-300 ease-in-out ${
+            isSearchOpen ? 'opacity-0 max-w-0 overflow-hidden pointer-events-none' : 'opacity-100 max-w-full'
+          }`}>
             <Link 
               href="/discover" 
               className={`py-2 transition-colors hover:text-[#4A1513] flex items-center gap-1 ${pathname === '/discover' ? 'text-[#4A1513] font-semibold' : ''}`}
@@ -1080,31 +1147,184 @@ export function SiteLayout({
           {/* Right: Actions matching screenshot exactly (compact refined size) */}
           <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-3.5">
             
-            {/* 1. Become a Seller Pill Button - visible on tablet & desktop, hidden on mobile where it lives inside the menu drawer */}
+            {/* 1. Become a Seller Pill Button - visible on tablet & desktop when search is closed */}
             <Link 
               href="/seller/register"
-              className="hidden md:inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[#4A1513] hover:bg-[#350B0A] text-white text-[12px] sm:text-[12.5px] font-medium transition-all shadow-xs active:scale-95 whitespace-nowrap"
+              className={`items-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[#4A1513] hover:bg-[#350B0A] text-white text-[12px] sm:text-[12.5px] font-medium transition-all shadow-xs active:scale-95 whitespace-nowrap ${
+                isSearchOpen ? 'hidden' : 'hidden md:inline-flex'
+              }`}
             >
               <span>Become a Seller</span>
               <span className="text-sm leading-none">→</span>
             </Link>
 
-            {/* 2. Search Icon in Circular Border Button */}
-            <div className="relative shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsSearchOpen(!isSearchOpen)}
-                className="w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-full border border-rose-200/80 hover:border-[#4A1513] hover:bg-rose-50/50 flex items-center justify-center text-[#4A1513] transition-all cursor-pointer"
-                title="Search Products"
-                aria-label="Search"
-              >
-                <Search size={15} strokeWidth={2} />
-              </button>
+            {/* 2. Inline Expandable Search Bar */}
+            <div 
+              ref={searchContainerRef}
+              className={`relative flex items-center transition-all duration-300 ease-in-out ${
+                isSearchOpen 
+                  ? "w-[170px] xs:w-[210px] sm:w-[280px] md:w-[380px] lg:w-[460px] xl:w-[520px]" 
+                  : "w-8 sm:w-8.5 shrink-0"
+              }`}
+            >
+              {isSearchOpen ? (
+                <form 
+                  onSubmit={handleSearchSubmit}
+                  className="w-full h-[38px] sm:h-[40px] flex items-center bg-[#FAF7F5] border border-[#4A1513]/40 focus-within:border-[#4A1513] focus-within:ring-2 focus-within:ring-[#4A1513]/15 rounded-full px-2.5 sm:px-3.5 transition-all duration-200 shadow-2xs"
+                >
+                  <Search size={15} strokeWidth={2} className="text-[#4A1513] shrink-0 mr-1 sm:mr-2" />
+                  <input 
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search products, brands, categories..."
+                    className="w-full bg-transparent border-none focus:outline-none text-[12px] sm:text-[13px] text-stone-800 placeholder:text-stone-400 font-normal min-w-0"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchQuery("");
+                        searchInputRef.current?.focus();
+                      }}
+                      className="text-stone-400 hover:text-stone-700 p-0.5 rounded-full hover:bg-stone-200/50 transition-colors shrink-0 cursor-pointer mr-1"
+                      aria-label="Clear search input"
+                    >
+                      <X size={13} strokeWidth={2} />
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsSearchOpen(false);
+                      setSearchQuery("");
+                    }}
+                    className="w-6 h-6 rounded-full hover:bg-stone-200/60 text-stone-500 hover:text-[#4A1513] flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+                    title="Close search"
+                    aria-label="Close search"
+                  >
+                    <X size={15} strokeWidth={2} />
+                  </button>
+                </form>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsSearchOpen(true)}
+                  className="w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-full border border-rose-200/80 hover:border-[#4A1513] hover:bg-rose-50/50 flex items-center justify-center text-[#4A1513] transition-all cursor-pointer"
+                  title="Search Products"
+                  aria-label="Search"
+                >
+                  <Search size={15} strokeWidth={2} />
+                </button>
+              )}
 
-              {/* Expandable Search Popover */}
+              {/* Live Search Quick Results Dropdown anchored below the input */}
               {isSearchOpen && (
-                <div className="absolute right-0 top-full mt-3 w-80 sm:w-96 z-50 bg-white rounded-2xl shadow-2xl border border-stone-200 p-3 animate-in fade-in slide-in-from-top-2 text-stone-900">
-                  <HeaderSearchBar />
+                <div className="absolute right-0 top-full mt-2 w-[280px] xs:w-[320px] sm:w-[380px] md:w-[440px] bg-white rounded-2xl shadow-xl border border-stone-200 z-50 p-4 animate-in fade-in slide-in-from-top-1 duration-150 text-stone-900 max-h-[70vh] overflow-y-auto">
+                  {!searchQuery.trim() ? (
+                    <div>
+                      <p className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-2.5">
+                        Trending Searches
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(searchSuggestions?.topSearches || [
+                          { label: 'Corset Lehengas', query: 'Corset Lehengas' },
+                          { label: 'Anarkali Sets', query: 'Anarkali' },
+                          { label: 'Pre Draped Saree', query: 'Pre Draped Saree' },
+                          { label: 'Indo Western', query: 'Indo-Western' },
+                          { label: 'Banarasi Silk', query: 'Banarasi' },
+                        ]).map((chip, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => {
+                              router.push(`/search?q=${encodeURIComponent(chip.query)}`);
+                              setIsSearchOpen(false);
+                              setSearchQuery("");
+                            }}
+                            className="text-[11.5px] px-2.5 py-1 rounded-full bg-stone-50 border border-stone-200 hover:border-[#4A1513] hover:text-[#4A1513] text-stone-700 transition cursor-pointer"
+                          >
+                            {chip.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      {isSearchLoading ? (
+                        <div className="py-6 flex items-center justify-center text-xs text-stone-400 gap-2">
+                          <Loader2 size={16} className="animate-spin text-[#4A1513]" />
+                          <span>Searching catalog...</span>
+                        </div>
+                      ) : searchSuggestions?.products && searchSuggestions.products.length > 0 ? (
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between pb-1 border-b border-stone-100">
+                            <p className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">
+                              Products ({searchSuggestions.products.length})
+                            </p>
+                            <button
+                              type="button"
+                              onClick={handleSearchSubmit}
+                              className="text-[11px] text-[#4A1513] font-semibold hover:underline cursor-pointer"
+                            >
+                              View all →
+                            </button>
+                          </div>
+                          <div className="divide-y divide-stone-50 max-h-[300px] overflow-y-auto pr-1">
+                            {searchSuggestions.products.slice(0, 5).map((item) => (
+                              <button
+                                key={item.id}
+                                type="button"
+                                onClick={() => {
+                                  setIsSearchOpen(false);
+                                  setSearchQuery("");
+                                  router.push(`/shop/${item.slug || item.id}`);
+                                }}
+                                className="w-full flex items-center gap-3 py-2 px-1 rounded-lg hover:bg-stone-50 transition text-left cursor-pointer group"
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img 
+                                  src={item.image} 
+                                  alt={item.name} 
+                                  className="w-10 h-12 object-cover rounded-md bg-stone-100 shrink-0" 
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-[10px] font-semibold uppercase text-stone-400 truncate">
+                                    {item.brandName || 'Femazon Couture'}
+                                  </p>
+                                  <p className="text-xs font-medium text-stone-800 truncate group-hover:text-[#4A1513] transition-colors">
+                                    {item.name}
+                                  </p>
+                                  <p className="text-xs font-bold text-[#4A1513] mt-0.5">
+                                    ₹{(item.discountPrice || item.price).toLocaleString('en-IN')}
+                                  </p>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleSearchSubmit}
+                            className="w-full mt-2 py-2 text-center rounded-xl bg-stone-50 hover:bg-[#4A1513] text-stone-700 hover:text-white text-xs font-medium transition cursor-pointer"
+                          >
+                            See all results for &ldquo;{searchQuery}&rdquo; →
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="py-6 text-center text-xs text-stone-500">
+                          <p>No products found for &ldquo;{searchQuery}&rdquo;</p>
+                          <button
+                            type="button"
+                            onClick={handleSearchSubmit}
+                            className="mt-2 text-[#4A1513] font-semibold underline cursor-pointer"
+                          >
+                            Search anyway
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
