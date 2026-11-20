@@ -2,60 +2,47 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export function LuxuryPromoBanner() {
   return (
-    <div className="relative overflow-hidden w-full bg-gradient-to-r from-[#4A1513] via-[#380E0C] to-[#4A1513] text-white py-5 sm:py-6 px-4 sm:px-8 border-y border-[#4A1513]/40 shadow-sm">
-      {/* Decorative Gold & Velvet Shimmer Accents */}
-      <div className="absolute -left-12 -top-12 w-48 h-48 bg-[#D4AF37]/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute right-0 -bottom-10 w-60 h-60 bg-[#E5C3A6]/10 rounded-full blur-3xl pointer-events-none" />
-      
-      {/* Background Subtle Radial Pattern */}
-      <div 
-        className="absolute inset-0 opacity-[0.04] pointer-events-none"
-        style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, #ffffff 1px, transparent 0)`,
-          backgroundSize: '24px 24px'
-        }}
-      />
+    <div className="w-full bg-[#F5ECE5] rounded-2xl md:rounded-3xl overflow-hidden mb-6 sm:mb-8 border border-stone-200/70 shadow-2xs">
+      <div className="grid grid-cols-1 md:grid-cols-12 items-center min-h-[180px] sm:min-h-[220px]">
+        {/* Left Side: Editorial Typography & Shop Now CTA */}
+        <div className="md:col-span-7 lg:col-span-8 px-6 py-6 sm:px-10 sm:py-8 lg:px-12 lg:py-10 flex flex-col justify-center items-start text-left">
+          <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-stone-900 font-semibold leading-tight tracking-tight">
+            Shop Our <br className="hidden sm:inline" />
+            <span className="font-normal italic">Latest Collection</span>
+          </h1>
 
-      <div className="relative mx-auto max-w-[1400px] flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6 text-center md:text-left">
-        
-        {/* Left Side: Editorial Typography with Gold Badges */}
-        <div className="flex flex-col sm:flex-row items-center sm:items-start md:items-center gap-3 sm:gap-4">
-          <div className="hidden sm:flex h-10 w-10 rounded-full bg-white/10 backdrop-blur-md border border-[#E5C3A6]/30 text-[#E5C3A6] items-center justify-center shrink-0 shadow-inner">
-            <Sparkles size={18} />
-          </div>
+          <p className="text-xs sm:text-sm text-stone-600 mt-2 font-sans max-w-md">
+            Discover elegance in every detail
+          </p>
 
-          <div>
-            <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#E5C3A6] font-sans">
-                Curated Luxury Edit
-              </span>
-              <span className="h-1 w-1 rounded-full bg-[#E5C3A6]" />
-              <span className="text-[10px] font-semibold text-stone-300 tracking-wider font-sans">
-                Festive &apos;26
-              </span>
-            </div>
-
-            <h2 className="font-serif text-xl sm:text-2xl md:text-[26px] lg:text-[28px] text-[#FDFBF7] tracking-tight font-normal leading-tight">
-              Celebrate in the Season&apos;s <span className="italic font-light text-[#F3DFCA]">Finest New Arrivals</span>
-            </h2>
-          </div>
-        </div>
-
-        {/* Right Side: Creative Champagne-Gold CTA Button */}
-        <div className="flex items-center gap-3 shrink-0">
           <Link
             href="/shop"
-            className="group relative inline-flex items-center justify-center gap-2 px-7 py-3 rounded-full bg-gradient-to-r from-[#E5C3A6] to-[#D4B295] hover:from-[#F0D5BE] hover:to-[#E0C1A7] text-[#4A1513] font-bold text-xs uppercase tracking-[0.2em] shadow-md hover:shadow-lg transition-all duration-200 active:scale-95 cursor-pointer"
+            className="mt-4 sm:mt-5 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-md bg-[#4A1513] hover:bg-[#380E0C] text-white text-xs sm:text-sm font-semibold transition-colors shadow-xs active:scale-95 cursor-pointer"
           >
-            <span>Explore Collection</span>
-            <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1" />
+            <span>Shop Now</span>
+            <ArrowRight size={14} />
           </Link>
         </div>
 
+        {/* Right Side: Festive Indian Woman Banner Image matching Reference */}
+        <div className="md:col-span-5 lg:col-span-4 h-[160px] md:h-full relative overflow-hidden flex justify-end">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/banners/shop_banner_woman.jpg"
+            alt="Shop Our Latest Collection"
+            className="h-full w-full object-cover object-right md:object-center"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src =
+                "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=85&w=800";
+            }}
+          />
+          {/* Subtle gradient blending */}
+          <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-[#F5ECE5] to-transparent pointer-events-none hidden md:block" />
+        </div>
       </div>
     </div>
   );

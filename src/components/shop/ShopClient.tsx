@@ -189,7 +189,7 @@ export function ShopClient({
   const [selectedCategory, setSelectedCategory] = useState(initialCategory || "All");
   const [selectedSilhouette, setSelectedSilhouette] = useState(initialSilhouette || "All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSort, setSelectedSort] = useState("Recommended");
+  const [selectedSort, setSelectedSort] = useState("Latest First");
   
   const [filters, setFilters] = useState<FilterState>(initialFilterState);
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
@@ -293,10 +293,11 @@ export function ShopClient({
     ...(selectedSilhouette !== "All" ? [`Silhouette: ${selectedSilhouette}`] : []),
     ...(filters.silhouettes || []).map(s => `Silhouette: ${s}`),
     ...filters.subcategories,
+    ...(filters.maxPrice && filters.maxPrice < 10000 ? [`Under ₹${filters.maxPrice.toLocaleString('en-IN')}`] : []),
     ...(filters.priceRange ? [filters.priceRange] : []),
     ...filters.sizes.map(s => `Size: ${s}`),
     ...filters.colors,
-    ...filters.brands.map(b => `Seller: ${b}`),
+    ...filters.brands.map(b => `Brand: ${b}`),
     ...(filters.inStockOnly ? ['In Stock'] : []),
     ...(filters.onSale ? ['On Sale'] : []),
     ...(filters.readyToShip ? ['Ready to Ship'] : [])
@@ -321,9 +322,18 @@ export function ShopClient({
       handleFilterChange('silhouettes', (filters.silhouettes || []).filter(s => s !== sil));
       return;
     }
+    if (chipText.startsWith('Brand: ')) {
+      const brand = chipText.replace('Brand: ', '');
+      handleFilterChange('brands', filters.brands.filter(b => b !== brand));
+      return;
+    }
     if (chipText.startsWith('Seller: ')) {
       const seller = chipText.replace('Seller: ', '');
       handleFilterChange('brands', filters.brands.filter(b => b !== seller));
+      return;
+    }
+    if (chipText.startsWith('Under ₹')) {
+      handleFilterChange('maxPrice', null);
       return;
     }
     if (chipText === filters.priceRange) {
@@ -457,7 +467,10 @@ export function ShopClient({
         if (!matchesBrand) return false;
       }
 
-      // 7. Price Range (Department-aware & custom ranges)
+      // 7. Price Range & Max Price Slider
+      if (filters.maxPrice && p.price > filters.maxPrice) {
+        return false;
+      }
       if (filters.priceRange && !matchesPriceRange(p.price, filters.priceRange)) {
         return false;
       }
@@ -487,6 +500,14 @@ export function ShopClient({
   const sortedProducts = useMemo(() => {
     const sorted = [...filteredProducts];
     switch (selectedSort) {
+      case "Latest First":
+      case "New Arrivals":
+      case "Newest Arrivals":
+        return sorted.sort((a, b) => {
+          const dateA = new Date(a.createdAt || a.date || 0).getTime();
+          const dateB = new Date(b.createdAt || b.date || 0).getTime();
+          return dateB - dateA;
+        });
       case "Price Low to High":
       case "Price: Low to High":
         return sorted.sort((a, b) => a.price - b.price);
@@ -498,8 +519,6 @@ export function ShopClient({
       case "Popularity":
       case "Customer Popular":
         return sorted.sort((a, b) => (b.rating * b.reviewCount) - (a.rating * a.reviewCount));
-      case "New Arrivals":
-      case "Newest Arrivals":
       case "Recommended":
       case "Featured":
       default:
@@ -590,7 +609,7 @@ export function ShopClient({
           {/* Product Grid or Empty State */}
           {isMounted ? (
             totalItems > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-x-8 md:gap-y-12">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-7 md:gap-x-6 md:gap-y-10">
                 {sortedProducts.map((product) => (
                   <ProductCard 
                     key={product.id} 
@@ -619,23 +638,12 @@ export function ShopClient({
               </div>
             )
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-x-8 md:gap-y-12">
-              {Array.from({ length: 8 }).map((_, idx) => <ProductCardSkeleton key={idx} />)}
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-7 md:gap-x-6 md:gap-y-10">
+              {Array.from({ length: 6 }).map((_, idx) => <ProductCardSkeleton key={idx} />)}
             </div>
           )}
           
         </div>
-      </div>
-
-      {/* Mobile Floating Filter Button */}
-      <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-        <button 
-          onClick={() => setIsFilterDrawerOpen(true)}
-          className="flex items-center gap-2 bg-[#4A1513] text-white px-7 py-3 rounded-full shadow-xl font-bold text-[12px] uppercase tracking-widest hover:bg-[#380E0C] transition-colors cursor-pointer"
-        >
-          <SlidersHorizontal size={15} />
-          Filter &amp; Sort
-        </button>
       </div>
 
     </div>

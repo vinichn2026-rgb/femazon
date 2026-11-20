@@ -1,16 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
 import {
   ChevronDown,
-  Sparkles,
-  Camera,
-  Zap,
-  Tag,
-  Scissors,
-  Check,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Check
 } from 'lucide-react';
 import { FilterState } from './FilterSidebar';
 
@@ -53,12 +47,11 @@ export function ShopControls({
   const sortRef = useRef<HTMLDivElement>(null);
 
   const sortOptions = [
+    "Latest First",
     "Recommended",
     "Popularity",
-    "New Arrivals",
     "Price Low to High",
     "Price High to Low",
-    "Discount High to Low"
   ];
 
   // Click outside to close sort dropdown
@@ -72,170 +65,89 @@ export function ShopControls({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const isOnSaleActive = filters?.onSale ?? false;
-  const isCustomFitActive = filters?.sizes?.includes("Custom Fit") ?? false;
+  // Compute active filters count for mobile filter badge
+  const activeCount = React.useMemo(() => {
+    if (!filters) return 0;
+    let count = 0;
+    if (filters.brands && filters.brands.length > 0) count += filters.brands.length;
+    if (filters.maxPrice && filters.maxPrice < 10000) count += 1;
+    if (selectedDepartment && selectedDepartment !== "all") count += 1;
+    if (selectedCategory && selectedCategory !== "All") count += 1;
+    return count;
+  }, [filters, selectedDepartment, selectedCategory]);
 
-  const handleToggleCustomFit = () => {
-    if (!filters || !onFilterChange) return;
-    if (isCustomFitActive) {
-      onFilterChange("sizes", filters.sizes.filter(s => s !== "Custom Fit"));
-    } else {
-      onFilterChange("sizes", [...filters.sizes, "Custom Fit"]);
-    }
-  };
-
-  const categoryDisplayTitle = selectedCategory === "All"
-    ? "All Collections"
-    : selectedCategory === "New"
-    ? "New Arrivals"
-    : selectedCategory;
+  const displayCount = Math.min(12, totalItems);
 
   return (
-    <div className="flex flex-col gap-3 pb-4 border-b border-stone-200/80 mb-6">
-      
-      {/* Top Header Line: Department Navigation Bar (Straight in line with Categories sidebar) & Item Count */}
-      <div className="flex items-center justify-between gap-3 min-h-[36px]">
-        {departments && departments.length > 0 ? (
-          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto hide-scrollbar py-0.5">
-            {departments.map((dept) => {
-              const isActive = selectedDepartment === dept.id;
+    <div className="flex items-center justify-between gap-4 py-2 mb-6">
+      {/* Desktop: Showing 1-12 of 48 products */}
+      <div className="hidden lg:block text-xs sm:text-[13px] text-stone-600 font-medium tracking-tight">
+        {totalItems > 0 ? (
+          <span>
+            Showing 1–{displayCount} of {totalItems} products
+          </span>
+        ) : (
+          <span>0 products found</span>
+        )}
+      </div>
+
+      {/* Mobile: Filter Button */}
+      <div className="lg:hidden flex items-center">
+        {onOpenMobileFilters && (
+          <button
+            type="button"
+            onClick={onOpenMobileFilters}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#FAF5F0] border border-[#E8DCD5] text-[#4A1513] text-xs font-semibold shadow-2xs hover:bg-[#F3ECE5] transition-colors cursor-pointer"
+          >
+            <SlidersHorizontal size={14} className="text-[#4A1513]" />
+            <span>Filter</span>
+            {activeCount > 0 && (
+              <span className="w-4 h-4 rounded-full bg-[#4A1513] text-white text-[10px] flex items-center justify-center font-bold">
+                {activeCount}
+              </span>
+            )}
+          </button>
+        )}
+      </div>
+
+      {/* Sort By Dropdown (Matches reference: "Sort by: Latest First ∨") */}
+      <div className="relative shrink-0" ref={sortRef}>
+        <button 
+          type="button"
+          onClick={() => setIsSortOpen(!isSortOpen)}
+          className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-2 rounded-lg border border-stone-200 bg-white text-xs font-medium text-stone-800 hover:border-[#4A1513] transition shadow-2xs cursor-pointer"
+        >
+          <span className="text-stone-500 font-normal">Sort by:</span>
+          <span className="font-semibold text-stone-900">{selectedSort}</span>
+          <ChevronDown size={13} className={`text-stone-500 transition-transform duration-200 ${isSortOpen ? 'rotate-180' : ''}`} />
+        </button>
+
+        {isSortOpen && (
+          <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-stone-200 rounded-xl shadow-xl z-50 overflow-hidden py-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
+            {sortOptions.map((option) => {
+              const isSelected = selectedSort === option;
               return (
                 <button
-                  key={dept.id}
+                  key={option}
                   type="button"
-                  onClick={() => onSelectDepartment?.(dept.id)}
-                  className={`px-3.5 sm:px-4 py-1.5 rounded-full text-xs sm:text-[12.5px] font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                    isActive
-                      ? 'bg-[#4A1513] text-white shadow-xs'
-                      : 'bg-[#FAF7F5] text-stone-700 hover:bg-stone-200/70 hover:text-stone-950 border border-stone-200/60'
+                  onClick={() => {
+                    onSortChange(option);
+                    setIsSortOpen(false);
+                  }}
+                  className={`w-full text-left px-3.5 py-2 text-xs font-medium transition-colors flex items-center justify-between cursor-pointer ${
+                    isSelected 
+                      ? 'font-bold text-[#4A1513] bg-[#4A1513]/5' 
+                      : 'text-stone-700 hover:bg-stone-50 hover:text-[#4A1513]'
                   }`}
                 >
-                  <span>{dept.name}</span>
+                  <span>{option}</span>
+                  {isSelected && <Check size={13} className="text-[#4A1513]" />}
                 </button>
               );
             })}
           </div>
-        ) : (
-          <h1 className="font-serif text-lg sm:text-xl md:text-2xl text-stone-900 font-normal tracking-tight">
-            <span>{categoryDisplayTitle}</span>{' '}
-            <span className="text-xs sm:text-sm font-sans font-normal text-stone-400">
-              ({totalItems.toLocaleString('en-IN')} Styles)
-            </span>
-          </h1>
         )}
-
-        <div className="flex items-center gap-2.5 shrink-0">
-          {departments && departments.length > 0 && (
-            <span className="hidden sm:inline-block text-xs sm:text-[13px] font-sans font-medium text-stone-400 whitespace-nowrap">
-              ({totalItems.toLocaleString('en-IN')} Styles)
-            </span>
-          )}
-
-          {/* Mobile Filter Trigger Button */}
-          {onOpenMobileFilters && (
-            <button
-              type="button"
-              onClick={onOpenMobileFilters}
-              className="lg:hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-stone-300 text-xs font-semibold text-stone-800"
-            >
-              <SlidersHorizontal size={13} />
-              <span>Filters</span>
-            </button>
-          )}
-        </div>
       </div>
-
-      {/* Action Strip: Quick Pill Filters & Luxury Sort Dropdown */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 pt-1">
-        
-        {/* Left: Quick Filter Pills (White & Maroon Theme) */}
-        <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar py-1">
-          
-          {/* 1. New Arrivals Pill */}
-          <button
-            type="button"
-            onClick={() => onSortChange(selectedSort === "New Arrivals" ? "Recommended" : "New Arrivals")}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer border ${
-              selectedSort === "New Arrivals"
-                ? 'border-[#4A1513] bg-[#4A1513] text-white shadow-xs'
-                : 'border-stone-200 bg-white text-stone-700 hover:border-[#4A1513] hover:text-[#4A1513]'
-            }`}
-          >
-            <Sparkles size={12} className={selectedSort === "New Arrivals" ? "text-white" : "text-[#4A1513]"} />
-            <span>New</span>
-          </button>
-
-          {/* 2. On Sale Pill */}
-          <button
-            type="button"
-            onClick={() => onFilterChange?.('onSale', !isOnSaleActive)}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer border ${
-              isOnSaleActive
-                ? 'border-[#4A1513] bg-[#4A1513] text-white shadow-xs'
-                : 'border-stone-200 bg-white text-stone-700 hover:border-[#4A1513] hover:text-[#4A1513]'
-            }`}
-          >
-            <Tag size={12} className={isOnSaleActive ? "text-white" : "text-[#4A1513]"} />
-            <span>On Sale</span>
-          </button>
-
-          {/* 5. Custom-Fit Pill */}
-          <button
-            type="button"
-            onClick={handleToggleCustomFit}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer border ${
-              isCustomFitActive
-                ? 'border-[#4A1513] bg-[#4A1513] text-white shadow-xs'
-                : 'border-stone-200 bg-white text-stone-700 hover:border-[#4A1513] hover:text-[#4A1513]'
-            }`}
-          >
-            <Scissors size={12} className={isCustomFitActive ? "text-white" : "text-[#4A1513]"} />
-            <span>Custom-fit</span>
-          </button>
-
-        </div>
-
-        {/* Right: Luxury Sort By Dropdown (White & Maroon) */}
-        <div className="relative shrink-0 self-end md:self-center" ref={sortRef}>
-          <button 
-            type="button"
-            onClick={() => setIsSortOpen(!isSortOpen)}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg border border-stone-200 bg-white text-xs font-semibold text-stone-800 hover:border-[#4A1513] transition shadow-2xs cursor-pointer"
-          >
-            <span className="text-stone-500 font-normal">Sort By:</span>
-            <span className="font-bold text-[#4A1513]">{selectedSort}</span>
-            <ChevronDown size={13} className={`text-stone-500 transition-transform duration-200 ${isSortOpen ? 'rotate-180' : ''}`} />
-          </button>
-
-          {isSortOpen && (
-            <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-stone-200 rounded-xl shadow-xl z-50 overflow-hidden py-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
-              {sortOptions.map((option) => {
-                const isSelected = selectedSort === option;
-                return (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() => {
-                      onSortChange(option);
-                      setIsSortOpen(false);
-                    }}
-                    className={`w-full text-left px-4 py-2 text-xs font-medium transition-colors flex items-center justify-between cursor-pointer ${
-                      isSelected 
-                        ? 'font-bold text-[#4A1513] bg-[#4A1513]/5' 
-                        : 'text-stone-700 hover:bg-stone-50 hover:text-[#4A1513]'
-                    }`}
-                  >
-                    <span>{option}</span>
-                    {isSelected && <Check size={13} className="text-[#4A1513]" />}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-      </div>
-
     </div>
   );
 }
