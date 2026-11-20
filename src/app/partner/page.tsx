@@ -8,6 +8,7 @@ import {
   Store,
   UserCheck,
 } from "lucide-react";
+import { PageBanner } from "@/components/common/PageBanner";
 
 export const metadata = {
   title: "Femazon Partner Hub | Multi-Vendor Marketplace",
@@ -93,23 +94,18 @@ const PARTNER_TYPES = [
 export default function PartnerHubPage() {
   return (
     <main className="min-h-screen bg-[#FAF7F5] pb-20 text-stone-900">
-      <section className="bg-[#3D110F] py-16 text-white px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-[1300px]">
-          <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-rose-200 mb-3">
-            <Store size={14} /> FEMAZON MULTI-VENDOR ECOSYSTEM
-          </span>
-          <h1 className="font-serif text-3xl sm:text-5xl font-bold tracking-tight">
-            Become a Femazon Partner
-          </h1>
-          <p className="mt-3 max-w-2xl text-sm sm:text-base text-rose-100/90 leading-relaxed">
-            Choose your partner role below to register your business or practice. All partner applications are reviewed and approved by the Femazon Admin team before becoming publicly visible.
-          </p>
-          <div className="mt-6 inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-4 py-2.5 text-xs text-rose-100">
-            <ShieldCheck size={15} className="text-emerald-300 shrink-0" />
-            <span>Admin Approval Workflow: Application Submitted → Under Review → Approved → Live on Femazon</span>
-          </div>
-        </div>
-      </section>
+      <div className="mx-auto max-w-[1300px] px-4 sm:px-6 lg:px-8 pt-4">
+        <PageBanner
+          title="Partner With Femazon"
+          highlightText="Grow Your Brand"
+          description="Join our curated women-first marketplace. Register as an independent boutique owner, fashion designer, beauty specialist, or artisan."
+          ctaText="Register Your Business"
+          ctaLink="/seller/register"
+          imageSrc="/banners/login_promo.jpg"
+          fallbackImage="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&q=80&w=800"
+          imageAlt="Partner With Femazon"
+        />
+      </div>
 
       <section className="mx-auto max-w-[1300px] px-4 pt-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">

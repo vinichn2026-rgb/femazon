@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Package, Truck, CheckCircle2, PackageSearch } from "lucide-react";
+import { PageBanner } from "@/components/common/PageBanner";
 
 type OrderItem = {
   id: number;
@@ -97,12 +98,16 @@ export default function MyOrdersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="mb-8">
-        <h1 className="font-serif text-4xl font-normal text-text-main mb-3">My Orders</h1>
-        <p className="font-sans text-[15px] text-text-muted">
-          Track, manage, and review your purchases
-        </p>
-      </div>
+      {/* Standardized Luxury Page Banner */}
+      <PageBanner
+        title="My Orders & Shipments"
+        highlightText="White-Glove Tracking"
+        description="Track, manage, and review your purchases of handcrafted couture, bridal wear, and designer jewelry."
+        ctaText="Continue Shopping"
+        ctaLink="/shop"
+        imageSrc="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=800&auto=format&fit=crop"
+        imageAlt="Femazon Orders"
+      />
 
       {orders.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-[#fbf9f6] border border-accent/10 rounded-3xl mx-auto">

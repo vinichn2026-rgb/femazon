@@ -20,6 +20,7 @@ import { DiscoverBrandsAroundYou } from "@/components/home/DiscoverBrandsAroundY
 import { ACTIVE_MARKETPLACE_LOCATIONS } from "@/data/locationMarketplaceData";
 import { getApprovedPartnerDirectory } from "@/lib/partnerDirectory";
 import { getApprovedStylists } from "@/lib/stylists";
+import { PageBanner } from "@/components/common/PageBanner";
 
 export const metadata: Metadata = {
   title: "Discover Femazon | Local Marketplace, Independent Brands & Personal Stylists",
@@ -73,40 +74,19 @@ export default async function DiscoverPage() {
   return (
     <div className="min-h-screen bg-[#FAF7F5] text-stone-900 font-sans selection:bg-[#4A1513] selection:text-white">
       
-      {/* 1. Discover Hero Banner */}
-      <section className="relative bg-[#4A1513] text-white py-14 sm:py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#E5C3A6_1px,transparent_1px)] [background-size:20px_20px]" />
-        
-        <div className="max-w-[1440px] mx-auto relative z-10 text-center max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-[#E5C3A6] text-xs font-semibold uppercase tracking-[0.25em] mb-4 shadow-sm">
-            <Sparkles size={13} />
-            <span>HELLO THOZHI × FEMAZON MARKETPLACE</span>
-          </div>
-
-          <h1 className="font-serif text-3xl sm:text-5xl md:text-6xl text-white font-light tracking-tight leading-[1.15] mb-4">
-            Discover Everything Women Love
-          </h1>
-
-          <p className="text-sm sm:text-base md:text-lg text-white/85 font-light leading-relaxed max-w-2xl mx-auto mb-8">
-            Your curated marketplace connecting you with independent boutiques, local women-led brands, fine jewellery, artisanal gifting, and certified personal stylists.
-          </p>
-
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <Link
-              href="/shop"
-              className="px-7 py-3 rounded-full bg-white text-stone-900 font-semibold text-xs uppercase tracking-[0.2em] hover:bg-[#E5C3A6] transition-all shadow-md active:scale-95"
-            >
-              Start Exploring Products
-            </Link>
-            <Link
-              href="/brands"
-              className="px-7 py-3 rounded-full bg-transparent hover:bg-white/10 text-white border border-white/30 text-xs font-semibold uppercase tracking-[0.2em] transition-all"
-            >
-              Browse Independent Brands
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* 1. Discover Hero Banner: Standardized Page Banner matching Shop reference */}
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+        <PageBanner
+          title="Discover Femazon"
+          highlightText="Curated World"
+          description="Your curated marketplace connecting you with independent boutiques, local women-led brands, fine jewellery, artisanal gifting, and certified personal stylists."
+          ctaText="Start Exploring"
+          ctaLink="/shop"
+          imageSrc="/banners/hero_dress.jpg"
+          fallbackImage="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=85&w=800"
+          imageAlt="Discover Everything Women Love"
+        />
+      </div>
 
       {/* 2. Four Pillars of Discovery (Women's Wear, Beauty, Jewellery, Gifting) */}
       <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">

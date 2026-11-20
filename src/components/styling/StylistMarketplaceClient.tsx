@@ -15,6 +15,7 @@ import {
   Video,
 } from "lucide-react";
 import { STYLIST_SPECIALIZATIONS, type PublicStylist } from "@/lib/stylistTypes";
+import { PageBanner } from "@/components/common/PageBanner";
 
 interface StylistMarketplaceClientProps {
   stylists: PublicStylist[];
@@ -111,62 +112,19 @@ export function StylistMarketplaceClient({
 
   return (
     <div className="min-h-screen bg-[#FAF7F5] pb-24 text-stone-900">
-      {/* 1. EDITORIAL HERO SECTION */}
-      <section className="relative overflow-hidden bg-[#4A1513] py-16 text-white sm:py-20">
-        <div className="absolute inset-0 z-0 opacity-25 mix-blend-overlay">
-          <img
-            src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1600&auto=format&fit=crop"
-            alt="Femazon Personal Styling"
-            className="h-full w-full object-cover"
-          />
-        </div>
-        <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#2D0B0A] via-[#4A1513]/92 to-transparent" />
-
-        <div className="relative z-10 mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-2xl">
-              <span className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#C8A253]/40 bg-white/10 px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-[#F3D79B] backdrop-blur-xs">
-                <Sparkles size={14} /> FEMAZON PERSONAL STYLIST MARKETPLACE
-              </span>
-              <h1 className="font-serif text-3xl font-bold tracking-tight text-white sm:text-5xl">
-                Discover Independent Personal Stylists
-              </h1>
-              <p className="mt-3 text-sm leading-relaxed text-stone-200 sm:text-base">
-                Book verified fashion stylists, wardrobe consultants, and personal shoppers for 1-on-1 online or in-person styling sessions tailored to your body type, lifestyle, and occasions.
-              </p>
-
-              {/* Search Bar */}
-              <div className="relative mt-6 max-w-xl">
-                <Search size={18} className="absolute left-4 top-3.5 text-stone-400" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by stylist name, city, or specialization..."
-                  className="w-full rounded-full bg-white py-3 pl-11 pr-6 text-sm text-stone-900 shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-300"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/personal-styling/register"
-                className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-xs font-bold uppercase tracking-wider text-[#4A1513] shadow-lg transition hover:bg-rose-50"
-              >
-                <UserCheck size={15} />
-                <span>Become a Stylist</span>
-              </Link>
-              <Link
-                href="/stylist/dashboard"
-                className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-6 py-3 text-xs font-bold uppercase tracking-wider text-white backdrop-blur-xs transition hover:bg-white/20"
-              >
-                <span>Stylist Dashboard</span>
-                <ArrowRight size={14} />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* 1. STANDARDIZED PAGE BANNER MATCHING SHOP REFERENCE */}
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 pt-4">
+        <PageBanner
+          title="Personal Styling & Wardrobe"
+          highlightText="Certified Stylists"
+          description="Book 1-on-1 virtual or in-person sessions with certified fashion stylists tailored to your body type, lifestyle, and celebrations."
+          ctaText="Become a Stylist"
+          ctaLink="/personal-styling/register"
+          imageSrc="/banners/hero_coords.jpg"
+          fallbackImage="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=1600&auto=format&fit=crop"
+          imageAlt="Personal Styling Experts"
+        />
+      </div>
 
       {/* 2. SPECIALIZATION PILLS */}
       <section className="sticky top-[88px] md:top-[96px] z-30 border-b border-stone-200 bg-white/95 backdrop-blur-sm">

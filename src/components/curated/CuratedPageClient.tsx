@@ -13,6 +13,7 @@ import {
   Layers, 
   Palette
 } from "lucide-react";
+import { PageBanner } from "@/components/common/PageBanner";
 
 interface ProductItem {
   id: string;
@@ -264,24 +265,18 @@ export function CuratedPageClient({ trendingProducts }: CuratedPageProps) {
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-stone-900 font-sans selection:bg-[#4A1513] selection:text-white">
       
-      {/* 1. Clean Editorial Header (No dark hero banner) */}
-      <div className="pt-8 sm:pt-12 pb-4 text-center border-b border-stone-200/60 bg-white">
-        <div className="mx-auto max-w-4xl px-4 flex flex-col items-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#4A1513]/5 border border-[#4A1513]/15 mb-3">
-            <Sparkles size={12} className="text-[#4A1513]" />
-            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.3em] text-[#4A1513]">
-              FEMAZON EDITS
-            </span>
-          </div>
-
-          <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl text-[#3D110F] font-normal tracking-tight mb-2">
-            Curated For Every Moment
-          </h1>
-
-          <p className="text-stone-500 text-xs sm:text-sm md:text-base max-w-xl font-light leading-relaxed">
-            Discover handpicked styles designed for every occasion, mood, and version of you.
-          </p>
-        </div>
+      {/* 1. Standardized Page Banner matching Shop reference */}
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 pt-4 pb-2">
+        <PageBanner
+          title="Curated For Every Moment"
+          highlightText="Signature Edits"
+          description="Discover handpicked styles designed for every celebration, milestone, mood, and version of you."
+          ctaText="Shop By Moment"
+          ctaLink="#moments"
+          imageSrc="/banners/hero_coords.jpg"
+          fallbackImage="https://images.unsplash.com/photo-1610047614301-13c63f00c032?q=80&w=800&h=1100&auto=format&fit=crop"
+          imageAlt="Curated For Every Moment"
+        />
       </div>
 
       {/* 2. Step 3: Main Category - Shop By Moment */}

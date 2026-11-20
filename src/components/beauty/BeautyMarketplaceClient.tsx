@@ -10,6 +10,7 @@ import {
 } from "@/data/marketplaceData";
 import type { ProductType } from "@/data/products";
 import { ServiceCategoryLanding } from "@/components/category/ServiceCategoryLanding";
+import { PageBanner } from "@/components/common/PageBanner";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { useFemazonStore } from "@/context/FemazonStoreContext";
 
@@ -148,28 +149,19 @@ export function BeautyMarketplaceClient({
         />
       ) : (
         <div className="min-h-screen pb-20">
-          {/* Beauty Products Hero */}
-          <section className="relative w-full bg-[#4A1513] text-white overflow-hidden py-14 sm:py-16">
-            <div className="absolute inset-0 z-0 opacity-25 mix-blend-overlay">
-              <img
-                src="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1600&auto=format&fit=crop"
-                alt="Beauty Products"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-r from-[#38100e] via-[#4A1513]/90 to-transparent z-0" />
-            <div className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-rose-200 text-xs font-bold tracking-widest uppercase mb-3">
-                <ShoppingBag size={14} /> BEAUTY &amp; SELF-CARE STORE
-              </span>
-              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-3">
-                Beauty, Skincare &amp; Personal Care Products
-              </h1>
-              <p className="text-sm sm:text-base text-stone-200 max-w-2xl">
-                Shop curated skincare, haircare, clean makeup, bath &amp; body, personal &amp; feminine hygiene, grooming essentials, and beauty tools from trusted sellers.
-              </p>
-            </div>
-          </section>
+          {/* Beauty Products Hero: Standardized Page Banner matching Shop reference */}
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+            <PageBanner
+              title="Beauty & Self-Care"
+              highlightText="Curated Sanctuary"
+              description="Shop pure botanicals, ritual skincare, radiant makeup, bath & body, and hair essentials from trusted beauty formulators."
+              ctaText="Explore Products"
+              ctaLink="#beauty-categories"
+              imageSrc="/banners/hero_beauty_jewels.jpg"
+              fallbackImage="https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=1600&auto=format&fit=crop"
+              imageAlt="Beauty & Self-Care Collection"
+            />
+          </div>
 
           {/* 8 Beauty Product Subcategories */}
           <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">

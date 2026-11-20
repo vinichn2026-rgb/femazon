@@ -19,6 +19,7 @@ import {
   Gift
 } from 'lucide-react';
 import { useFemazonStore, CartItem } from '@/context/FemazonStoreContext';
+import { PageBanner } from '@/components/common/PageBanner';
 
 // Related Styling & "Complete the Look" Curations
 interface RelatedMatch {
@@ -178,6 +179,17 @@ export default function FullCartPage() {
   return (
     <div className="min-h-screen bg-[#FAF7F5] py-8 sm:py-12 text-stone-900 font-sans selection:bg-[#4A1513] selection:text-white">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Standardized Luxury Page Banner */}
+        <PageBanner
+          title="Your Shopping Bag"
+          highlightText="Curated Luxury"
+          description="Review your curated couture, designer bridal wear, and handcrafted accessories ready for white-glove delivery."
+          ctaText="Continue Browsing"
+          ctaLink="/shop"
+          imageSrc="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=800&auto=format&fit=crop"
+          imageAlt="Femazon Shopping Bag"
+          className="mb-6 sm:mb-8"
+        />
         
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center gap-2 text-[12px] font-medium text-stone-400 mb-6 uppercase tracking-wider">

@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Mail, Phone, MapPin, Send, MessageSquare } from 'lucide-react';
+import { PageBanner } from '@/components/common/PageBanner';
 
 export const metadata = {
   title: "Contact Us | Femazon",
@@ -9,19 +10,20 @@ export const metadata = {
 
 export default function ContactPage() {
   return (
-    <main className="min-h-screen bg-surface py-12 md:py-20">
+    <main className="min-h-screen bg-surface py-6 md:py-10">
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
         
-        {/* Header Section */}
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <p className="font-sans text-[11px] font-bold uppercase tracking-widest text-primary">Get in Touch</p>
-          <h1 className="font-serif text-4xl md:text-5xl font-normal text-text-main">
-            We're here to help
-          </h1>
-          <p className="font-sans text-text-muted text-[15px] max-w-xl mx-auto">
-            Have a question about your order, our services, or need styling advice? Our customer experience team is available and ready to assist you.
-          </p>
-        </div>
+        {/* Standardized Page Banner matching Shop reference */}
+        <PageBanner
+          title="We're Here to Help"
+          highlightText="Customer Concierge"
+          description="Have questions about your order, boutique styling, or seller partnerships? Our dedicated concierge team is ready to assist you."
+          ctaText="Send a Message"
+          ctaLink="#contact-form"
+          imageSrc="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=800&auto=format&fit=crop"
+          fallbackImage="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=85&w=800"
+          imageAlt="Contact Femazon Support"
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
           

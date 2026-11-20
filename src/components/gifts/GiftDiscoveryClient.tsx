@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useFemazonStore } from "@/context/FemazonStoreContext";
 import type { GiftCatalogProduct } from "@/lib/giftCatalog";
+import { PageBanner } from "@/components/common/PageBanner";
 
 type GiftDiscoveryClientProps = {
   products: GiftCatalogProduct[];
@@ -280,46 +281,19 @@ export function GiftDiscoveryClient({
 
   return (
     <main className="min-h-screen bg-[#FAF7F5] pb-20 text-stone-900">
-      {/* 1. HERO BANNER */}
-      <section className="overflow-hidden bg-[#fff1f4] px-4 py-10 text-[#3D110F] sm:py-14">
-        <div className="mx-auto grid max-w-[1400px] items-center gap-7 md:grid-cols-[1fr_0.85fr] md:gap-12">
-          <div className="py-2">
-            <span className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#C8A253]/50 bg-white/85 px-3.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-[#4A1513] sm:text-xs">
-              <Gift size={14} /> SENT WITH LOVE · FEMAZON GIFTING
-            </span>
-            <h1 className="max-w-3xl font-serif text-3xl font-normal leading-tight tracking-tight sm:text-5xl">
-              Gifts for All Occasions
-            </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-stone-600 sm:text-base">
-              Curated gift hampers, fresh flowers, artisan chocolates, celebration cakes, personalized keepsakes, jewellery, and self-care boxes — delivered with personal messages and luxury gift wrapping.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <a
-                href="#gift-results"
-                className="inline-flex items-center gap-2 rounded-full bg-[#4A1513] px-6 py-3 text-xs font-bold uppercase tracking-wider text-white shadow-sm hover:bg-[#38100e] transition"
-              >
-                <span>Explore Gifts</span>
-                <ArrowRight size={14} />
-              </a>
-              <Link
-                href="/partner/register"
-                className="inline-flex items-center gap-2 rounded-full border border-[#4A1513] bg-white px-6 py-3 text-xs font-bold uppercase tracking-wider text-[#4A1513] hover:bg-rose-50 transition"
-              >
-                <Store size={14} />
-                <span>Sell Gifts on Femazon</span>
-              </Link>
-            </div>
-          </div>
-          <div className="relative hidden h-60 overflow-hidden rounded-3xl md:block lg:h-72 shadow-md">
-            <img
-              src="https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=1200&auto=format&fit=crop"
-              alt="A carefully wrapped gift box"
-              className="h-full w-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#3D110F]/35 to-transparent" />
-          </div>
-        </div>
-      </section>
+      {/* 1. HERO BANNER: STANDARDIZED PAGE BANNER MATCHING SHOP REFERENCE */}
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 pt-4">
+        <PageBanner
+          title="Gifts for All Occasions"
+          highlightText="Curated Celebrations"
+          description="Curated gift hampers, fresh flowers, artisan chocolates, celebration cakes, personalized keepsakes & luxury gift wrapping."
+          ctaText="Explore Gifts"
+          ctaLink="#gift-results"
+          imageSrc="/banners/hero_gifts.jpg"
+          fallbackImage="https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=1200&auto=format&fit=crop"
+          imageAlt="Gifts for All Occasions"
+        />
+      </div>
 
       {/* 2. SHOP BY OCCASION (12 OCCASIONS) */}
       <section className="mx-auto max-w-[1400px] px-4 pt-10 sm:px-6 lg:px-8">

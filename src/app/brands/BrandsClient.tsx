@@ -15,6 +15,7 @@ import {
   X
 } from "lucide-react";
 import { ACTIVE_MARKETPLACE_LOCATIONS } from "@/data/locationMarketplaceData";
+import { PageBanner } from "@/components/common/PageBanner";
 
 export interface BrandListing {
   id: string | number;
@@ -87,22 +88,19 @@ export function BrandsClient({ initialBrands, initialCity = "all" }: BrandsClien
   return (
     <div className="min-h-screen bg-[#FAF7F5] text-stone-900 font-sans">
       
-      {/* Header Banner */}
-      <section className="bg-[#4A1513] text-white py-12 sm:py-16 px-4 sm:px-6 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#E5C3A6_1px,transparent_1px)] [background-size:16px_16px]" />
-        <div className="max-w-[1440px] mx-auto relative z-10 text-center sm:text-left">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-[#E5C3A6] text-xs font-bold uppercase tracking-[0.2em] mb-3">
-            <Store size={13} />
-            <span>FEMAZON DIRECTORY</span>
-          </div>
-          <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl text-white font-light tracking-wide">
-            Our Brands &amp; Boutiques
-          </h1>
-          <p className="mt-2 text-white/80 max-w-2xl text-xs sm:text-sm md:text-base font-light">
-            Discover independent women&apos;s fashion ateliers, generational master weavers, beauty formulators and handcrafted gift makers across India.
-          </p>
-        </div>
-      </section>
+      {/* Standardized Page Banner matching Shop reference */}
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+        <PageBanner
+          title="Our Brands & Boutiques"
+          highlightText="Verified Ateliers"
+          description="Discover independent women's fashion ateliers, generational master weavers, beauty formulators and handcrafted gift makers across India."
+          ctaText="Explore Boutiques"
+          ctaLink="#brands-list"
+          imageSrc="/banners/hero_runway.jpg"
+          fallbackImage="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&q=80&w=800"
+          imageAlt="Our Brands and Boutiques"
+        />
+      </div>
 
       {/* Main Container */}
       <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">

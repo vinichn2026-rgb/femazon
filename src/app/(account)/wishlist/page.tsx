@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Heart, ShoppingBag, Trash2 } from "lucide-react";
+import { PageBanner } from "@/components/common/PageBanner";
 
 type WishlistItem = {
   id: number;
@@ -100,12 +101,16 @@ export default function WishlistPage() {
 
   return (
     <div className="space-y-6">
-      <div className="mb-8">
-        <h1 className="font-serif text-3xl font-normal text-text-main mb-2">Your Wishlist</h1>
-        <p className="font-sans text-sm text-text-muted">
-          {items.length} {items.length === 1 ? 'item' : 'items'} saved
-        </p>
-      </div>
+      {/* Standardized Luxury Page Banner */}
+      <PageBanner
+        title="Your Saved Wishlist"
+        highlightText="Curated Favorites"
+        description="Cherished pieces, festive bridal wear, and celebration picks saved to your private Femazon vault."
+        ctaText="Explore Collection"
+        ctaLink="/shop"
+        imageSrc="https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?q=80&w=800&auto=format&fit=crop"
+        imageAlt="Femazon Wishlist"
+      />
 
       {items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white border border-accent/10 rounded-3xl mx-auto">

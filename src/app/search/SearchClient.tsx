@@ -8,7 +8,7 @@ import { FilterSidebar, FilterState } from '@/components/shop/FilterSidebar';
 import { ShopControls } from '@/components/shop/ShopControls';
 import { ActiveFilterChips } from '@/components/shop/ActiveFilterChips';
 import { ProductCard, ProductCardSkeleton } from '@/components/shop/ProductCard';
-import { LuxuryPromoBanner } from '@/components/shop/LuxuryPromoBanner';
+import { PageBanner } from '@/components/common/PageBanner';
 import type { PartnerDirectoryListing } from '@/lib/partnerDirectory';
 
 const initialFilterState: FilterState = {
@@ -184,8 +184,19 @@ export default function SearchClient({
 
   return (
     <div className="bg-surface min-h-screen text-text-main font-sans pb-24">
-      {/* Luxury Burgundy & Gold Promo Banner */}
-      <LuxuryPromoBanner />
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 pt-2 sm:pt-3">
+        {/* Standardized Luxury Page Banner */}
+        <PageBanner
+          title="Search Results"
+          highlightText={query ? `"${query}"` : "Couture Catalog"}
+          description="Explore curated couture, handcrafted accessories, and designer boutique pieces tailored to your search."
+          ctaText="Explore Shop"
+          ctaLink="/shop"
+          imageSrc="/banners/hero_saree.jpg"
+          imageAlt="Search Results"
+          className="mb-4 sm:mb-6"
+        />
+      </div>
 
       {initialProducts.length === 0 && serviceResults.length === 0 && partnerResults.length === 0 ? (
         // Empty State

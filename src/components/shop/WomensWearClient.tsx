@@ -25,6 +25,7 @@ import {
 import { useFemazonStore } from '@/context/FemazonStoreContext';
 import { BoutiqueDirectory } from '@/components/partner/BoutiqueDirectory';
 import type { PartnerDirectoryListing } from '@/lib/partnerDirectory';
+import { PageBanner } from '@/components/common/PageBanner';
 
 interface WomensWearClientProps {
   initialProducts: WomensWearProduct[];
@@ -367,57 +368,19 @@ export function WomensWearClient({
   return (
     <div className="bg-[#FAF7F5] min-h-screen text-stone-900 font-sans pb-24">
       
-      {/* 1. HERO BANNER: LUXURY WOMEN'S WEAR MARKETPLACE */}
-      <section className="relative w-full bg-[#4A1513] text-white overflow-hidden py-14 sm:py-20">
-        <div className="absolute inset-0 z-0 opacity-25 mix-blend-overlay">
-          <img 
-            src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1600&auto=format&fit=crop" 
-            alt="Femazon Women's Wear"
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-[#38100e] via-[#4A1513]/90 to-transparent z-0" />
-
-        <div className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl">
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-rose-200 text-xs font-bold tracking-widest uppercase mb-3.5 backdrop-blur-xs">
-              <Sparkles size={14} /> FEMAZON WOMEN&apos;S WEAR MARKETPLACE
-            </span>
-            <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-3">
-              Curated Women&apos;s Fashion &amp; Boutiques
-            </h1>
-            <p className="font-serif text-lg text-rose-100 font-light italic mb-4">
-              &quot;Every silhouette, celebration, and everyday luxury — directly from independent designers.&quot;
-            </p>
-            <p className="text-sm text-stone-200 leading-relaxed max-w-2xl mb-6">
-              Discover authentic handloom sarees, designer kurtis, regal sharara suits, statement lehengas, western tailoring, plus-size curves, and conscious maternity wear curated from verified boutiques across India.
-            </p>
-
-            {/* Quick Hero Search Bar */}
-            <div className="relative max-w-xl">
-              <input 
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search across Sarees, Anarkalis, Co-ords, Boutiques, Fabrics..."
-                className="w-full bg-white text-stone-900 rounded-full pl-11 pr-24 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 shadow-lg"
-              />
-              <Search size={18} className="absolute left-4 top-3.5 text-stone-400" />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-14 top-3 text-stone-400 hover:text-stone-700 text-xs p-1"
-                >
-                  Clear
-                </button>
-              )}
-              <span className="absolute right-4 top-3 text-xs font-bold text-[#4A1513] uppercase tracking-wider">
-                SEARCH
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* 1. HERO BANNER: STANDARDIZED PAGE BANNER MATCHING SHOP REFERENCE */}
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4">
+        <PageBanner
+          title="Women's Wear"
+          highlightText="Curated Collections"
+          description="Discover authentic handloom sarees, designer kurtis, regal lehengas & western tailoring from verified independent boutiques."
+          ctaText="Explore Collections"
+          ctaLink="#catalog"
+          imageSrc="/banners/hero_saree.jpg"
+          fallbackImage="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=85&w=800"
+          imageAlt="Women's Wear Collection"
+        />
+      </div>
 
       <BoutiqueDirectory boutiques={boutiques} directoryError={boutiqueDirectoryError} />
 

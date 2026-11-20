@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, MessageCircleQuestion } from 'lucide-react';
 import Link from 'next/link';
+import { PageBanner } from '@/components/common/PageBanner';
 
 const FAQ_CATEGORIES = [
   { id: 'orders', label: 'Orders & Shipping' },
@@ -72,21 +73,20 @@ export default function FAQPage() {
   const filteredFaqs = FAQS.filter(faq => faq.category === activeCategory);
 
   return (
-    <main className="min-h-screen bg-surface py-12 md:py-20">
+    <main className="min-h-screen bg-surface py-6 md:py-10">
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
         
-        {/* Header Section */}
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-accent/10 text-primary mb-2">
-            <MessageCircleQuestion size={24} />
-          </div>
-          <h1 className="font-serif text-4xl md:text-5xl font-normal text-text-main">
-            Frequently Asked Questions
-          </h1>
-          <p className="font-sans text-text-muted text-[15px] max-w-xl mx-auto">
-            Find answers to common questions about orders, shipping, returns, our unique services, and more.
-          </p>
-        </div>
+        {/* Standardized Page Banner matching Shop reference */}
+        <PageBanner
+          title="Frequently Asked Questions"
+          highlightText="Help & Support"
+          description="Find clear answers about orders, white-glove shipping, returns, stylist bookings, and vendor onboarding."
+          ctaText="Browse Topics"
+          ctaLink="#faq-topics"
+          imageSrc="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=800&auto=format&fit=crop"
+          fallbackImage="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=85&w=800"
+          imageAlt="Femazon Help & FAQs"
+        />
 
         <div className="flex flex-col md:flex-row gap-10 lg:gap-16">
           

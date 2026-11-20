@@ -18,6 +18,7 @@ import {
   Info
 } from "lucide-react";
 import { useFemazonStore, BookingItem } from "@/context/FemazonStoreContext";
+import { PageBanner } from "@/components/common/PageBanner";
 
 interface ManagedService {
   id: number;
@@ -250,20 +251,18 @@ export function SimpleServicesClient({ dbServices }: { dbServices?: any[] }) {
 
   return (
     <div className="min-h-screen bg-[#FDFBF9] text-[#2D2A26] pb-24">
-      {/* 1. Header / Discovery Hero */}
-      <div className="bg-[#FAF6F0] border-b border-[#E8DFD5] pt-12 pb-14 px-4 sm:px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#EFE4D6] text-[#4A1513] text-xs font-bold uppercase tracking-wider mb-4">
-            <HeartHandshake size={14} />
-            Femazon Managed Services
-          </span>
-          <h1 className="font-serif text-3xl sm:text-5xl text-[#2B1810] font-normal leading-tight mb-4">
-            How Can Femazon Help You?
-          </h1>
-          <p className="text-base sm:text-lg text-[#6B5E55] max-w-2xl mx-auto leading-relaxed">
-            Find the right service for your special family moments and everyday needs. Book easily — we’ll help arrange the rest.
-          </p>
-        </div>
+      {/* 1. Standardized Page Banner matching Shop reference */}
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 pt-4 pb-2">
+        <PageBanner
+          title="Femazon Managed Services"
+          highlightText="At-Home Care"
+          description="Book trusted at-home fashion, makeup, mehendi art, and saree draping services coordinated directly by Femazon for you and your family."
+          ctaText="Track My Bookings"
+          ctaLink="/bookings"
+          imageSrc="https://images.unsplash.com/photo-1598305015383-7d727b11c97a?q=80&w=800&auto=format&fit=crop"
+          fallbackImage="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=800&auto=format&fit=crop"
+          imageAlt="Femazon Managed Services"
+        />
       </div>
 
       {/* 2. Reassurance Banner */}
