@@ -1076,13 +1076,13 @@ export function SiteLayout({
   return (
     <div className="min-h-screen bg-background text-text-main font-sans overflow-x-hidden">
       
-      {/* 1. Top Announcement Banner matching reference */}
-      <div className="w-full text-white py-1.5 px-4 text-center relative z-40 transition-colors shadow-2xs bg-black">
-        <div className="mx-auto flex max-w-[1440px] items-center justify-center gap-2.5 sm:gap-6 text-[10.5px] sm:text-[11.5px] font-medium tracking-wider uppercase text-stone-200">
+      {/* 1. Top Announcement Banner matching Femazon maroon branding */}
+      <div className="w-full text-white py-1.5 px-4 text-center relative z-40 transition-colors shadow-2xs bg-[#4A1513]">
+        <div className="mx-auto flex max-w-[1440px] items-center justify-center gap-2.5 sm:gap-6 text-[10.5px] sm:text-[11.5px] font-medium tracking-wider uppercase text-white/90">
           <span>Free Shipping Above ₹3000</span>
-          <span className="text-stone-600">|</span>
+          <span className="text-white/40">|</span>
           <span>Easy 7-Day Returns</span>
-          <span className="text-stone-600 hidden xs:inline">|</span>
+          <span className="text-white/40 hidden xs:inline">|</span>
           <span className="hidden xs:inline">100% Authentic Luxury</span>
         </div>
       </div>
