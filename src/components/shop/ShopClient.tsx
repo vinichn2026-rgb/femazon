@@ -189,7 +189,7 @@ export function ShopClient({
   const [selectedCategory, setSelectedCategory] = useState(initialCategory || "All");
   const [selectedSilhouette, setSelectedSilhouette] = useState(initialSilhouette || "All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSort, setSelectedSort] = useState("Latest First");
+  const [selectedSort, setSelectedSort] = useState("Recommended");
   
   const [filters, setFilters] = useState<FilterState>(initialFilterState);
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
@@ -564,49 +564,50 @@ export function ShopClient({
       <LuxuryPromoBanner />
 
       {/* Main Layout Architecture */}
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 pt-5 md:pt-7 flex flex-col lg:flex-row gap-8 lg:gap-12 relative">
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 pt-5 md:pt-7">
         
-        {/* Filter Sidebar (Desktop & Mobile Drawer) with Sellers & Brands right under Categories */}
-        <FilterSidebar 
-          categories={activeCategories}
+        {/* Top Control Bar spanning equally above Filter Sidebar & Product section */}
+        <ShopControls 
+          totalItems={totalItems}
           selectedCategory={selectedCategory}
-          onSelectCategory={(c) => setSelectedCategory(c)}
           selectedDepartment={selectedDepartment}
+          departments={SHOP_DEPARTMENTS}
           onSelectDepartment={handleSelectDepartment}
-          availableBrands={availableBrands}
+          searchQuery={searchQuery}
+          onSearchChange={(q) => setSearchQuery(q)}
+          selectedSort={selectedSort}
+          onSortChange={(s) => setSelectedSort(s)}
           filters={filters}
           onFilterChange={handleFilterChange}
-          onClearAll={handleClearAllFilters}
-          isOpen={isFilterDrawerOpen}
-          onClose={() => setIsFilterDrawerOpen(false)}
+          onOpenMobileFilters={() => setIsFilterDrawerOpen(true)}
         />
 
-        {/* Right Main Section */}
-        <div className="flex-1 w-full min-w-0 flex flex-col">
-          
-          {/* Top Control Bar with Department Bar & Active Filters */}
-          <ShopControls 
-            totalItems={totalItems}
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 relative">
+          {/* Filter Sidebar (Desktop & Mobile Drawer) with Sellers & Brands right under Categories */}
+          <FilterSidebar 
+            categories={activeCategories}
             selectedCategory={selectedCategory}
+            onSelectCategory={(c) => setSelectedCategory(c)}
             selectedDepartment={selectedDepartment}
-            departments={SHOP_DEPARTMENTS}
             onSelectDepartment={handleSelectDepartment}
-            searchQuery={searchQuery}
-            onSearchChange={(q) => setSearchQuery(q)}
-            selectedSort={selectedSort}
-            onSortChange={(s) => setSelectedSort(s)}
+            availableBrands={availableBrands}
             filters={filters}
             onFilterChange={handleFilterChange}
-            onOpenMobileFilters={() => setIsFilterDrawerOpen(true)}
-          />
-
-          <ActiveFilterChips 
-            activeFilters={activeFilterChips}
-            onRemoveFilter={handleRemoveChip}
             onClearAll={handleClearAllFilters}
+            isOpen={isFilterDrawerOpen}
+            onClose={() => setIsFilterDrawerOpen(false)}
           />
 
-          {/* Product Grid or Empty State */}
+          {/* Right Main Section */}
+          <div className="flex-1 w-full min-w-0 flex flex-col">
+            
+            <ActiveFilterChips 
+              activeFilters={activeFilterChips}
+              onRemoveFilter={handleRemoveChip}
+              onClearAll={handleClearAllFilters}
+            />
+
+            {/* Product Grid or Empty State */}
           {isMounted ? (
             totalItems > 0 ? (
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-7 md:gap-x-6 md:gap-y-10">
@@ -645,7 +646,8 @@ export function ShopClient({
           
         </div>
       </div>
-
     </div>
+
+  </div>
   );
 }
