@@ -1672,44 +1672,83 @@ export function SiteLayout({
         </div>
       </header>
 
-      {/* Mobile Sliding Drawer & Backdrop (below header so header actions stay fixed & visible) */}
+      {/* Mobile Sliding Drawer & Backdrop (comes upon the header section while open) */}
       <div 
-        className={`fixed inset-0 top-[58px] sm:top-[64px] z-40 bg-[#4A1513]/40 backdrop-blur-xs transition-opacity duration-300 lg:hidden ${
+        className={`fixed inset-0 z-[60] bg-black/60 backdrop-blur-xs transition-opacity duration-300 lg:hidden ${
           isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={() => setIsMobileMenuOpen(false)}
       />
       <div 
-        className={`fixed top-[58px] sm:top-[64px] bottom-0 left-0 z-40 w-full max-w-[320px] bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden flex flex-col ${
+        className={`fixed inset-y-0 left-0 z-[70] w-full max-w-[320px] sm:max-w-[340px] bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden flex flex-col ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        {/* Mobile Header User Summary Card */}
-        <div className="flex items-center justify-between border-b border-stone-200 px-5 py-3.5 bg-[#FAF7F5]">
+        {/* Drawer Header: Logo on left, Close X button on right */}
+        <div className="flex h-[58px] sm:h-[64px] items-center justify-between border-b border-stone-200 px-5 bg-white shrink-0">
+          <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img 
+              src="/femazon-logo-transparent.png" 
+              alt="Femazon" 
+              className="h-8 w-auto object-contain"
+              style={{ maxHeight: '34px', height: '32px', width: 'auto' }}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "/femazon-logo.png";
+              }}
+            />
+          </Link>
+          <button 
+            onClick={() => setIsMobileMenuOpen(false)} 
+            className="text-stone-700 hover:text-[#4A1513] p-1.5 rounded-full hover:bg-stone-100 transition-colors cursor-pointer"
+            aria-label="Close menu"
+          >
+            <X size={22} strokeWidth={1.8} />
+          </button>
+        </div>
+
+        {/* User Account Quick Banner */}
+        <div className="flex items-center justify-between border-b border-stone-200/80 px-5 py-3 bg-[#FAF7F5] shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-[#4A1513] text-white flex items-center justify-center font-serif text-xs font-bold shadow-xs">
+            <div className="w-8 h-8 rounded-full bg-[#4A1513] text-white flex items-center justify-center font-serif text-xs font-bold shadow-xs shrink-0">
               {isLoggedIn ? userFirstName.charAt(0).toUpperCase() : <User size={15} />}
             </div>
-            <div>
-              <p className="text-xs font-bold text-stone-800">
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-stone-800 truncate">
                 {isLoggedIn ? `Hi, ${userFirstName}` : 'Welcome to Femazon'}
               </p>
-              <p className="text-[10px] text-stone-500">
+              <p className="text-[10.5px] text-stone-500 truncate">
                 {isLoggedIn ? (user?.email || 'Femazon Privé') : 'Luxury Fashion & Couture'}
               </p>
             </div>
           </div>
-          <button 
-            onClick={() => setIsMobileMenuOpen(false)} 
-            className="text-stone-400 hover:text-stone-800 p-1 cursor-pointer"
-            aria-label="Close menu"
-          >
-            <X size={18} strokeWidth={1.8} />
-          </button>
+          {isLoggedIn ? (
+            <button
+              type="button"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                requestLogout();
+              }}
+              className="text-[11px] font-bold text-rose-600 hover:underline shrink-0 ml-2 cursor-pointer"
+            >
+              Logout
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                openAuthModal('otp');
+              }}
+              className="text-[11px] font-bold text-[#4A1513] hover:underline shrink-0 ml-2 cursor-pointer"
+            >
+              Sign In
+            </button>
+          )}
         </div>
 
         {/* Mobile Search */}
-        <div className="px-5 pt-3 pb-2">
+        <div className="px-5 pt-3 pb-2 shrink-0">
           <SearchBar className="!max-w-full" />
         </div>
 
