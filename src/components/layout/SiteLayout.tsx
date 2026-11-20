@@ -1672,51 +1672,6 @@ export function SiteLayout({
         </div>
       </header>
 
-      {/* 3. Horizontal Category Navigation Strip matching Reference */}
-      <nav className="w-full bg-white border-b border-stone-200/80 overflow-x-auto no-scrollbar relative z-30 shadow-2xs">
-        <div className="mx-auto flex max-w-[1440px] items-center gap-3 sm:gap-5 px-4 sm:px-6 py-2 text-[11.5px] sm:text-xs font-medium text-stone-700 whitespace-nowrap">
-          <Link href="/shop?filter=new" className="flex items-center gap-1 text-[#4A1513] font-bold hover:opacity-85 transition shrink-0">
-            <span>✨ New In</span>
-          </Link>
-          <span className="text-stone-300 shrink-0">|</span>
-          <Link href="/womens-wear" className="hover:text-[#4A1513] transition shrink-0">
-            Women
-          </Link>
-          <span className="text-stone-300 shrink-0">|</span>
-          <Link href="/shop?category=Kurta+Sets" className="hover:text-[#4A1513] transition shrink-0">
-            Kurta Sets
-          </Link>
-          <span className="text-stone-300 shrink-0">|</span>
-          <Link href="/womens-wear?category=Lehengas" className="hover:text-[#4A1513] transition shrink-0">
-            Lehengas
-          </Link>
-          <span className="text-stone-300 shrink-0">|</span>
-          <Link href="/womens-wear?category=Sarees" className="hover:text-[#4A1513] transition shrink-0">
-            Sarees
-          </Link>
-          <span className="text-stone-300 shrink-0">|</span>
-          <Link href="/shop?category=Wedding" className="hover:text-[#4A1513] transition shrink-0">
-            Wedding
-          </Link>
-          <span className="text-stone-300 shrink-0">|</span>
-          <Link href="/shop?readyToShip=true" className="hover:text-[#4A1513] transition shrink-0">
-            Ready To Ship
-          </Link>
-          <span className="text-stone-300 shrink-0">|</span>
-          <Link href="/beauty" className="hover:text-[#4A1513] transition shrink-0">
-            Beauty
-          </Link>
-          <span className="text-stone-300 shrink-0">|</span>
-          <Link href="/shop?category=Jewelry" className="hover:text-[#4A1513] transition shrink-0">
-            Jewellery
-          </Link>
-          <span className="text-stone-300 shrink-0">|</span>
-          <Link href="/shop?onSale=true" className="text-[#4A1513] font-bold hover:opacity-85 transition shrink-0">
-            ⭐ On Sale
-          </Link>
-        </div>
-      </nav>
-
       {/* Mobile Sliding Drawer & Backdrop (below header so header actions stay fixed & visible) */}
       <div 
         className={`fixed inset-0 top-[58px] sm:top-[64px] z-40 bg-[#4A1513]/40 backdrop-blur-xs transition-opacity duration-300 lg:hidden ${
