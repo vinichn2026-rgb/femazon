@@ -1754,13 +1754,60 @@ export function SiteLayout({
               <span className="px-1.5 py-0.5 rounded-full bg-rose-100 text-[#4A1513] text-[10px] font-bold">New</span>
             </Link>
 
-            <Link 
-              href="/shop"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block py-2.5 hover:text-[#4A1513] transition-colors"
-            >
-              Shop
-            </Link>
+            <div>
+              <button 
+                type="button"
+                onClick={() => setActiveAccordion(activeAccordion === 'ShopNav' ? null : 'ShopNav')}
+                className="w-full flex items-center justify-between py-2.5 hover:text-[#4A1513] transition-colors cursor-pointer text-left font-medium"
+              >
+                <span>Shop</span>
+                <ChevronDown 
+                  size={14} 
+                  className={`text-stone-400 transition-transform duration-200 ${
+                    activeAccordion === 'ShopNav' ? 'rotate-180 text-[#4A1513]' : ''
+                  }`} 
+                />
+              </button>
+              {activeAccordion === 'ShopNav' && (
+                <div className="pl-3 py-1.5 space-y-1 bg-[#FAF7F5]/80 rounded-xl my-1 border border-stone-200/60 animate-in fade-in duration-150">
+                  <Link 
+                    href="/womens-wear"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block py-1.5 text-[12.5px] text-stone-700 hover:text-[#4A1513] font-medium"
+                  >
+                    1. Women&apos;s Wear
+                  </Link>
+                  <Link 
+                    href="/beauty?view=products"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block py-1.5 text-[12.5px] text-stone-700 hover:text-[#4A1513] font-medium"
+                  >
+                    2. Beauty &amp; Self-care
+                  </Link>
+                  <Link 
+                    href="/jewellery"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block py-1.5 text-[12.5px] text-stone-700 hover:text-[#4A1513] font-medium"
+                  >
+                    3. Jewellery &amp; Accessories
+                  </Link>
+                  <Link 
+                    href="/gifts"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block py-1.5 text-[12.5px] text-stone-700 hover:text-[#4A1513] font-medium"
+                  >
+                    4. Gifts for Every Occasion
+                  </Link>
+                  <Link 
+                    href="/shop"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block pt-1.5 text-[11px] text-[#4A1513] font-bold uppercase tracking-wider hover:underline"
+                  >
+                    View All Products →
+                  </Link>
+                </div>
+              )}
+            </div>
 
             <Link 
               href="/personal-styling"
@@ -1967,12 +2014,11 @@ export function SiteLayout({
             
             <div className="flex flex-col items-center gap-4 text-center md:items-start md:text-left">
               <h4 className="font-serif text-sm font-bold tracking-widest uppercase text-[#4A1513] mb-2">Shop</h4>
-              <Link href="/shop?sort=newest" className="text-xs font-medium text-stone-500 hover:text-[#4A1513] transition">New Arrivals</Link>
-              <Link href="/shop?category=clothing" className="text-xs font-medium text-stone-500 hover:text-[#4A1513] transition">Clothing</Link>
-              <Link href="/shop?category=shoes" className="text-xs font-medium text-stone-500 hover:text-[#4A1513] transition">Shoes</Link>
-              <Link href="/shop?category=accessories" className="text-xs font-medium text-stone-500 hover:text-[#4A1513] transition">Accessories</Link>
-              <Link href="/shop?category=beauty" className="text-xs font-medium text-stone-500 hover:text-[#4A1513] transition">Beauty</Link>
-              <Link href="/shop?category=offers" className="text-xs font-medium text-[#4A1513] hover:underline transition">Offers</Link>
+              <Link href="/womens-wear" className="text-xs font-medium text-stone-500 hover:text-[#4A1513] transition">Women&apos;s Wear</Link>
+              <Link href="/beauty" className="text-xs font-medium text-stone-500 hover:text-[#4A1513] transition">Beauty &amp; Self-care</Link>
+              <Link href="/jewellery" className="text-xs font-medium text-stone-500 hover:text-[#4A1513] transition">Jewellery &amp; Accessories</Link>
+              <Link href="/gifts" className="text-xs font-medium text-stone-500 hover:text-[#4A1513] transition">Gifts for Every Occasion</Link>
+              <Link href="/shop" className="text-xs font-semibold text-[#4A1513] hover:underline transition">View All Products</Link>
             </div>
 
             <div className="flex flex-col items-center gap-4 text-center md:items-start md:text-left">

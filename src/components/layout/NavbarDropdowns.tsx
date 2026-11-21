@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 
 interface DropdownProps {
   isOpen: boolean;
@@ -12,14 +12,41 @@ interface DropdownProps {
 }
 
 /* =========================================================================
-   1. SHOP DROPDOWN: Clean 3-Column Simple Category List
+   1. SHOP DROPDOWN: Minimal & Elegant 4 Main Categories
    ========================================================================= */
+const SHOP_MAIN_CATEGORIES = [
+  {
+    title: "Women's Wear",
+    href: "/womens-wear",
+    description: "Sarees, Kurtas, Lehengas, Dresses & Western Wear",
+    accent: "bg-[#4A1513]",
+  },
+  {
+    title: "Beauty & Self-care",
+    href: "/beauty?view=products",
+    description: "Skincare, Haircare, Makeup, Fragrances & Botanical Rituals",
+    accent: "bg-[#8B5E3C]",
+  },
+  {
+    title: "Jewellery & Accessories",
+    href: "/jewellery",
+    description: "Regal Kundan, Handbags, Potlis, Footwear & Shawls",
+    accent: "bg-[#C5A059]",
+  },
+  {
+    title: "Gifts for Every Occasion",
+    href: "/gifts",
+    description: "Curated Hampers, Celebration Boxes & Thoughtful Surprises",
+    accent: "bg-[#6B2D5C]",
+  },
+];
+
 export function ShopDropdown({ isOpen, onClose, onMouseEnter, onMouseLeave }: DropdownProps) {
   return (
     <div
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
-      className={`absolute top-full left-0 mt-1 w-[580px] bg-white rounded-xl shadow-[0_12px_32px_rgba(0,0,0,0.12)] border border-stone-200/90 p-5 z-50 transition-all duration-180 ease-out select-none ${
+      className={`absolute top-full left-0 mt-1 w-[380px] bg-white rounded-2xl shadow-[0_16px_40px_rgba(74,21,19,0.12)] border border-stone-200/90 p-3.5 z-50 transition-all duration-180 ease-out select-none ${
         isOpen
           ? "opacity-100 translate-y-0 pointer-events-auto visible"
           : "opacity-0 -translate-y-1 pointer-events-none invisible"
@@ -28,268 +55,51 @@ export function ShopDropdown({ isOpen, onClose, onMouseEnter, onMouseLeave }: Dr
       {/* Invisible hover bridge to eliminate any gap between nav link and dropdown */}
       <div className="absolute -top-3 left-0 right-0 h-3" />
 
-      <div className="grid grid-cols-3 gap-6">
-        {/* Column 1: Indian Wear */}
-        <div>
-          <Link
-            href="/womens-wear?category=Indian+Wear"
-            onClick={onClose}
-            className="text-[11px] font-bold uppercase tracking-wider text-[#4A1513] block pb-1.5 mb-2.5 border-b border-stone-100 hover:underline"
-          >
-            Indian Wear
-          </Link>
-          <div className="space-y-2">
-            <div>
-              <Link
-                href="/womens-wear?category=Sarees"
-                onClick={onClose}
-                className="text-[12.5px] font-semibold text-stone-800 hover:text-[#4A1513] transition-colors block"
-              >
-                Sarees
-              </Link>
-              <div className="pl-1.5 mt-0.5 space-y-0.5">
-                <Link
-                  href="/womens-wear?category=Sarees&subCategory=Banarasi+Silk"
-                  onClick={onClose}
-                  className="text-[11.5px] text-stone-500 hover:text-[#4A1513] transition-colors block py-0.5"
-                >
-                  Banarasi Silk
-                </Link>
-                <Link
-                  href="/womens-wear?category=Sarees&subCategory=Kanjeevaram+Heritage"
-                  onClick={onClose}
-                  className="text-[11.5px] text-stone-500 hover:text-[#4A1513] transition-colors block py-0.5"
-                >
-                  Kanjeevaram
-                </Link>
-                <Link
-                  href="/womens-wear?category=Sarees&subCategory=Organza+%26+Tissue"
-                  onClick={onClose}
-                  className="text-[11.5px] text-stone-500 hover:text-[#4A1513] transition-colors block py-0.5"
-                >
-                  Organza &amp; Tissue
-                </Link>
-              </div>
-            </div>
-
-            <div>
-              <Link
-                href="/womens-wear?category=Kurtas+%26+Kurta+Sets"
-                onClick={onClose}
-                className="text-[12.5px] font-semibold text-stone-800 hover:text-[#4A1513] transition-colors block"
-              >
-                Kurtas &amp; Sets
-              </Link>
-              <div className="pl-1.5 mt-0.5 space-y-0.5">
-                <Link
-                  href="/womens-wear?category=Kurtas+%26+Kurta+Sets&subCategory=Straight+Kurta+Sets"
-                  onClick={onClose}
-                  className="text-[11.5px] text-stone-500 hover:text-[#4A1513] transition-colors block py-0.5"
-                >
-                  Straight Sets
-                </Link>
-                <Link
-                  href="/womens-wear?category=Kurtas+%26+Kurta+Sets&subCategory=Chikankari+Handloom"
-                  onClick={onClose}
-                  className="text-[11.5px] text-stone-500 hover:text-[#4A1513] transition-colors block py-0.5"
-                >
-                  Chikankari
-                </Link>
-              </div>
-            </div>
-
-            <Link
-              href="/womens-wear?category=Lehengas"
-              onClick={onClose}
-              className="text-[12.5px] font-semibold text-stone-800 hover:text-[#4A1513] transition-colors block"
-            >
-              Lehengas
-            </Link>
-
-            <Link
-              href="/womens-wear?category=Salwar+Suits"
-              onClick={onClose}
-              className="text-[12.5px] font-semibold text-stone-800 hover:text-[#4A1513] transition-colors block"
-            >
-              Salwar Suits &amp; Anarkali
-            </Link>
-
-            <Link
-              href="/womens-wear?category=Ethnic+Dresses"
-              onClick={onClose}
-              className="text-[12.5px] font-semibold text-stone-800 hover:text-[#4A1513] transition-colors block"
-            >
-              Ethnic Dresses
-            </Link>
-          </div>
-        </div>
-
-        {/* Column 2: Western Wear */}
-        <div>
-          <Link
-            href="/womens-wear?category=Western+Wear"
-            onClick={onClose}
-            className="text-[11px] font-bold uppercase tracking-wider text-[#4A1513] block pb-1.5 mb-2.5 border-b border-stone-100 hover:underline"
-          >
-            Western Wear
-          </Link>
-          <div className="space-y-2">
-            <div>
-              <Link
-                href="/womens-wear?category=Dresses"
-                onClick={onClose}
-                className="text-[12.5px] font-semibold text-stone-800 hover:text-[#4A1513] transition-colors block"
-              >
-                Dresses
-              </Link>
-              <div className="pl-1.5 mt-0.5 space-y-0.5">
-                <Link
-                  href="/womens-wear?category=Dresses&subCategory=Maxi+Dresses"
-                  onClick={onClose}
-                  className="text-[11.5px] text-stone-500 hover:text-[#4A1513] transition-colors block py-0.5"
-                >
-                  Maxi Dresses
-                </Link>
-                <Link
-                  href="/womens-wear?category=Dresses&subCategory=Midi+Dresses"
-                  onClick={onClose}
-                  className="text-[11.5px] text-stone-500 hover:text-[#4A1513] transition-colors block py-0.5"
-                >
-                  Midi &amp; Evening
-                </Link>
-              </div>
-            </div>
-
-            <div>
-              <Link
-                href="/womens-wear?category=Tops+%26+Shirts"
-                onClick={onClose}
-                className="text-[12.5px] font-semibold text-stone-800 hover:text-[#4A1513] transition-colors block"
-              >
-                Tops &amp; Shirts
-              </Link>
-              <div className="pl-1.5 mt-0.5 space-y-0.5">
-                <Link
-                  href="/womens-wear?category=Tops+%26+Shirts&subCategory=Silk+%26+Satin+Shirts"
-                  onClick={onClose}
-                  className="text-[11.5px] text-stone-500 hover:text-[#4A1513] transition-colors block py-0.5"
-                >
-                  Satin &amp; Silk Shirts
-                </Link>
-                <Link
-                  href="/womens-wear?category=Tops+%26+Shirts&subCategory=Peplum+Tops"
-                  onClick={onClose}
-                  className="text-[11.5px] text-stone-500 hover:text-[#4A1513] transition-colors block py-0.5"
-                >
-                  Peplum Tops
-                </Link>
-              </div>
-            </div>
-
-            <Link
-              href="/womens-wear?category=Co-ord+Sets"
-              onClick={onClose}
-              className="text-[12.5px] font-semibold text-stone-800 hover:text-[#4A1513] transition-colors block"
-            >
-              Co-ord Sets
-            </Link>
-
-            <Link
-              href="/womens-wear?category=Trousers+%26+Pants"
-              onClick={onClose}
-              className="text-[12.5px] font-semibold text-stone-800 hover:text-[#4A1513] transition-colors block"
-            >
-              Trousers &amp; Pants
-            </Link>
-
-            <Link
-              href="/womens-wear?category=Jackets"
-              onClick={onClose}
-              className="text-[12.5px] font-semibold text-stone-800 hover:text-[#4A1513] transition-colors block"
-            >
-              Jackets &amp; Blazers
-            </Link>
-          </div>
-        </div>
-
-        {/* Column 3: Accessories & Beauty */}
-        <div>
-          <Link
-            href="/womens-wear?category=Other+Fashion"
-            onClick={onClose}
-            className="text-[11px] font-bold uppercase tracking-wider text-[#4A1513] block pb-1.5 mb-2.5 border-b border-stone-100 hover:underline"
-          >
-            Accessories &amp; More
-          </Link>
-          <div className="space-y-2">
-            <div>
-              <Link
-                href="/womens-wear?category=Jewellery"
-                onClick={onClose}
-                className="text-[12.5px] font-semibold text-stone-800 hover:text-[#4A1513] transition-colors block"
-              >
-                Jewellery
-              </Link>
-              <div className="pl-1.5 mt-0.5 space-y-0.5">
-                <Link
-                  href="/womens-wear?category=Jewellery&subCategory=Necklaces+%26+Chokers"
-                  onClick={onClose}
-                  className="text-[11.5px] text-stone-500 hover:text-[#4A1513] transition-colors block py-0.5"
-                >
-                  Kundan Chokers
-                </Link>
-                <Link
-                  href="/womens-wear?category=Jewellery&subCategory=Earrings+%26+Jhumkas"
-                  onClick={onClose}
-                  className="text-[11.5px] text-stone-500 hover:text-[#4A1513] transition-colors block py-0.5"
-                >
-                  Jhumkas &amp; Earrings
-                </Link>
-              </div>
-            </div>
-
-            <Link
-              href="/womens-wear?category=Handbags"
-              onClick={onClose}
-              className="text-[12.5px] font-semibold text-stone-800 hover:text-[#4A1513] transition-colors block"
-            >
-              Handbags &amp; Potlis
-            </Link>
-
-            <Link
-              href="/womens-wear?category=Footwear"
-              onClick={onClose}
-              className="text-[12.5px] font-semibold text-stone-800 hover:text-[#4A1513] transition-colors block"
-            >
-              Footwear &amp; Juttis
-            </Link>
-
-            <Link
-              href="/beauty"
-              onClick={onClose}
-              className="text-[12.5px] font-semibold text-stone-800 hover:text-[#4A1513] transition-colors block"
-            >
-              Natural Beauty &amp; Skincare
-            </Link>
-
-            <Link
-              href="/gifts"
-              onClick={onClose}
-              className="text-[12.5px] font-semibold text-stone-800 hover:text-[#4A1513] transition-colors block"
-            >
-              Curated Gift Hampers
-            </Link>
-          </div>
-        </div>
+      {/* Header Label */}
+      <div className="px-3 pt-2 pb-2.5 border-b border-stone-100 flex items-center justify-between">
+        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C5A059]">
+          Shop by Category
+        </span>
+        <span className="text-[10px] text-stone-400 font-medium">4 Main Categories</span>
       </div>
 
-      {/* Bottom Direct Link */}
-      <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between">
+      {/* Four Main Categories List - Clean, Minimal & Single-Layer */}
+      <div className="py-2 space-y-1">
+        {SHOP_MAIN_CATEGORIES.map((cat, idx) => (
+          <Link
+            key={cat.title}
+            href={cat.href}
+            onClick={onClose}
+            className="group flex items-center justify-between p-3 rounded-xl hover:bg-[#FAF7F5] border border-transparent hover:border-[#C5A059]/35 transition-all cursor-pointer"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-[#4A1513]/5 text-[#4A1513] group-hover:bg-[#4A1513] group-hover:text-white transition-all flex items-center justify-center shrink-0 font-serif font-bold text-xs shadow-2xs">
+                {idx + 1}
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-[13px] font-semibold text-stone-900 group-hover:text-[#4A1513] transition-colors leading-tight">
+                  {cat.title}
+                </h4>
+                <p className="text-[11px] text-stone-500 truncate mt-0.5 group-hover:text-stone-700 transition-colors">
+                  {cat.description}
+                </p>
+              </div>
+            </div>
+            <ArrowRight
+              size={14}
+              className="text-stone-300 group-hover:text-[#4A1513] group-hover:translate-x-1 transition-all shrink-0 ml-2"
+            />
+          </Link>
+        ))}
+      </div>
+
+      {/* Bottom Direct Link to All Products */}
+      <div className="pt-2.5 px-3 border-t border-stone-100 flex items-center justify-between">
         <span className="text-[11px] text-stone-400">Authentic luxury collections</span>
         <Link
           href="/shop"
           onClick={onClose}
-          className="text-[11px] font-bold text-[#4A1513] uppercase tracking-wider hover:underline inline-flex items-center gap-1"
+          className="text-[11px] font-bold text-[#4A1513] uppercase tracking-wider hover:text-[#C5A059] inline-flex items-center gap-1 transition-colors"
         >
           <span>View All Products</span>
           <ArrowRight size={11} />
