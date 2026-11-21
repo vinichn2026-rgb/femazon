@@ -3,11 +3,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronRight, SlidersHorizontal, PackageX, ArrowRight } from 'lucide-react';
+import { ChevronRight, SlidersHorizontal, PackageX, ArrowRight, Share2 } from 'lucide-react';
 import { FilterSidebar, FilterState } from '@/components/shop/FilterSidebar';
 import { ShopControls } from '@/components/shop/ShopControls';
 import { ActiveFilterChips } from '@/components/shop/ActiveFilterChips';
 import { ProductCard, ProductCardSkeleton } from '@/components/shop/ProductCard';
+import { useFemazonStore } from '@/context/FemazonStoreContext';
 
 const initialFilterState: FilterState = {
   silhouettes: [],
@@ -35,6 +36,7 @@ const SUBCATEGORIES = [
 
 export default function CategoryClient({ category, initialProducts, initialWishlistIds = [] }: any) {
   const router = useRouter();
+  const { user, addToCart, toggleWishlist, isInWishlist, openAuthModal } = useFemazonStore();
   const [isMounted, setIsMounted] = useState(false);
   const [wishlist, setWishlist] = useState<number[]>(initialWishlistIds);
   
@@ -134,39 +136,52 @@ export default function CategoryClient({ category, initialProducts, initialWishl
   ];
 
   const handleToggleWishlist = async (productId: string, isCurrentlyWishlisted: boolean) => {
+    if (!user) {
+      openAuthModal('login');
+      return;
+    }
     const numId = Number(productId);
-    setWishlist(prev => isCurrentlyWishlisted ? prev.filter(id => id !== numId) : [...prev, numId]);
-    try {
-      const res = await fetch("/api/wishlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId: numId, action: isCurrentlyWishlisted ? 'toggle' : undefined })
-      });
-      if (res.status === 401) router.push('/login');
-    } catch (err) {}
+    const prod = initialProducts.find((p: any) => String(p.id) === String(productId));
+    await toggleWishlist({
+      id: numId,
+      name: prod?.name || 'Designer Product',
+      brand: prod?.brand || 'Femazon Luxe',
+      price: prod?.price || 0,
+      image: prod?.image || prod?.images?.[0]
+    });
   };
 
   const handleQuickAdd = async (product: any) => {
-    try {
-      const res = await fetch("/api/cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productId: product.id,
-          quantity: 1,
-          size: product.sizes?.[0] || null,
-          color: product.colors?.[0] || null
-        })
-      });
-      if (res.status === 401) {
-        alert("Please log in to add items to your cart.");
-        router.push("/login");
-        return;
-      }
-      if (res.ok) alert(`${product.name} added to cart!`);
-      else alert("Failed to add to cart.");
-    } catch (err) {
-      alert("Error adding to cart.");
+    if (!user) {
+      openAuthModal('login');
+      return;
+    }
+    await addToCart({
+      productId: Number(product.id),
+      name: product.name,
+      brand: product.brand || 'Femazon Luxe',
+      price: product.price,
+      image: product.image || product.images?.[0] || 'https://images.unsplash.com/photo-1583391733958-65e2be10c3fb?auto=format&fit=crop&q=85&w=600',
+      size: product.sizes?.[0] || 'M',
+      color: product.colors?.[0] || undefined,
+      quantity: 1,
+      category: category?.name || product.category
+    }, true);
+  };
+
+  const handleShareCategory = () => {
+    // Generate clean category URL without any personal user or session tokens
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://femazon.luxury';
+    const cleanUrl = `${origin}/category/${category.slug}`;
+    if (navigator.share) {
+      navigator.share({
+        title: `${category.name} Collection | Femazon`,
+        text: `Explore the curated ${category.name} collection on Femazon Luxury Fashion.`,
+        url: cleanUrl
+      }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(cleanUrl);
+      alert('Category link copied to clipboard!');
     }
   };
 
@@ -279,9 +294,20 @@ export default function CategoryClient({ category, initialProducts, initialWishl
         {/* Right Main Section */}
         <div className="flex-1 w-full min-w-0 flex flex-col">
           
-          <div className="mb-6 pb-6 border-b border-zinc-200">
-            <h2 className="font-serif text-3xl text-text-main mb-2">All {category.name}</h2>
-            <p className="text-sm text-text-muted">Discover our complete collection</p>
+          <div className="mb-6 pb-6 border-b border-zinc-200 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 className="font-serif text-3xl text-text-main mb-2">All {category.name}</h2>
+              <p className="text-sm text-text-muted">Discover our complete collection</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleShareCategory}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full border border-stone-200 bg-white text-stone-700 hover:text-[#4A1513] hover:border-stone-400 text-xs font-bold uppercase tracking-wider transition shadow-2xs cursor-pointer"
+              title="Share Category Link"
+            >
+              <Share2 size={14} />
+              <span>Share Category</span>
+            </button>
           </div>
 
           {/* Top Control Bar & Active Filters */}
@@ -307,7 +333,7 @@ export default function CategoryClient({ category, initialProducts, initialWishl
                   <ProductCard 
                     key={product.id} 
                     product={product} 
-                    isWishlisted={wishlist.includes(Number(product.id))}
+                    isWishlisted={isInWishlist(product.id) || wishlist.includes(Number(product.id))}
                     onQuickAdd={handleQuickAdd}
                     onToggleWishlist={handleToggleWishlist}
                   />

@@ -487,18 +487,18 @@ export function PartnerDropdown({ isOpen, onClose, onMouseEnter, onMouseLeave }:
       <div className="absolute -top-3 left-0 right-0 h-3" />
       <div className="space-y-0.5">
         <Link
-          href="/seller/register"
+          href="/partner"
           onClick={onClose}
           className="text-[12.5px] text-stone-700 hover:text-[#4A1513] hover:bg-stone-50 rounded-lg px-2.5 py-1.5 transition-colors block font-medium"
         >
-          Become a Seller / Boutique
+          Designer &amp; Boutique Partnerships
         </Link>
         <Link
           href="/seller/dashboard"
           onClick={onClose}
           className="text-[12.5px] text-stone-700 hover:text-[#4A1513] hover:bg-stone-50 rounded-lg px-2.5 py-1.5 transition-colors block"
         >
-          Vendor Dashboard
+          Partner Dashboard
         </Link>
         <Link
           href="/personal-styling"
@@ -516,11 +516,11 @@ export function PartnerDropdown({ isOpen, onClose, onMouseEnter, onMouseLeave }:
         </Link>
         <div className="my-1.5 border-t border-stone-100" />
         <Link
-          href="/seller/register"
+          href="/partner"
           onClick={onClose}
           className="text-[11.5px] font-bold text-[#4A1513] px-2.5 py-1 hover:underline block"
         >
-          Start Selling on Femazon →
+          Explore Femazon Partner Network →
         </Link>
       </div>
     </div>

@@ -23,7 +23,7 @@ import { useFemazonStore } from '@/context/FemazonStoreContext';
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, setUser, refreshAuth } = useFemazonStore();
+  const { user, setUser, refreshAuth, syncGuestData } = useFemazonStore();
 
   const callbackUrl = searchParams.get('callbackUrl') || searchParams.get('returnUrl') || '/shop';
 
@@ -264,6 +264,9 @@ function LoginForm() {
     } catch (e) {}
 
     setUser(sessionUser);
+    try {
+      await syncGuestData();
+    } catch (e) {}
 
     setIsLoading(false);
     setIsSuccessTransition(true);

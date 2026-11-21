@@ -25,6 +25,7 @@ import {
 
 import { ProductCheckoutDrawer } from '@/components/shop/ProductCheckoutDrawer';
 import { generateWhatsAppLink } from '@/lib/whatsapp';
+import { useFemazonStore } from '@/context/FemazonStoreContext';
 
 interface ProductDetailClientProps {
   product: any;
@@ -40,6 +41,7 @@ export function ProductDetailClient({
   isWishlisted: initialWishlisted = false
 }: ProductDetailClientProps) {
   const router = useRouter();
+  const { user, addToCart, toggleWishlist, isInWishlist, openAuthModal } = useFemazonStore();
   const [isCheckoutDrawerOpen, setIsCheckoutDrawerOpen] = useState(false);
   const [checkoutDrawerMode, setCheckoutDrawerMode] = useState<'bag' | 'checkout'>('bag');
 
@@ -177,65 +179,6 @@ export function ProductDetailClient({
     setOpenAccordions(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const originalPrice = product.price;
-  const currentPrice = product.discountPrice ? product.discountPrice : product.price;
-
-  const handleToggleWishlist = async () => {
-    setIsWishlisted(!isWishlisted);
-    try {
-      await fetch('/api/wishlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId: Number(product.id), action: isWishlisted ? 'remove' : 'add' })
-      });
-    } catch (e) {}
-  };
-
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: product.name,
-        url: window.location.href
-      }).catch(() => {});
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      alert('Product link copied to clipboard!');
-    }
-  };
-
-  const handleAddToCart = async () => {
-    setIsAddingToCart(true);
-    try {
-      const res = await fetch('/api/cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          productId: Number(product.id),
-          quantity,
-          size: selectedSize,
-          color: selectedColor
-        })
-      });
-
-      if (res.status === 401) {
-        alert('Please sign in to add items to your cart.');
-        router.push('/login');
-        return;
-      }
-
-      if (res.ok) {
-        setCartSuccessMessage('Added to your cart!');
-        setTimeout(() => setCartSuccessMessage(''), 3000);
-      } else {
-        alert('Could not add to cart.');
-      }
-    } catch (e) {
-      alert('Error adding item to cart.');
-    } finally {
-      setIsAddingToCart(false);
-    }
-  };
-
   // Extract Designer Name & Display Title (Matching Aza Fashions)
   const isSurkhSyahi = product.name?.toLowerCase().includes('surkh') || product.slug?.includes('surkh') || product.name?.toLowerCase().includes('aaina') || product.id === '678643' || product.id === 'p1';
   const isPaulmiHarsh = product.name?.toLowerCase().includes('paulmi') || product.slug?.includes('paulmi');
@@ -256,6 +199,77 @@ export function ProductDetailClient({
     : isSheetalBatra
     ? "Orange Chanderi Silk Umaira Embroidered Flared Anarkali Salwar Set"
     : (product.name?.split('-')[1]?.trim() || product.name || "Luxury Designer Couture Set");
+
+  const originalPrice = product.price;
+  const currentPrice = product.discountPrice ? product.discountPrice : product.price;
+
+  const isItemWishlisted = isInWishlist(product.id) || isWishlisted;
+
+  const handleToggleWishlist = async () => {
+    if (!user) {
+      openAuthModal('login');
+      return;
+    }
+    setIsWishlisted(!isItemWishlisted);
+    await toggleWishlist({
+      id: Number(product.id),
+      name: displayTitle,
+      brand: designerName,
+      price: currentPrice,
+      originalPrice: originalPrice,
+      image: galleryImages[0] || product.image || images[0],
+      category: product.category || product.subcategory
+    });
+  };
+
+  const handleShare = () => {
+    // Generate clean canonical URL without any user, session, cart, or wishlist parameters
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://femazon.luxury';
+    const cleanUrl = product.slug 
+      ? `${origin}/products/${product.slug}`
+      : `${origin}/product/${product.id}`;
+
+    if (navigator.share) {
+      navigator.share({
+        title: displayTitle || product.name,
+        text: `Explore ${displayTitle || product.name} on Femazon Luxury Designer Fashion.`,
+        url: cleanUrl
+      }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(cleanUrl);
+      alert('Product link copied to clipboard!');
+    }
+  };
+
+  const handleAddToCart = async () => {
+    setIsAddingToCart(true);
+    try {
+      if (!user) {
+        openAuthModal('login');
+        return;
+      }
+
+      await addToCart({
+        productId: Number(product.id),
+        name: displayTitle,
+        brand: designerName,
+        price: currentPrice,
+        originalPrice: originalPrice,
+        image: galleryImages[0] || product.image || images[0] || 'https://images.unsplash.com/photo-1583391733958-65e2be10c3fb?auto=format&fit=crop&q=85&w=600',
+        size: selectedSize,
+        color: selectedColor,
+        quantity: quantity,
+        category: product.category || product.subcategory || 'Fashion'
+      }, true);
+
+      setCartSuccessMessage('Added to your cart!');
+      setTimeout(() => setCartSuccessMessage(''), 3000);
+    } catch (e) {
+      alert('Error adding item to cart.');
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
 
   // Filter similar items based on active tab
   const filteredSimilarItems = useMemo(() => {
@@ -372,10 +386,10 @@ export function ProductDetailClient({
                 <button
                   type="button"
                   onClick={handleToggleWishlist}
-                  className={`p-2 rounded-full hover:bg-stone-100 transition ${isWishlisted ? 'text-[#4A1513]' : 'text-stone-600'}`}
+                  className={`p-2 rounded-full hover:bg-stone-100 transition ${isItemWishlisted ? 'text-[#4A1513]' : 'text-stone-600'}`}
                   title="Wishlist"
                 >
-                  <Heart size={18} fill={isWishlisted ? '#4A1513' : 'none'} className={isWishlisted ? 'text-[#4A1513]' : ''} />
+                  <Heart size={18} fill={isItemWishlisted ? '#4A1513' : 'none'} className={isItemWishlisted ? 'text-[#4A1513]' : ''} />
                 </button>
                 <button
                   type="button"

@@ -20,7 +20,7 @@ import { useFemazonStore } from '@/context/FemazonStoreContext';
 function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { setUser } = useFemazonStore();
+  const { setUser, syncGuestData } = useFemazonStore();
 
   const callbackUrl = searchParams.get('callbackUrl') || searchParams.get('returnUrl') || '/shop';
 
@@ -329,6 +329,10 @@ function RegisterForm() {
         role: 'CUSTOMER',
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200'
       });
+
+      try {
+        await syncGuestData();
+      } catch (e) {}
 
       setIsVerifyingOtp(false);
       setStep('success');

@@ -9,6 +9,7 @@ import { ShopControls } from '@/components/shop/ShopControls';
 import { ActiveFilterChips } from '@/components/shop/ActiveFilterChips';
 import { ProductCard, ProductCardSkeleton } from '@/components/shop/ProductCard';
 import { PageBanner } from '@/components/common/PageBanner';
+import { useFemazonStore } from '@/context/FemazonStoreContext';
 import type { PartnerDirectoryListing } from '@/lib/partnerDirectory';
 
 const initialFilterState: FilterState = {
@@ -49,6 +50,7 @@ export default function SearchClient({
   partnerDirectoryError?: string | null;
 }) {
   const router = useRouter();
+  const { user, addToCart, toggleWishlist, isInWishlist, openAuthModal } = useFemazonStore();
   const [isMounted, setIsMounted] = useState(false);
   const [wishlist, setWishlist] = useState<number[]>(initialWishlistIds);
   
@@ -144,40 +146,37 @@ export default function SearchClient({
   ];
 
   const handleToggleWishlist = async (productId: string, isCurrentlyWishlisted: boolean) => {
+    if (!user) {
+      openAuthModal('login');
+      return;
+    }
     const numId = Number(productId);
-    setWishlist(prev => isCurrentlyWishlisted ? prev.filter(id => id !== numId) : [...prev, numId]);
-    try {
-      const res = await fetch("/api/wishlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId: numId, action: isCurrentlyWishlisted ? 'toggle' : undefined })
-      });
-      if (res.status === 401) router.push('/login');
-    } catch (err) {}
+    const prod = initialProducts.find((p: any) => String(p.id) === String(productId));
+    await toggleWishlist({
+      id: numId,
+      name: prod?.name || 'Designer Product',
+      brand: prod?.brand || 'Femazon Luxe',
+      price: prod?.price || 0,
+      image: prod?.image || prod?.images?.[0]
+    });
   };
 
   const handleQuickAdd = async (product: any) => {
-    try {
-      const res = await fetch("/api/cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productId: product.id,
-          quantity: 1,
-          size: product.sizes?.[0] || null,
-          color: product.colors?.[0] || null
-        })
-      });
-      if (res.status === 401) {
-        alert("Please log in to add items to your cart.");
-        router.push("/login");
-        return;
-      }
-      if (res.ok) alert(`${product.name} added to cart!`);
-      else alert("Failed to add to cart.");
-    } catch (err) {
-      alert("Error adding to cart.");
+    if (!user) {
+      openAuthModal('login');
+      return;
     }
+    await addToCart({
+      productId: Number(product.id),
+      name: product.name,
+      brand: product.brand || 'Femazon Luxe',
+      price: product.price,
+      image: product.image || product.images?.[0] || 'https://images.unsplash.com/photo-1583391733958-65e2be10c3fb?auto=format&fit=crop&q=85&w=600',
+      size: product.sizes?.[0] || 'M',
+      color: product.colors?.[0] || undefined,
+      quantity: 1,
+      category: product.category
+    }, true);
   };
 
   const totalItems = sortedProducts.length;
@@ -266,7 +265,7 @@ export default function SearchClient({
                     <ProductCard 
                       key={product.id} 
                       product={product} 
-                      isWishlisted={wishlist.includes(Number(product.id))}
+                      isWishlisted={isInWishlist(product.id) || wishlist.includes(Number(product.id))}
                       onQuickAdd={handleQuickAdd}
                       onToggleWishlist={handleToggleWishlist}
                     />

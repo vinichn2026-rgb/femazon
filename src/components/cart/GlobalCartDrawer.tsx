@@ -176,10 +176,19 @@ export function GlobalCartDrawer() {
                             <h4 className="font-serif text-xs font-semibold text-stone-900 leading-snug line-clamp-1 mt-0.5">
                               {item.name}
                             </h4>
-                            {item.size && (
-                              <span className="text-[11px] text-stone-500 block mt-0.5">
-                                Size: <b className="text-stone-800">{item.size}</b>
-                              </span>
+                            {(item.size || item.color) && (
+                              <div className="flex flex-wrap items-center gap-2 text-[11px] text-stone-500 mt-0.5">
+                                {item.size && (
+                                  <span>
+                                    Size: <b className="text-stone-800">{item.size}</b>
+                                  </span>
+                                )}
+                                {item.color && (
+                                  <span>
+                                    Colour: <b className="text-stone-800">{item.color}</b>
+                                  </span>
+                                )}
+                              </div>
                             )}
                           </div>
 
