@@ -5,6 +5,8 @@ export const dynamic = 'force-dynamic';
 
 interface ShopSearchParams {
   category?: string;
+  dept?: string;
+  department?: string;
   silhouette?: string;
   style?: string;
   length?: string;
@@ -19,6 +21,7 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
   // Instant pre-formatted catalog from memory cache (0ms)
   const formattedProducts = await getFormattedShopProducts();
 
+  const initialDept = resolvedSearchParams.dept || resolvedSearchParams.department;
   let initialCategory = resolvedSearchParams.category || "All";
   const rawCatLower = initialCategory.toLowerCase().trim();
   if (rawCatLower === "handbags" || rawCatLower === "handbag" || rawCatLower === "bags" || rawCatLower === "bag" || rawCatLower === "lady bag" || rawCatLower === "ladies bag") {
@@ -64,6 +67,7 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
     <ShopClient 
       initialProducts={formattedProducts} 
       initialCategory={initialCategory} 
+      initialDepartment={initialDept}
       initialSilhouette={initialSilhouette}
       initialWishlistIds={[]} 
       bannerImage={bannerImage} 

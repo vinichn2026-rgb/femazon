@@ -66,7 +66,7 @@ export const SHOP_DEPARTMENTS: DepartmentOption[] = [
   },
   {
     id: "beauty",
-    name: "Beauty & Self-Care",
+    name: "Beauty & Self-care",
     categories: [
       "Skincare",
       "Hair Care",
@@ -131,7 +131,52 @@ interface ShopClientProps {
   initialOccasion?: string;
   initialWishlistIds?: number[];
   bannerImage?: string;
+  initialDepartment?: string;
 }
+
+const CATEGORY_BANNERS: Record<string, {
+  title: string;
+  highlightText: string;
+  description: string;
+  imageSrc: string;
+  imageAlt: string;
+}> = {
+  "womens-wear": {
+    title: "Women's Wear",
+    highlightText: "Boutique Collections",
+    description: "Handcrafted sarees, designer kurtis, regal lehengas & modern western silhouettes from authentic boutiques.",
+    imageSrc: "/banners/hero_saree.jpg",
+    imageAlt: "Women's Wear Collection",
+  },
+  "beauty": {
+    title: "Beauty & Self-care",
+    highlightText: "Botanical Rituals & Glow",
+    description: "Shop pure botanicals, ritual skincare, radiant makeup, bath & body, and hair essentials from trusted formulators.",
+    imageSrc: "/banners/hero_beauty_jewels.jpg",
+    imageAlt: "Beauty & Self-care Collection",
+  },
+  "jewellery": {
+    title: "Jewellery & Accessories",
+    highlightText: "Timeless Adornments",
+    description: "Regal Kundan chokers, temple jhumkas, artisanal potlis, luxury handbags & embroidered footwear.",
+    imageSrc: "/categories/luxury_jewelry.png",
+    imageAlt: "Jewellery & Accessories Collection",
+  },
+  "gifts": {
+    title: "Gifts for Every Occasion",
+    highlightText: "Thoughtful Curations",
+    description: "Curated gift hampers, celebratory boxes, flowers, chocolates & personalised surprises.",
+    imageSrc: "/banners/hero_gifts.jpg",
+    imageAlt: "Gifts for Every Occasion",
+  },
+  "all": {
+    title: "Shop Our",
+    highlightText: "Latest Collection",
+    description: "Discover elegance in every detail across our four curated departments.",
+    imageSrc: "/banners/shop_banner_woman.jpg",
+    imageAlt: "Shop Our Latest Collection",
+  },
+};
 
 function matchesPriceRange(price: number, rangeStr: string): boolean {
   if (!rangeStr) return true;
@@ -169,21 +214,25 @@ export function ShopClient({
   initialSubcategory,
   initialOccasion,
   initialWishlistIds = [], 
-  bannerImage 
+  bannerImage,
+  initialDepartment
 }: ShopClientProps) {
   const router = useRouter();
   const { isInWishlist, toggleWishlist, addToCart } = useFemazonStore();
   const [isMounted, setIsMounted] = useState(false);
   
-  // Resolve initial department based on initialCategory
+  // Resolve initial department based on initialDepartment prop or initialCategory
   const resolvedInitialDept = useMemo(() => {
+    if (initialDepartment && ["womens-wear", "beauty", "jewellery", "gifts", "all"].includes(initialDepartment)) {
+      return initialDepartment;
+    }
     const catLower = (initialCategory || "").toLowerCase();
-    if (catLower === "beauty" || catLower === "skincare" || catLower === "makeup" || catLower === "hair care") return "beauty";
-    if (catLower === "handbags" || catLower === "potlis" || catLower === "jewelry" || catLower === "jewellery" || catLower === "accessories" || catLower === "belts" || catLower === "footwear" || catLower === "shawls") return "jewellery";
+    if (catLower === "beauty" || catLower.includes("beauty") || catLower === "skincare" || catLower === "makeup" || catLower === "hair care") return "beauty";
+    if (catLower === "handbags" || catLower === "potlis" || catLower === "jewelry" || catLower === "jewellery" || catLower.includes("jewel") || catLower === "accessories" || catLower === "belts" || catLower === "footwear" || catLower === "shawls") return "jewellery";
     if (catLower === "gifts" || catLower.includes("gift")) return "gifts";
-    if (catLower === "womens-wear" || catLower === "sarees" || catLower === "dresses" || catLower === "kurta sets") return "womens-wear";
+    if (catLower === "womens-wear" || catLower.includes("women") || catLower === "sarees" || catLower === "dresses" || catLower === "kurta sets") return "womens-wear";
     return "all";
-  }, [initialCategory]);
+  }, [initialCategory, initialDepartment]);
 
   const [selectedDepartment, setSelectedDepartment] = useState(resolvedInitialDept);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory || "All");
@@ -557,29 +606,90 @@ export function ShopClient({
   };
 
   const totalItems = sortedProducts.length;
+  const currentBanner = CATEGORY_BANNERS[selectedDepartment] || CATEGORY_BANNERS.all;
 
   return (
     <div className="bg-surface min-h-screen text-text-main font-sans pb-24">
       {/* Main Layout Architecture */}
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 pt-2 sm:pt-3">
-        {/* Luxury Burgundy & Gold Promo Banner */}
-        <LuxuryPromoBanner />
+        {/* Luxury Burgundy & Gold Promo Banner (Dynamic per Category) */}
+        <LuxuryPromoBanner
+          title={currentBanner.title}
+          highlightText={currentBanner.highlightText}
+          description={currentBanner.description}
+          imageSrc={currentBanner.imageSrc}
+          imageAlt={currentBanner.imageAlt}
+          ctaText="Explore Collection"
+          ctaLink="#shop-catalog"
+        />
+
+        {/* Relevant Subcategories for Selected Category */}
+        {activeCategories && activeCategories.length > 1 && (
+          <div className="w-full mb-3 sm:mb-4 bg-white/70 backdrop-blur-xs rounded-2xl border border-stone-200/80 p-3 sm:p-4 shadow-2xs">
+            <div className="flex items-center justify-between gap-2 mb-2.5">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C5A059]">
+                {SHOP_DEPARTMENTS.find(d => d.id === selectedDepartment)?.name || "Shop"} Subcategories
+              </span>
+              {selectedCategory !== "All" && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategory("All")}
+                  className="text-xs font-bold text-[#4A1513] hover:underline cursor-pointer"
+                >
+                  View All ({totalItems})
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar py-0.5">
+              <button
+                type="button"
+                onClick={() => setSelectedCategory("All")}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer shrink-0 border ${
+                  selectedCategory === "All"
+                    ? 'bg-[#4A1513] text-white border-[#4A1513] shadow-xs'
+                    : 'bg-[#FAF7F5] text-stone-700 hover:text-[#4A1513] hover:border-[#C5A059]/60 border-stone-200'
+                }`}
+              >
+                All {SHOP_DEPARTMENTS.find(d => d.id === selectedDepartment)?.name || "Categories"}
+              </button>
+              {activeCategories.filter(c => c !== "All").map((subCat) => {
+                const isSelected = selectedCategory.toLowerCase() === subCat.toLowerCase();
+                return (
+                  <button
+                    key={subCat}
+                    type="button"
+                    onClick={() => setSelectedCategory(isSelected ? "All" : subCat)}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer shrink-0 border ${
+                      isSelected
+                        ? 'bg-[#4A1513] text-white border-[#4A1513] shadow-xs'
+                        : 'bg-white text-stone-700 hover:text-[#4A1513] hover:border-[#C5A059]/60 border-stone-200'
+                    }`}
+                  >
+                    {subCat}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
         
         {/* Top Control Bar spanning equally above Filter Sidebar & Product section */}
-        <ShopControls 
-          totalItems={totalItems}
-          selectedCategory={selectedCategory}
-          selectedDepartment={selectedDepartment}
-          departments={SHOP_DEPARTMENTS}
-          onSelectDepartment={handleSelectDepartment}
-          searchQuery={searchQuery}
-          onSearchChange={(q) => setSearchQuery(q)}
-          selectedSort={selectedSort}
-          onSortChange={(s) => setSelectedSort(s)}
-          filters={filters}
-          onFilterChange={handleFilterChange}
-          onOpenMobileFilters={() => setIsFilterDrawerOpen(true)}
-        />
+        <div id="shop-catalog">
+          <ShopControls 
+            totalItems={totalItems}
+            selectedCategory={selectedCategory}
+            selectedDepartment={selectedDepartment}
+            departments={SHOP_DEPARTMENTS}
+            onSelectDepartment={handleSelectDepartment}
+            searchQuery={searchQuery}
+            onSearchChange={(q) => setSearchQuery(q)}
+            selectedSort={selectedSort}
+            onSortChange={(s) => setSelectedSort(s)}
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            onOpenMobileFilters={() => setIsFilterDrawerOpen(true)}
+          />
+        </div>
 
         <div className="flex flex-col lg:flex-row items-start gap-8 lg:gap-12 relative">
           {/* Filter Sidebar (Desktop & Mobile Drawer) with Sellers & Brands right under Categories */}
