@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -17,7 +17,9 @@ import {
   Truck,
   Users,
   CalendarDays,
-  Loader2
+  Loader2,
+  User,
+  ChevronDown,
 } from "lucide-react";
 import { BrandLogo } from "@/components/common/BrandLogo";
 
@@ -57,7 +59,21 @@ export function AdminNavbar({
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [navigatingHref, setNavigatingHref] = useState<string | null>(null);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setIsProfileMenuOpen(false);
+      }
+    }
+    if (isProfileMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isProfileMenuOpen]);
 
   const handleAdminLogout = async () => {
     setIsLoggingOut(true);
@@ -78,7 +94,7 @@ export function AdminNavbar({
       {/* Top Header Bar */}
       <header className="sticky top-0 z-40 bg-white border-b border-stone-200 shadow-2xs px-4 sm:px-8 py-3.5 flex items-center justify-between">
         
-        {/* Left: Mobile Toggle + Brand Logo + Admin Context Pill */}
+        {/* Left: Mobile Toggle + Brand Logo (Clean & Minimal) */}
         <div className="flex items-center gap-3 sm:gap-4">
           {/* Mobile Menu Trigger */}
           <button
@@ -98,57 +114,10 @@ export function AdminNavbar({
 
           {/* Luxury Brand Logo */}
           <BrandLogo />
-
-          {/* Divider */}
-          <div className="h-5 w-[1px] bg-stone-300 hidden md:block" />
-
-          {/* Admin Context Badge & Live Indicator */}
-          <div className="hidden md:flex items-center gap-2.5">
-            <span className="text-xs font-bold uppercase tracking-widest text-[#4A1513] bg-[#FAF7F5] px-3 py-1 rounded-full border border-stone-200 flex items-center gap-1.5 shadow-2xs">
-              <ShieldCheck size={13} className="text-[#4A1513]" />
-              <span>Admin Dashboard</span>
-            </span>
-            <span className="text-xs text-stone-500 font-medium">
-              {currentSection || adminName}
-            </span>
-
-            {/* Live Operational Status */}
-            <div className="hidden lg:flex items-center gap-1.5 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/80">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Live System</span>
-            </div>
-          </div>
         </div>
 
-        {/* Center: Meaningful Quick Insights (Hidden on small mobile) */}
-        {stats && (
-          <div className="hidden xl:flex items-center gap-2 bg-stone-50/80 border border-stone-200/80 rounded-full px-3 py-1">
-            {stats.ordersCount !== undefined && (
-              <button
-                type="button"
-                onClick={() => onTabChange?.("orders")}
-                className="flex items-center gap-1 text-[11px] font-semibold text-stone-600 hover:text-[#4A1513] px-2 py-0.5 rounded-full hover:bg-white transition cursor-pointer"
-              >
-                <ShoppingCart size={12} className="text-[#4A1513]" />
-                <span>{stats.ordersCount} Orders</span>
-              </button>
-            )}
-
-            {stats.vendorsCount !== undefined && (
-              <button
-                type="button"
-                onClick={() => onTabChange?.("product-vendors")}
-                className="flex items-center gap-1 text-[11px] font-semibold text-stone-600 hover:text-[#4A1513] px-2 py-0.5 rounded-full hover:bg-white transition cursor-pointer"
-              >
-                <Store size={12} className="text-[#4A1513]" />
-                <span>{stats.vendorsCount} Vendors</span>
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Right: Shortcuts + Live Store + Admin Profile + Logout */}
-        <div className="flex items-center gap-2.5 sm:gap-4">
+        {/* Right: Live Store + Admin Profile/Avatar Menu with Logout & Profile */}
+        <div className="flex items-center gap-2.5 sm:gap-3.5">
           {/* Live Storefront Link */}
           <Link
             href="/shop"
@@ -159,17 +128,88 @@ export function AdminNavbar({
             <ExternalLink size={13} />
           </Link>
 
-          {/* Admin Avatar Badge */}
-          <div className="hidden md:flex items-center gap-2 bg-stone-50 border border-stone-200 rounded-full py-1 pl-1.5 pr-3">
-            <div className="w-6 h-6 rounded-full bg-[#4A1513] text-white flex items-center justify-center text-[10px] font-bold shadow-2xs">
-              A
-            </div>
-            <span className="text-xs font-bold text-stone-800 leading-none">
-              Admin
-            </span>
+          {/* Admin Profile & Avatar Menu Button with Dropdown */}
+          <div className="relative" ref={profileMenuRef}>
+            <button
+              type="button"
+              onClick={() => setIsProfileMenuOpen((prev) => !prev)}
+              className="flex items-center gap-2 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-full py-1.5 pl-2 pr-3 transition cursor-pointer select-none group shadow-2xs"
+              aria-label="Open Admin Menu"
+              aria-expanded={isProfileMenuOpen}
+            >
+              <div className="w-7 h-7 rounded-full bg-[#4A1513] text-white flex items-center justify-center text-xs font-bold shadow-2xs group-hover:scale-105 transition-transform">
+                A
+              </div>
+              <span className="text-xs font-bold text-stone-800 leading-none hidden sm:inline">
+                Admin
+              </span>
+              <ChevronDown
+                size={12}
+                className={`text-stone-400 transition-transform duration-200 ${
+                  isProfileMenuOpen ? "rotate-180 text-[#4A1513]" : ""
+                }`}
+              />
+            </button>
+
+            {/* Profile Dropdown Menu */}
+            {isProfileMenuOpen && (
+              <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl border border-stone-200 shadow-xl py-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                {/* Admin Details Header */}
+                <div className="px-4 py-3 border-b border-stone-100 bg-[#FAF7F5] rounded-t-xl">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-full bg-[#4A1513] text-white flex items-center justify-center text-xs font-bold shadow-2xs shrink-0">
+                      A
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-stone-900 truncate">{adminName}</p>
+                      <p className="text-[11px] text-stone-500 truncate">{adminEmail}</p>
+                    </div>
+                  </div>
+                  <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 px-2.5 py-0.5 text-[9.5px] font-bold tracking-wider uppercase border border-emerald-200/60">
+                    <ShieldCheck size={10} /> Super Admin
+                  </span>
+                </div>
+
+                {/* Menu Options: Logout on top, Profile directly below Logout */}
+                <div className="p-1.5 space-y-1">
+                  {/* Option 1: Admin Logout */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsProfileMenuOpen(false);
+                      setShowLogoutConfirm(true);
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition cursor-pointer text-left group"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center group-hover:bg-rose-100 transition shrink-0">
+                      <LogOut size={14} />
+                    </div>
+                    <div>
+                      <span className="font-bold block">Admin Logout</span>
+                      <span className="text-[10px] text-rose-400 font-normal">Sign out of session</span>
+                    </div>
+                  </button>
+
+                  {/* Option 2: Profile (Directly Below Logout) */}
+                  <Link
+                    href="/admin/profile"
+                    onClick={() => setIsProfileMenuOpen(false)}
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-stone-700 hover:bg-stone-100 hover:text-[#4A1513] transition cursor-pointer text-left group"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-stone-100 text-[#4A1513] flex items-center justify-center group-hover:bg-[#4A1513] group-hover:text-white transition shrink-0">
+                      <User size={14} />
+                    </div>
+                    <div>
+                      <span className="font-bold block">Admin Profile</span>
+                      <span className="text-[10px] text-stone-400 font-normal">View account & credentials</span>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* ADMIN LOGOUT BUTTON */}
+          {/* ADMIN LOGOUT BUTTON (Direct action button) */}
           <button
             type="button"
             onClick={() => setShowLogoutConfirm(true)}
@@ -274,8 +314,8 @@ export function AdminNavbar({
               </div>
             </div>
 
-            {/* Mobile Drawer Footer with Logout */}
-            <div className="pt-4 border-t border-stone-100">
+            {/* Mobile Drawer Footer: Logout with Profile directly below it */}
+            <div className="pt-4 border-t border-stone-100 space-y-2">
               <button
                 type="button"
                 onClick={() => {
@@ -287,6 +327,15 @@ export function AdminNavbar({
                 <LogOut size={14} />
                 <span>Admin Logout</span>
               </button>
+
+              <Link
+                href="/admin/profile"
+                onClick={() => setIsMobileDrawerOpen(false)}
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-stone-200 text-stone-700 hover:bg-stone-50 text-xs font-semibold transition"
+              >
+                <User size={14} className="text-[#4A1513]" />
+                <span>Admin Profile Details</span>
+              </Link>
             </div>
           </div>
           <div className="flex-1" onClick={() => setIsMobileDrawerOpen(false)} />
