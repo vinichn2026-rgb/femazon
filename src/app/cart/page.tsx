@@ -110,7 +110,8 @@ export default function FullCartPage() {
     removeFromCart, 
     addToCart, 
     toggleWishlist, 
-    isInWishlist 
+    isInWishlist,
+    openAuthModal
   } = useFemazonStore();
 
   const [promoCode, setPromoCode] = useState('');
@@ -232,13 +233,25 @@ export default function FullCartPage() {
             <p className="text-stone-500 text-sm max-w-md mx-auto mb-8 leading-relaxed">
               Explore our exquisite collection of designer bridal wear, handcrafted sarees, and contemporary chic ensembles.
             </p>
-            <Link
-              href="/shop"
-              className="inline-flex items-center gap-2 bg-[#4A1513] hover:bg-[#350B0A] text-white font-medium text-xs uppercase tracking-[0.16em] px-8 py-4 rounded-full shadow-md hover:shadow-lg transition-all"
-            >
-              <span>Explore Collection</span>
-              <ArrowRight size={15} />
-            </Link>
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              {!user && (
+                <button
+                  type="button"
+                  onClick={() => openAuthModal ? openAuthModal('login') : null}
+                  className="inline-flex items-center gap-2 bg-[#4A1513] hover:bg-[#350B0A] text-white font-medium text-xs uppercase tracking-[0.16em] px-8 py-4 rounded-full shadow-md hover:shadow-lg transition-all cursor-pointer"
+                >
+                  <span>Sign In / Register</span>
+                  <ArrowRight size={15} />
+                </button>
+              )}
+              <Link
+                href="/shop"
+                className="inline-flex items-center gap-2 bg-stone-100 hover:bg-stone-200 text-stone-800 font-medium text-xs uppercase tracking-[0.16em] px-8 py-4 rounded-full transition-all"
+              >
+                <span>Explore Collection</span>
+                <ArrowRight size={15} />
+              </Link>
+            </div>
           </div>
         ) : (
           /* MAIN TWO-COLUMN FULL-VIEW CART LAYOUT */
@@ -246,6 +259,28 @@ export default function FullCartPage() {
             
             {/* LEFT COLUMN: CART ITEMS & PROGRESS (7 COLS) */}
             <div className="lg:col-span-7 space-y-6">
+              
+              {/* Guest Cart Informational Banner */}
+              {!user && (
+                <div className="p-4 rounded-2xl bg-[#FAF7F4] border border-[#4A1513]/15 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <Sparkles size={20} className="text-[#4A1513] shrink-0" />
+                    <div>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-stone-900">Guest Shopping Bag</h4>
+                      <p className="text-xs text-stone-500">
+                        Items are currently preserved in this browser. Sign in to synchronize your bag to your permanent member vault.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => openAuthModal ? openAuthModal('login') : null}
+                    className="px-5 py-2.5 rounded-full bg-[#4A1513] hover:bg-[#350B0A] text-white text-[11px] font-bold uppercase tracking-wider transition shrink-0 cursor-pointer"
+                  >
+                    Sign In to Sync
+                  </button>
+                </div>
+              )}
               
               {/* Free Express Shipping Meter */}
               <div className="bg-white rounded-2xl p-4 sm:p-5 border border-stone-200/90 shadow-xs">
@@ -312,6 +347,11 @@ export default function FullCartPage() {
                             {item.size && (
                               <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-[#FAF7F5] border border-stone-200 font-semibold text-stone-800">
                                 Size: {item.size}
+                              </span>
+                            )}
+                            {item.color && (
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-[#FAF7F5] border border-stone-200 font-semibold text-stone-800">
+                                Colour: {item.color}
                               </span>
                             )}
                             <span>₹{item.price.toLocaleString('en-IN')} / piece</span>

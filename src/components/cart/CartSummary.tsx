@@ -25,7 +25,7 @@ type CartData = {
 };
 
 export function CartSummary() {
-  const { user } = useFemazonStore();
+  const { user, refreshCart } = useFemazonStore();
   const [cartData, setCartData] = useState<CartData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -70,6 +70,7 @@ export function CartSummary() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ quantity: newQuantity })
       });
+      refreshCart();
     } catch (err) {
       fetchCart(); // Revert on failure
     }
@@ -87,6 +88,7 @@ export function CartSummary() {
 
     try {
       await fetch(`/api/cart/${itemId}`, { method: "DELETE" });
+      refreshCart();
     } catch (err) {
       fetchCart(); // Revert on failure
     }

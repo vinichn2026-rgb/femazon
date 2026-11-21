@@ -23,7 +23,8 @@ export function AuthModal() {
     authModalView, 
     closeAuthModal, 
     setUser, 
-    refreshAuth 
+    refreshAuth,
+    syncGuestData
   } = useFemazonStore();
 
   // Mode: 'email_otp' | 'password' | 'register'
@@ -298,6 +299,9 @@ export function AuthModal() {
     }
 
     setUser(formattedUser);
+    try {
+      await syncGuestData();
+    } catch (e) {}
 
     setTimeout(() => {
       closeAuthModal();

@@ -94,7 +94,7 @@ const PARTNER_TYPES = [
 export default function PartnerHubPage() {
   return (
     <main className="min-h-screen bg-[#FAF7F5] pb-20 text-stone-900">
-      <div className="mx-auto max-w-[1300px] px-4 sm:px-6 lg:px-8 pt-4">
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 pt-2 sm:pt-3">
         <PageBanner
           title="Partner With Femazon"
           highlightText="Grow Your Brand"
@@ -102,12 +102,13 @@ export default function PartnerHubPage() {
           ctaText="Register Your Business"
           ctaLink="/seller/register"
           imageSrc="/banners/login_promo.jpg"
+          imagePosition="object-top md:object-top"
           fallbackImage="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&q=80&w=800"
           imageAlt="Partner With Femazon"
         />
       </div>
 
-      <section className="mx-auto max-w-[1300px] px-4 pt-12 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-[1400px] px-4 sm:px-6 pt-2 sm:pt-4">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           {PARTNER_TYPES.map((partner) => (
             <article

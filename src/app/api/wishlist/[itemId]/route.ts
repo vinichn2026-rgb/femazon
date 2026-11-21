@@ -1,32 +1,59 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/lib/prisma';
-import { authOptions } from '@/lib/authOptions';
+import { getApiAuthEmail, getApiAuthPayload } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
 
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ itemId: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
+    const payload = await getApiAuthPayload(request);
+    const userEmail = payload?.email || (await getApiAuthEmail(request));
 
-    if (!session?.user?.email) {
+    if (!userEmail) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const itemId = parseInt((await params).itemId, 10);
+    const { itemId: rawItemId } = await params;
+    const itemId = parseInt(rawItemId, 10);
     if (isNaN(itemId)) {
       return NextResponse.json({ error: 'Invalid item ID' }, { status: 400 });
     }
 
-    // We can directly delete because the ID is unique for WishlistItem
-    await prisma.wishlistItem.delete({
-      where: { id: itemId }
+    const user = await prisma.user.findUnique({ where: { email: userEmail } });
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const wishlist = await prisma.wishlist.findUnique({ where: { userId: user.id } });
+    if (!wishlist) {
+      return NextResponse.json({ error: 'Wishlist not found' }, { status: 404 });
+    }
+
+    // STRICT USER ISOLATION: Check if item belongs to this user's wishlist either by wishlistItem.id or by productId
+    const existingItem = await prisma.wishlistItem.findFirst({
+      where: {
+        wishlistId: wishlist.id,
+        OR: [
+          { id: itemId },
+          { productId: itemId }
+        ]
+      }
     });
 
-    return NextResponse.json({ success: true });
+    if (!existingItem) {
+      return NextResponse.json({ error: 'Wishlist item not found in your wishlist' }, { status: 404 });
+    }
+
+    await prisma.wishlistItem.delete({
+      where: { id: existingItem.id }
+    });
+
+    return NextResponse.json({ success: true, message: 'Item removed from wishlist' });
   } catch (error) {
-    console.error(error);
+    console.error('[Wishlist Item API] DELETE error:', error);
     return NextResponse.json({ error: 'Failed to remove wishlist item' }, { status: 500 });
   }
 }

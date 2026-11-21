@@ -1239,9 +1239,9 @@ export function SiteLayout({
               />
             </div>
 
-            {/* 5. Partner With Femazon */}
+            {/* 5. Partner With Femazon (Enhanced Luxury Branding) */}
             <div
-              className="relative py-2"
+              className="relative py-1 flex items-center"
               onMouseEnter={() => handleNavMouseEnter('partner')}
               onMouseLeave={handleNavMouseLeave}
             >
@@ -1252,14 +1252,32 @@ export function SiteLayout({
                     setActiveDropdown('partner');
                   }
                 }}
-                className={`py-2 transition-colors hover:text-[#4A1513] flex items-center gap-1 cursor-pointer select-none ${
-                  pathname === '/partner' || activeDropdown === 'partner' ? 'text-[#4A1513] font-semibold' : ''
+                className={`relative group inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-[12px] sm:text-[12.5px] font-medium tracking-[0.015em] transition-all duration-300 cursor-pointer select-none border border-[#C5A059]/40 hover:border-[#B89047] bg-gradient-to-r from-[#FAF6F0]/90 via-[#FDFBF7] to-[#FAF6F0]/90 hover:from-[#F6EEDD] hover:via-[#FAF5EB] hover:to-[#F6EEDD] shadow-[0_1px_4px_rgba(197,160,89,0.10)] hover:shadow-[0_2px_8px_rgba(197,160,89,0.18)] ${
+                  pathname === '/partner' || activeDropdown === 'partner'
+                    ? 'text-[#4A1513] border-[#B89047] bg-[#F6EEDD] font-semibold'
+                    : 'text-stone-800 hover:text-[#4A1513]'
                 }`}
               >
-                <span>Partner With Femazon</span>
-                <span className={`text-[7.5px] transition-transform duration-200 inline-block ml-0.5 ${
-                  activeDropdown === 'partner' ? 'rotate-180 text-[#4A1513]' : 'text-stone-400'
-                }`}>
+                {/* Subtle gold jewel sparkle */}
+                <Sparkles 
+                  size={12} 
+                  className="text-[#C5A059] group-hover:text-[#9A7836] transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110 shrink-0" 
+                />
+                
+                <span className="relative">
+                  Partner With Femazon
+                  {/* Refined smooth gold underline on hover */}
+                  <span className="absolute -bottom-0.5 left-0 w-full h-[1.5px] bg-gradient-to-r from-[#C5A059] via-[#D4AF37] to-[#9A7836] rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left ease-out" />
+                </span>
+
+                {/* Dropdown indicator */}
+                <span 
+                  className={`text-[7.5px] transition-transform duration-200 inline-block ml-0.5 ${
+                    activeDropdown === 'partner' 
+                      ? 'rotate-180 text-[#4A1513]' 
+                      : 'text-[#C5A059] group-hover:text-[#4A1513]'
+                  }`}
+                >
                   ▼
                 </span>
               </Link>
@@ -1275,18 +1293,7 @@ export function SiteLayout({
           {/* Right: Actions matching screenshot exactly (compact refined size) */}
           <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-3.5">
             
-            {/* 1. Become a Seller Pill Button - visible on tablet & desktop when search is closed */}
-            <Link 
-              href="/seller/register"
-              className={`items-center gap-1.5 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-[#4A1513] hover:bg-[#350B0A] text-white text-[12px] sm:text-[12.5px] font-medium transition-all shadow-xs active:scale-95 whitespace-nowrap ${
-                isSearchOpen ? 'hidden' : 'hidden md:inline-flex'
-              }`}
-            >
-              <span>Become a Seller</span>
-              <span className="text-sm leading-none">→</span>
-            </Link>
-
-            {/* 2. Inline Expandable Search Bar using existing HeaderSearchBar */}
+            {/* Inline Expandable Search Bar using existing HeaderSearchBar */}
             <div 
               ref={searchContainerRef}
               className={`relative flex items-center transition-all duration-300 ease-in-out ${
@@ -1643,9 +1650,11 @@ export function SiteLayout({
               title="Shopping Cart"
             >
               <ShoppingCart size={19} strokeWidth={1.8} className="group-hover:scale-105 transition-transform" />
-              <span className="absolute top-0 right-0 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-[#4A1513] text-[9.5px] font-bold text-white shadow-xs animate-in zoom-in">
-                {cartCount > 0 ? cartCount : 4}
-              </span>
+              {cartCount > 0 && (
+                <span className="absolute top-0 right-0 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-[#4A1513] text-[9.5px] font-bold text-white shadow-xs animate-in zoom-in">
+                  {cartCount}
+                </span>
+              )}
             </button>
 
           </div>
@@ -1770,16 +1779,13 @@ export function SiteLayout({
             <Link 
               href="/partner"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="block py-2.5 hover:text-[#4A1513] transition-colors"
+              className="flex items-center justify-between py-2.5 px-3.5 my-1.5 rounded-xl bg-gradient-to-r from-[#FAF6F0] to-[#FDFBF7] border border-[#C5A059]/35 text-stone-800 hover:text-[#4A1513] font-medium text-xs transition-all group shadow-xs"
             >
-              Partner With Femazon
-            </Link>
-            <Link 
-              href="/seller/register"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="block py-2.5 font-semibold text-[#4A1513] hover:underline transition-colors"
-            >
-              Become a Seller →
+              <span className="flex items-center gap-2">
+                <Sparkles size={13} className="text-[#C5A059] shrink-0" />
+                <span className="font-medium">Partner With Femazon</span>
+              </span>
+              <span className="text-[#C5A059] group-hover:text-[#4A1513] group-hover:translate-x-0.5 transition-all text-xs">→</span>
             </Link>
             <button 
               type="button"
@@ -1818,9 +1824,11 @@ export function SiteLayout({
               className="w-full text-left py-2.5 hover:text-[#4A1513] transition-colors flex items-center justify-between"
             >
               <span>Shopping Cart</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-[#4A1513] text-white text-[10px] font-bold">
-                {cartCount > 0 ? cartCount : 4}
-              </span>
+              {cartCount > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full bg-[#4A1513] text-white text-[10px] font-bold">
+                  {cartCount}
+                </span>
+              )}
             </button>
           </div>
 
