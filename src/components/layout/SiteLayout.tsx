@@ -9,7 +9,6 @@ import {
   Heart, 
   ShoppingBag, 
   ShoppingCart,
-  Globe,
   ArrowRight,
   UserCircle2, 
   Camera, 
@@ -1334,20 +1333,7 @@ export function SiteLayout({
               )}
             </Link>
 
-            {/* 4. Globe / Language (EN) Icon - hidden on mobile to prevent overcrowding */}
-            <div 
-              className="hidden sm:flex relative p-1 text-stone-700 hover:text-black transition-colors cursor-pointer items-center justify-center group shrink-0"
-              title="Language: English (EN)"
-            >
-              <div className="relative">
-                <Globe size={18} strokeWidth={1.8} className="text-stone-700 group-hover:text-black" />
-                <span className="absolute -bottom-1 -right-1 text-[8px] font-bold text-stone-600 bg-stone-100 border border-stone-300 rounded px-0.5 leading-none">
-                  EN
-                </span>
-              </div>
-            </div>
-
-            {/* 5. Account / Profile with Fixed Position Frame */}
+            {/* 4. Account / Profile with Fixed Position Frame */}
             <div className="relative flex items-center shrink-0" ref={profileDropdownRef}>
               <button
                 type="button"
