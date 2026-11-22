@@ -58,7 +58,7 @@ const SECTIONS: CategorySection[] = [
         id: "ww-5",
         title: "Festive Lehengas",
         badge: "HANDCRAFTED",
-        image: "https://images.unsplash.com/photo-1583391733958-d15ce1711202?q=80&w=500&auto=format&fit=crop",
+        image: "https://images.unsplash.com/photo-1583391733958-65e2be10c3fb?auto=format&fit=crop&q=85&w=600",
         href: "/womens-wear?category=Lehengas",
       },
     ],
@@ -331,10 +331,6 @@ export function ExploreCategorySection() {
 
         {/* LEFT-MOVING ELITE COMPACT SQUIRCLE CAROUSEL (Yuukke Style) */}
         <div className="relative overflow-hidden w-full py-2">
-          {/* Subtle soft edge gradient masks */}
-          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-r from-white to-transparent z-10" />
-          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-8 sm:w-16 bg-gradient-to-l from-white to-transparent z-10" />
-
           {/* Continuous Left-moving animated track */}
           <div
             key={currentSection.id}

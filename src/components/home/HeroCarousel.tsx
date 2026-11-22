@@ -23,7 +23,7 @@ const AZA_HERO_SLIDES: HeroSlide[] = [
     tag: "THE BRIDAL EDIT • COUTURE 2026",
     title: "Designer Lehengas & Royal Silhouettes",
     tagline: "Handcrafted masterworks in pure silk, zardozi embroidery, and heritage drapes from premier ateliers.",
-    link: "/womens-wear?category=Lehengas",
+    link: "/shop",
     ctaText: "Explore Collection",
     image: "/banners/hero_bridal.jpg",
     fallbackImage: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&q=85&w=1920",
