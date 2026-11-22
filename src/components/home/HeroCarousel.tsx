@@ -109,25 +109,43 @@ export function HeroCarousel() {
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  const resetTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    if (!isPaused) {
+      timerRef.current = setInterval(() => {
+        setCurrent((prev) => (prev + 1) % AZA_HERO_SLIDES.length);
+      }, 5000);
+    }
+  }, [isPaused]);
+
   const nextSlide = useCallback(() => {
     setCurrent((prev) => (prev + 1) % AZA_HERO_SLIDES.length);
-  }, []);
+    resetTimer();
+  }, [resetTimer]);
 
   const prevSlide = useCallback(() => {
     setCurrent((prev) => (prev - 1 + AZA_HERO_SLIDES.length) % AZA_HERO_SLIDES.length);
-  }, []);
+    resetTimer();
+  }, [resetTimer]);
 
-  // Smooth auto-play rotation (every 6 seconds, paused on hover)
+  const goToSlide = useCallback((index: number) => {
+    setCurrent(index);
+    resetTimer();
+  }, [resetTimer]);
+
+  // Smooth auto-play rotation every 5 seconds, paused on hover or focus
   useEffect(() => {
-    if (isPaused) {
-      if (timerRef.current) clearInterval(timerRef.current);
-      return;
-    }
-    timerRef.current = setInterval(nextSlide, 6000);
+    resetTimer();
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
     };
-  }, [isPaused, nextSlide]);
+  }, [resetTimer]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart(e.targetTouches[0].clientX);
@@ -144,15 +162,18 @@ export function HeroCarousel() {
   const currentSlide = AZA_HERO_SLIDES[current];
 
   return (
-    <div className="w-full bg-white select-none py-1.5 sm:py-2.5">
-      {/* Container with even classy whitespace on left and right - Aza Fashions Benchmark */}
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
-        {/* Main Hero Slider Card with Rounded Luxury Corners */}
+    <div className="w-full bg-white select-none">
+      {/* Container matching Shop page banner proportions & padding */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-6">
+        {/* Main Hero Slider Card with Compact Height, Rounded Corners, and Warm Beige-Cream Background */}
         <section
           aria-label="Femazon Luxury Hero Banner"
-          className="relative w-full h-[280px] sm:h-[330px] md:h-[370px] lg:h-[420px] xl:h-[450px] rounded-2xl sm:rounded-3xl overflow-hidden bg-stone-900 group shadow-[0_10px_35px_rgba(0,0,0,0.1)] border border-stone-200/60"
+          tabIndex={0}
+          className="relative w-full h-[320px] sm:h-[360px] lg:h-[380px] rounded-3xl overflow-hidden bg-[#F4ECE8] group border border-stone-200/70 shadow-2xs outline-none focus-visible:ring-2 focus-visible:ring-[#4A1513]/20"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
+          onFocus={() => setIsPaused(true)}
+          onBlur={() => setIsPaused(false)}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
@@ -168,40 +189,37 @@ export function HeroCarousel() {
                     : "opacity-0 z-0 pointer-events-none"
                 }`}
               >
-                {/* High-Resolution Editorial Image */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={slide.image}
-                  alt={slide.title}
-                  loading={index === 0 ? "eager" : "lazy"}
-                  onError={(e) => {
-                    if (slide.fallbackImage && e.currentTarget.src !== slide.fallbackImage) {
-                      e.currentTarget.src = slide.fallbackImage;
-                    }
-                  }}
-                  className="w-full h-full object-cover transition-all duration-700"
-                  style={{
-                    objectPosition: slide.objectPosition || "center 5%",
-                  }}
-                />
+                {/* Right-anchored Editorial Image Container */}
+                <div className="absolute right-0 top-0 bottom-0 w-full sm:w-[68%] h-full overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={slide.image}
+                    alt={slide.title}
+                    loading={index === 0 ? "eager" : "lazy"}
+                    onError={(e) => {
+                      if (slide.fallbackImage && e.currentTarget.src !== slide.fallbackImage) {
+                        e.currentTarget.src = slide.fallbackImage;
+                      }
+                    }}
+                    className="w-full h-full object-cover object-[75%_15%] md:object-right-top transition-all duration-700"
+                  />
 
-                {/* Aza-Inspired Multi-Layer Gradient Overlays: Text legibility while keeping couture vivid */}
-                {/* Left-to-right soft scrim */}
-                <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 sm:via-black/20 to-transparent" />
-                {/* Mobile bottom-to-top scrim */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 sm:hidden" />
-                {/* Bottom subtle vignette for indicators */}
-                <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+                  {/* Smooth Left-to-Right #F4ECE8 Gradient Fade so left text stays readable */}
+                  <div className="absolute inset-y-0 left-0 w-28 sm:w-48 bg-gradient-to-r from-[#F4ECE8] via-[#F4ECE8]/60 to-transparent pointer-events-none hidden sm:block" />
+
+                  {/* Mobile bottom-to-top scrim */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#F4ECE8] via-[#F4ECE8]/80 to-[#F4ECE8]/30 sm:hidden pointer-events-none" />
+                </div>
               </div>
             );
           })}
 
-          {/* Floating Side Navigation Arrows (Aza Benchmark Style) */}
+          {/* Floating Side Navigation Arrows */}
           <button
             type="button"
             onClick={prevSlide}
             aria-label="Previous Slide"
-            className="absolute left-3 sm:left-5 md:left-6 top-1/2 -translate-y-1/2 z-30 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-stone-900 shadow-[0_4px_20px_rgba(0,0,0,0.2)] backdrop-blur-md flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95 cursor-pointer border border-white/70"
+            className="absolute left-3 sm:left-5 md:left-6 top-1/2 -translate-y-1/2 z-30 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-stone-900 shadow-[0_4px_20px_rgba(0,0,0,0.15)] backdrop-blur-md flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95 cursor-pointer border border-stone-200/80"
           >
             <ChevronLeft size={18} strokeWidth={2} />
           </button>
@@ -210,34 +228,34 @@ export function HeroCarousel() {
             type="button"
             onClick={nextSlide}
             aria-label="Next Slide"
-            className="absolute right-3 sm:right-5 md:right-6 top-1/2 -translate-y-1/2 z-30 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-stone-900 shadow-[0_4px_20px_rgba(0,0,0,0.2)] backdrop-blur-md flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95 cursor-pointer border border-white/70"
+            className="absolute right-3 sm:right-5 md:right-6 top-1/2 -translate-y-1/2 z-30 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white text-stone-900 shadow-[0_4px_20px_rgba(0,0,0,0.15)] backdrop-blur-md flex items-center justify-center transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95 cursor-pointer border border-stone-200/80"
           >
             <ChevronRight size={18} strokeWidth={2} />
           </button>
 
-          {/* Editorial Text Content Block (Left-Aligned Aza Layout) */}
+          {/* Editorial Text Content Block (Left-Aligned Layout) */}
           <div className="absolute inset-0 z-20 px-6 sm:px-10 md:px-12 lg:px-14 flex items-center justify-start pointer-events-none">
-            <div className="w-full sm:w-[62%] md:w-[54%] lg:w-[48%] text-left pointer-events-auto py-2 sm:py-3">
+            <div className="w-full sm:w-[58%] md:w-[52%] lg:w-[48%] text-left pointer-events-auto py-2 sm:py-3">
               
               {/* Subtle Luxury Pre-Header Ribbon */}
               <div className="inline-flex items-center gap-1.5 mb-1.5 sm:mb-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-                <span className="font-sans text-[9.5px] sm:text-[10.5px] font-bold uppercase tracking-[0.25em] text-[#F3DFCA] drop-shadow">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse" />
+                <span className="font-sans text-[9.5px] sm:text-[10.5px] font-bold uppercase tracking-[0.25em] text-[#8B5E3C]">
                   {currentSlide.tag}
                 </span>
               </div>
 
-              {/* Grand Couture Headline (Vogue / Aza Serif Typography) */}
-              <h1 className="font-serif text-lg sm:text-2xl md:text-3xl lg:text-[34px] text-white font-normal leading-[1.12] tracking-tight mb-1 sm:mb-2 drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+              {/* Grand Couture Headline (Left-aligned dark espresso serif heading #2A1A1A) */}
+              <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-[#2A1A1A] font-normal leading-[1.14] tracking-tight mb-2 sm:mb-2.5">
                 {currentSlide.title}
               </h1>
 
-              {/* Sub-tagline description */}
-              <p className="font-sans text-[11.5px] sm:text-xs md:text-[13px] text-stone-200/90 font-light leading-relaxed mb-2.5 sm:mb-4 max-w-md line-clamp-2 drop-shadow">
+              {/* Sub-tagline description (Muted subtitle #5C4B4B) */}
+              <p className="font-sans text-xs sm:text-[13px] md:text-sm text-[#5C4B4B] font-light leading-relaxed mb-4 sm:mb-5 max-w-md line-clamp-2">
                 {currentSlide.tagline}
               </p>
 
-              {/* Action Buttons matching Reference */}
+              {/* Action Buttons: existing homepage CTA button styling unchanged */}
               <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
                 <Link
                   href={currentSlide.link}
@@ -261,29 +279,29 @@ export function HeroCarousel() {
             </div>
           </div>
 
-          {/* Bottom Pagination & Slide Counter (Aza Fashions Benchmark) */}
+          {/* Bottom Pagination & Slide Counter */}
           <div className="absolute bottom-3 sm:bottom-4 inset-x-0 z-30 px-6 sm:px-10 flex items-center justify-between pointer-events-none">
             
-            {/* Left/Center: Sleek Indicator Dashes */}
+            {/* Left/Center: Sleek Indicator Dots */}
             <div className="flex items-center gap-2 pointer-events-auto">
               {AZA_HERO_SLIDES.map((slide, idx) => (
                 <button
                   key={slide.id}
-                  onClick={() => setCurrent(idx)}
+                  onClick={() => goToSlide(idx)}
                   aria-label={`Go to slide ${idx + 1}`}
-                  className={`h-1 sm:h-1.5 transition-all duration-500 rounded-full cursor-pointer ${
+                  className={`h-1.5 transition-all duration-500 rounded-full cursor-pointer ${
                     idx === current
-                      ? "w-8 sm:w-10 bg-white shadow-md"
-                      : "w-2.5 sm:w-3 bg-white/40 hover:bg-white/70"
+                      ? "w-8 sm:w-10 bg-[#4A1513] shadow-xs"
+                      : "w-2.5 sm:w-3 bg-stone-400/50 hover:bg-stone-600/70"
                   }`}
                 />
               ))}
             </div>
 
-            {/* Right: Modern Slide Counter (e.g. 01 / 06) */}
-            <div className="hidden sm:flex items-center gap-1.5 text-white/90 font-mono text-[11px] tracking-widest bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
-              <span className="font-bold text-white">0{current + 1}</span>
-              <span className="text-white/40">/</span>
+            {/* Right: Modern Slide Counter (01 / 06) */}
+            <div className="hidden sm:flex items-center gap-1.5 text-stone-700 font-mono text-[11px] tracking-widest bg-white/80 backdrop-blur-md px-3 py-1 rounded-full border border-stone-200/70 shadow-2xs">
+              <span className="font-bold text-[#4A1513]">0{current + 1}</span>
+              <span className="text-stone-400">/</span>
               <span>0{AZA_HERO_SLIDES.length}</span>
             </div>
 
