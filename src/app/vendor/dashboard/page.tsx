@@ -49,10 +49,14 @@ export default async function VendorDashboardPage() {
     redirect("/vendor/login");
   }
 
-  // 4. Verify vendor approval status on the server before granting dashboard access
+  // 4. Verify vendor approval status and completed password setup on the server
   const vendorProfile = user.vendorProfile;
   if (!vendorProfile || vendorProfile.status !== 'APPROVED') {
     redirect(`/vendor/login?error=${encodeURIComponent(vendorProfile?.status || 'PENDING')}`);
+  }
+
+  if ((vendorProfile as any).passwordSetupCompleted === false) {
+    redirect("/vendor/login?error=PASSWORD_SETUP_REQUIRED");
   }
 
   return (

@@ -253,9 +253,13 @@ model VendorProfile {
   status           String   @default("PENDING") // Requires Admin approval
   
   // Automatic approval email tracking
-  approvalEmailSent   Boolean   @default(false)
-  approvalEmailSentAt DateTime?
-  approvalEmailError  String?
+  approvalEmailSent        Boolean   @default(false)
+  approvalEmailSentAt      DateTime?
+  approvalEmailError       String?
+
+  // Password setup tracking
+  passwordSetupCompleted   Boolean   @default(false)
+  passwordSetupCompletedAt DateTime?
   
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt        DateTime @default(now())

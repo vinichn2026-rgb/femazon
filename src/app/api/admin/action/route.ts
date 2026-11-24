@@ -5,6 +5,7 @@ import { authOptions } from '@/lib/authOptions';
 import { getApiAuthPayload } from '@/lib/auth';
 import { sendVendorApprovalEmail } from '@/lib/email';
 import { generateVendorPasswordSetupToken } from '@/lib/vendorPasswordSetup';
+import { getVendorPasswordSetupUrl, getVendorLoginUrl, getVendorDashboardUrl } from '@/lib/appUrl';
 
 function slugify(text: string): string {
   return text
@@ -96,8 +97,6 @@ export async function POST(request: Request) {
 
         if (shouldSendEmail && recipientEmail && existingProfile.user) {
           try {
-            const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-            
             // Generate unique, time-limited, single-use password setup token
             const setupToken = generateVendorPasswordSetupToken({
               userId: existingProfile.user.id,
@@ -106,7 +105,9 @@ export async function POST(request: Request) {
               currentPasswordHash: existingProfile.user.password,
               vendorStatus: 'APPROVED',
             });
-            passwordSetupUrl = `${baseUrl}/vendor/set-password?token=${encodeURIComponent(setupToken)}`;
+            passwordSetupUrl = getVendorPasswordSetupUrl(setupToken, request);
+            const loginUrl = getVendorLoginUrl(request);
+            const dashboardUrl = getVendorDashboardUrl(request);
 
             const emailResult = await sendVendorApprovalEmail({
               to: recipientEmail,
@@ -114,8 +115,8 @@ export async function POST(request: Request) {
               shopName: existingProfile.businessName || 'Femazon Partner Boutique',
               vendorId: existingProfile.id,
               passwordSetupUrl,
-              loginUrl: `${baseUrl}/vendor/login`,
-              dashboardUrl: `${baseUrl}/vendor/dashboard`,
+              loginUrl,
+              dashboardUrl,
               supportEmail: process.env.SUPPORT_EMAIL || 'support@femazon.com'
             });
 
@@ -194,8 +195,6 @@ export async function POST(request: Request) {
           return NextResponse.json({ error: 'Vendor has no registered user/email address' }, { status: 400 });
         }
 
-        const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-        
         // Generate a fresh setup token
         const setupToken = generateVendorPasswordSetupToken({
           userId: vendor.user.id,
@@ -204,7 +203,9 @@ export async function POST(request: Request) {
           currentPasswordHash: vendor.user.password,
           vendorStatus: vendor.status || 'APPROVED',
         });
-        const passwordSetupUrl = `${baseUrl}/vendor/set-password?token=${encodeURIComponent(setupToken)}`;
+        const passwordSetupUrl = getVendorPasswordSetupUrl(setupToken, request);
+        const loginUrl = getVendorLoginUrl(request);
+        const dashboardUrl = getVendorDashboardUrl(request);
 
         const result = await sendVendorApprovalEmail({
           to: recipientEmail,
@@ -212,8 +213,8 @@ export async function POST(request: Request) {
           shopName: vendor.businessName || 'Femazon Partner Boutique',
           vendorId: vendor.id,
           passwordSetupUrl,
-          loginUrl: `${baseUrl}/vendor/login`,
-          dashboardUrl: `${baseUrl}/vendor/dashboard`,
+          loginUrl,
+          dashboardUrl,
           supportEmail: process.env.SUPPORT_EMAIL || 'support@femazon.com'
         });
 
@@ -255,7 +256,6 @@ export async function POST(request: Request) {
           return NextResponse.json({ error: 'Vendor profile or user account not found' }, { status: 404 });
         }
 
-        const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
         const setupToken = generateVendorPasswordSetupToken({
           userId: vendor.user.id,
           vendorId: vendor.id,
@@ -263,7 +263,7 @@ export async function POST(request: Request) {
           currentPasswordHash: vendor.user.password,
           vendorStatus: vendor.status,
         });
-        const setupUrl = `${baseUrl}/vendor/set-password?token=${encodeURIComponent(setupToken)}`;
+        const setupUrl = getVendorPasswordSetupUrl(setupToken, request);
 
         return NextResponse.json({
           success: true,

@@ -38,7 +38,12 @@ export default async function VendorLoginPage() {
       include: { vendorProfile: true }
     });
 
-    if (user && user.role === 'VENDOR' && user.vendorProfile?.status === 'APPROVED') {
+    if (
+      user &&
+      user.role === 'VENDOR' &&
+      user.vendorProfile?.status === 'APPROVED' &&
+      (user.vendorProfile as any).passwordSetupCompleted !== false
+    ) {
       redirect("/vendor/dashboard");
     }
   }

@@ -163,7 +163,7 @@ export async function setVendorPassword(params: {
 
     const hashedPassword = await bcrypt.hash(params.newPassword, 10);
 
-    // Update user password and ensure role is VENDOR
+    // Update user password, ensure role is VENDOR, and mark setup completed
     await prisma.$transaction([
       prisma.user.update({
         where: { id: params.userId },
@@ -176,6 +176,8 @@ export async function setVendorPassword(params: {
         where: { id: params.vendorId },
         data: {
           status: 'APPROVED',
+          passwordSetupCompleted: true,
+          passwordSetupCompletedAt: new Date(),
         },
       }),
     ]);

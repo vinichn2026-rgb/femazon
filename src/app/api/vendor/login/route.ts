@@ -73,36 +73,62 @@ export async function POST(request: Request) {
     return invalidAuthResponse;
   }
 
-  // 3. Check password hash
+  const vendorProfile = user.vendorProfile;
+
+  // 3. Strict Vendor Status & Password Setup Verification
+  if (vendorProfile) {
+    if (vendorProfile.status === 'PENDING') {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Your vendor account is pending admin approval. You will receive an approval email with your password setup link once approved.',
+        },
+        { status: 403 }
+      );
+    }
+
+    if (vendorProfile.status === 'REJECTED') {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Your vendor application has been rejected. Please contact Femazon support.',
+        },
+        { status: 403 }
+      );
+    }
+
+    if (vendorProfile.status === 'SUSPENDED') {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Your vendor account has been suspended. Please contact Femazon support.',
+        },
+        { status: 403 }
+      );
+    }
+
+    // Approved vendors who have not created a password must use the setup link first
+    if (vendorProfile.status === 'APPROVED' && (vendorProfile as any).passwordSetupCompleted === false) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Your account is approved, but you have not created your password yet. Please open the "Set Your Password" link sent to your registered email to activate your account.',
+          needsPasswordSetup: true,
+        },
+        { status: 403 }
+      );
+    }
+  }
+
+  // 4. Check password hash
   const isValidPassword = await bcrypt.compare(String(password), String(user.password));
   if (!isValidPassword) {
     return invalidAuthResponse;
   }
 
-  // 4. Strict Role Separation & Approval Verification
-  const vendorProfile = user.vendorProfile;
-
-  if (user.role !== 'VENDOR') {
-    if (vendorProfile?.status === 'PENDING') {
-      return NextResponse.json(
-        { success: false, message: 'Your vendor account is pending admin approval. You will receive an email once approved.' },
-        { status: 403 }
-      );
-    }
+  // 5. Strict Role Separation & Final Verification
+  if (user.role !== 'VENDOR' || !vendorProfile || vendorProfile.status !== 'APPROVED') {
     return invalidAuthResponse;
-  }
-
-  // 5. Verify vendor approval status on the server before granting access
-  if (!vendorProfile || vendorProfile.status !== 'APPROVED') {
-    const statusMsg = vendorProfile?.status === 'REJECTED'
-      ? 'Your vendor application has been rejected. Please contact Femazon support.'
-      : vendorProfile?.status === 'SUSPENDED'
-      ? 'Your vendor account has been suspended. Please contact Femazon support.'
-      : 'Your vendor account is pending admin approval. You will receive an email once approved.';
-    return NextResponse.json(
-      { success: false, message: statusMsg },
-      { status: 403 }
-    );
   }
 
   // 6. Generate signed HMAC token with VENDOR role

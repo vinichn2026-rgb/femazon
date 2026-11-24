@@ -15,6 +15,8 @@
  * - SUPPORT_EMAIL: Femazon partner care email (e.g. 'support@femazon.com')
  */
 
+import { getAppUrl, getVendorLoginUrl, getVendorDashboardUrl } from '@/lib/appUrl';
+
 export interface SendOtpEmailParams {
   to: string;
   name?: string;
@@ -359,6 +361,7 @@ export function generateVendorApprovalEmailHtml({
 }: SendVendorApprovalEmailParams): string {
   const currentYear = new Date().getFullYear();
   const recipientGreeting = vendorName ? vendorName.trim() : shopName;
+  const effectiveLoginUrl = loginUrl || getVendorLoginUrl();
 
   return `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
@@ -498,7 +501,7 @@ export function generateVendorApprovalEmailHtml({
               <table role="presentation" cellspacing="0" cellpadding="0">
                 <tr>
                   <td align="center" style="border-radius: 50px; background-color: #4A1513;">
-                    <a href="${loginUrl || 'http://localhost:3000/vendor/login'}" target="_blank" style="display: inline-block; background-color: #4A1513; color: #FFFFFF; font-size: 14px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; text-decoration: none; padding: 16px 38px; border-radius: 50px; border: 1px solid #4A1513; box-shadow: 0 4px 16px rgba(74, 21, 19, 0.25);">
+                    <a href="${effectiveLoginUrl}" target="_blank" style="display: inline-block; background-color: #4A1513; color: #FFFFFF; font-size: 14px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; text-decoration: none; padding: 16px 38px; border-radius: 50px; border: 1px solid #4A1513; box-shadow: 0 4px 16px rgba(74, 21, 19, 0.25);">
                       Access Vendor Portal &rarr;
                     </a>
                   </td>
@@ -510,7 +513,7 @@ export function generateVendorApprovalEmailHtml({
               <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #FAF7F5; border: 1px solid #EAE0D8; border-radius: 12px; padding: 12px 18px; margin-top: 12px; text-align: center;">
                 <tr>
                   <td style="font-size: 13px; color: #6B5E5B;">
-                    <strong>Vendor Login URL:</strong> <a href="${loginUrl || 'http://localhost:3000/vendor/login'}" style="color: #4A1513; font-weight: 600; text-decoration: underline;">${loginUrl || 'http://localhost:3000/vendor/login'}</a>
+                    <strong>Vendor Login URL:</strong> <a href="${effectiveLoginUrl}" style="color: #4A1513; font-weight: 600; text-decoration: underline;">${effectiveLoginUrl}</a>
                   </td>
                 </tr>
               </table>
@@ -528,7 +531,7 @@ export function generateVendorApprovalEmailHtml({
                   Click the <strong style="color: #4A1513;">Set Your Password</strong> button above to create your personal, confidential password.
                 </li>
                 <li style="margin-bottom: 8px;">
-                  After setting your password, open the Vendor Portal at <a href="${loginUrl || 'http://localhost:3000/vendor/login'}" style="color: #4A1513; font-weight: 600;">/vendor/login</a>.
+                  After setting your password, open the Vendor Portal at <a href="${effectiveLoginUrl}" style="color: #4A1513; font-weight: 600;">/vendor/login</a>.
                 </li>
                 <li style="margin-bottom: 8px;">
                   Sign in using your registered Login ID (<strong style="color: #2B1311;">${to}</strong>) and your new password.
@@ -596,8 +599,7 @@ export async function sendOtpEmail({
   otp, 
   verificationUrl 
 }: SendOtpEmailParams): Promise<{ success: boolean; messageId?: string; error?: string }> {
-  const defaultBaseUrl = process.env.NODE_ENV === 'production' ? 'https://femazon-beta.vercel.app' : 'http://localhost:3000';
-  const baseUrl = process.env.NEXTAUTH_URL || defaultBaseUrl;
+  const baseUrl = getAppUrl();
   const autoVerificationUrl = verificationUrl || `${baseUrl}/login?identifier=${encodeURIComponent(to)}&otp=${otp}`;
   const html = generateOtpEmailHtml({ name, otp, verificationUrl: autoVerificationUrl });
 
@@ -614,10 +616,8 @@ export async function sendOtpEmail({
 export async function sendVendorApprovalEmail(
   params: SendVendorApprovalEmailParams
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
-  const defaultBaseUrl = process.env.NODE_ENV === 'production' ? 'https://femazon-beta.vercel.app' : 'http://localhost:3000';
-  const baseUrl = process.env.NEXTAUTH_URL || defaultBaseUrl;
-  const loginUrl = params.loginUrl || `${baseUrl}/vendor/login`;
-  const dashboardUrl = params.dashboardUrl || `${baseUrl}/vendor/dashboard`;
+  const loginUrl = params.loginUrl || getVendorLoginUrl();
+  const dashboardUrl = params.dashboardUrl || getVendorDashboardUrl();
   const supportEmail = params.supportEmail || process.env.SUPPORT_EMAIL || 'support@femazon.com';
 
   const html = generateVendorApprovalEmailHtml({
