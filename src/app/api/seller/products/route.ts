@@ -38,6 +38,12 @@ export async function POST(request: Request) {
 
     const { name, description, price, discountPrice, category, subcategory, stock, sizes, colors, sku, images, image, status } = parsed.data;
     const imageList = Array.isArray(images) ? images : typeof images === 'string' ? images.split(/\r?\n/).filter(Boolean) : [];
+    
+    // Strict 3 to 5 images requirement
+    if (status !== 'DRAFT' && (imageList.length < 3 || imageList.length > 5)) {
+      return NextResponse.json({ error: 'Product must have between 3 and 5 uploaded images.' }, { status: 400 });
+    }
+
     const mainImage = image || imageList[0] || null;
 
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now();

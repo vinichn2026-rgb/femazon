@@ -128,18 +128,7 @@ export function ShopByOccasion() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-[#FDF7EF] via-[#FAF2E8] to-[#F5ECE0] py-6 sm:py-8 select-none border-b border-[#EEDFCF]">
-      
-      {/* Decorative ambient glow matching the reference image */}
-      <div
-        className="pointer-events-none absolute -left-20 top-10 w-96 h-96 rounded-full bg-[#FFFBF5]/70 blur-3xl"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute -right-20 top-0 w-[520px] h-[520px] rounded-full bg-[#F6E5D3]/60 blur-3xl"
-        aria-hidden="true"
-      />
-
+    <section className="relative overflow-hidden bg-[#F5ECE5] py-6 sm:py-8 select-none border-b border-[#EEDFCF]">
       <div className="relative mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
         
         {/* Header Section: Title and subtitle */}

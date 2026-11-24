@@ -70,6 +70,14 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       name, description, price, discountPrice, category, subcategory, stock,
       sizes, colors, sku, images, image, status,
     } = parsed.data;
+
+    // Validate 3 to 5 images if updating image list
+    if (images !== undefined) {
+      const imageList = Array.isArray(images) ? images : typeof images === 'string' ? images.split(/\r?\n/).filter(Boolean) : [];
+      if (imageList.length > 0 && (imageList.length < 3 || imageList.length > 5)) {
+        return NextResponse.json({ error: 'Product must have between 3 and 5 uploaded images.' }, { status: 400 });
+      }
+    }
     const dataToUpdate: Prisma.ProductUpdateInput = {
       ...(name !== undefined && { name }),
       ...(description !== undefined && { description }),

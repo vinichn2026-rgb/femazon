@@ -17,13 +17,11 @@ import {
 } from 'lucide-react';
 import { 
   WOMENS_WEAR_CATEGORIES, 
-  WOMENS_WEAR_GROUP_NAMES,
   WOMENS_WEAR_OCCASIONS,
   WomensWearCategory, 
   WomensWearProduct 
 } from '@/data/womensWearData';
 import { useFemazonStore } from '@/context/FemazonStoreContext';
-import { BoutiqueDirectory } from '@/components/partner/BoutiqueDirectory';
 import type { PartnerDirectoryListing } from '@/lib/partnerDirectory';
 import { PageBanner } from '@/components/common/PageBanner';
 
@@ -102,7 +100,6 @@ export function WomensWearClient({
   const [selectedPriceRange, setSelectedPriceRange] = useState<string>("all");
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [selectedGroup, setSelectedGroup] = useState<string>("All");
   const [selectedCollectionTab, setSelectedCollectionTab] = useState<"all" | "new" | "trending" | "ready">("all");
   const [selectedOccasion, setSelectedOccasion] = useState<string>("all");
   const [onlyReadyToShip, setOnlyReadyToShip] = useState(false);
@@ -186,29 +183,6 @@ export function WomensWearClient({
       .sort((a, b) => b[1] - a[1])
       .slice(0, 14)
       .map(([color]) => color);
-  }, [initialProducts]);
-
-  // Dynamic Designer Collections derived from live products
-  const designerCollections = useMemo(() => {
-    const byBrand = new Map<string, { brand: string; vendorId?: number; count: number; image: string; sampleCategory: string }>();
-    for (const p of initialProducts) {
-      if (!p.brand) continue;
-      const existing = byBrand.get(p.brand);
-      if (existing) {
-        existing.count += 1;
-      } else {
-        byBrand.set(p.brand, {
-          brand: p.brand,
-          vendorId: p.vendorId,
-          count: 1,
-          image: p.images[0] || "/images/dress/placeholder.jpg",
-          sampleCategory: p.category,
-        });
-      }
-    }
-    return Array.from(byBrand.values())
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 6);
   }, [initialProducts]);
 
   // Filtered & Sorted Products
@@ -382,294 +356,8 @@ export function WomensWearClient({
         />
       </div>
 
-      <BoutiqueDirectory boutiques={boutiques} directoryError={boutiqueDirectoryError} />
-
-      {/* 2. SHOP BY CATEGORY (INDIAN WEAR / WESTERN WEAR / OTHER FASHION) */}
-      <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-4">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-5">
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#4A1513] block">
-              Curated Collections
-            </span>
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900">
-              Shop by Category
-            </h2>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {["All", ...WOMENS_WEAR_GROUP_NAMES].map((group) => (
-              <button
-                key={group}
-                type="button"
-                onClick={() => setSelectedGroup(group)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wide transition cursor-pointer ${
-                  selectedGroup === group
-                    ? "bg-[#4A1513] text-white shadow-xs"
-                    : "bg-white text-stone-700 border border-stone-200 hover:border-[#4A1513]"
-                }`}
-              >
-                {group === "All" ? "All Fashion" : group}
-              </button>
-            ))}
-            {selectedCategory !== "All" && (
-              <button
-                onClick={() => handleCategoryChange("All")}
-                className="text-xs font-bold uppercase tracking-wider text-[#4A1513] hover:underline cursor-pointer ml-2"
-              >
-                View All ({initialProducts.length} Styles)
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Categories Avatar / Card Carousel Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 sm:gap-4">
-          {WOMENS_WEAR_CATEGORIES.filter(
-            (cat) => selectedGroup === "All" || cat.group === selectedGroup
-          ).map((cat) => {
-            const isSelected = selectedCategory.toLowerCase() === cat.name.toLowerCase();
-
-            return (
-              <div
-                key={cat.id}
-                onClick={() => handleCategoryChange(isSelected ? "All" : cat.name)}
-                className={`group cursor-pointer rounded-2xl overflow-hidden bg-white border transition-all duration-300 flex flex-col ${
-                  isSelected 
-                    ? 'border-[#4A1513] ring-2 ring-[#4A1513] shadow-md -translate-y-1' 
-                    : 'border-stone-200/80 hover:border-stone-300 hover:shadow-md hover:-translate-y-0.5'
-                }`}
-              >
-                <div className="relative aspect-[4/3] w-full overflow-hidden bg-stone-100">
-                  <img 
-                    src={cat.image} 
-                    alt={cat.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-60" />
-                  <span className="absolute bottom-2 left-2 text-[9px] font-bold text-white bg-black/40 px-1.5 py-0.5 rounded backdrop-blur-xs">
-                    {categoryCounts[cat.id] || 0} Styles
-                  </span>
-                </div>
-                <div className="p-2.5 text-center flex-1 flex flex-col justify-center">
-                  <h3 className={`font-serif text-xs font-bold transition line-clamp-1 ${
-                    isSelected ? 'text-[#4A1513]' : 'text-stone-900 group-hover:text-[#4A1513]'
-                  }`}>
-                    {cat.name}
-                  </h3>
-                  <p className="text-[10px] text-stone-400 truncate mt-0.5">
-                    {cat.subcategories[0]}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* 2b. SAREES & KURTIS FEATURE SPOTLIGHTS */}
-      <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Sarees Feature Spotlight */}
-          <div 
-            onClick={() => handleCategoryChange("Sarees")}
-            className={`group relative cursor-pointer overflow-hidden rounded-3xl bg-gradient-to-br from-[#4A1513] to-[#2B0B0A] text-white p-7 sm:p-9 flex flex-col justify-between shadow-lg hover:shadow-2xl transition duration-500 min-h-[260px] ${
-              selectedCategory.toLowerCase() === "sarees" ? "ring-3 ring-amber-400 shadow-2xl" : ""
-            }`}
-          >
-            <div className="absolute right-0 top-0 bottom-0 w-1/2 sm:w-5/12 overflow-hidden opacity-35 group-hover:opacity-50 transition duration-500">
-              <img 
-                src="https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=85&w=800" 
-                alt="Sarees Showcase"
-                className="w-full h-full object-cover group-hover:scale-105 transition duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-[#4A1513] via-transparent to-transparent" />
-            </div>
-            <div className="relative z-10 max-w-sm">
-              <span className="inline-block px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-200 text-[10px] font-bold tracking-widest uppercase mb-2.5 border border-amber-300/30">
-                Signature Pavilion · {categoryCounts.sarees} Styles
-              </span>
-              <h3 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight mb-2 text-white">
-                The Saree Sanctuary
-              </h3>
-              <p className="text-xs text-rose-100/90 leading-relaxed mb-4 line-clamp-2">
-                Pure Kanjeevaram heritage silks, Varanasi Kadwa weaves, hand-painted sheer organza &amp; effortless pre-draped cocktail sarees.
-              </p>
-              <div className="flex flex-wrap gap-1.5 mb-5">
-                {["Banarasi", "Kanjeevaram", "Organza", "Pre-Draped", "Chiffon"].map(tag => (
-                  <span key={tag} className="text-[10px] bg-white/10 px-2 py-0.5 rounded-full text-rose-100 backdrop-blur-xs">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div className="relative z-10">
-              <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white text-[#4A1513] text-xs font-bold uppercase tracking-wider group-hover:bg-amber-300 transition shadow-sm">
-                <span>Shop Sarees</span>
-                <ArrowRight size={13} />
-              </span>
-            </div>
-          </div>
-
-          {/* Kurtas & Kurta Sets Feature Spotlight */}
-          <div 
-            onClick={() => handleCategoryChange("Kurtas & Kurta Sets")}
-            className={`group relative cursor-pointer overflow-hidden rounded-3xl bg-gradient-to-br from-[#2E1825] to-[#180A13] text-white p-7 sm:p-9 flex flex-col justify-between shadow-lg hover:shadow-2xl transition duration-500 min-h-[260px] ${
-              selectedCategory.toLowerCase() === "kurtas & kurta sets" ? "ring-3 ring-rose-400 shadow-2xl" : ""
-            }`}
-          >
-            <div className="absolute right-0 top-0 bottom-0 w-1/2 sm:w-5/12 overflow-hidden opacity-35 group-hover:opacity-50 transition duration-500">
-              <img 
-                src="https://images.unsplash.com/photo-1583391733958-65e2be10c3fb?auto=format&fit=crop&q=85&w=800" 
-                alt="Kurtas & Kurta Sets Showcase"
-                className="w-full h-full object-cover group-hover:scale-105 transition duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-[#2E1825] via-transparent to-transparent" />
-            </div>
-            <div className="relative z-10 max-w-sm">
-              <span className="inline-block px-2.5 py-0.5 rounded-full bg-rose-400/20 text-rose-200 text-[10px] font-bold tracking-widest uppercase mb-2.5 border border-rose-300/30">
-                Artisanal Pret · {categoryCounts["kurtas-kurta-sets"] || 0} Styles
-              </span>
-              <h3 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight mb-2 text-white">
-                Kurtas &amp; Kurta Sets
-              </h3>
-              <p className="text-xs text-rose-100/90 leading-relaxed mb-4 line-clamp-2">
-                Authentic 32-stitch Lucknowi Chikankari, festive flared Anarkalis, Bagru hand-block everyday kurtas &amp; chic silk tunics.
-              </p>
-              <div className="flex flex-wrap gap-1.5 mb-5">
-                {["Chikankari", "Anarkali", "Straight Cut", "Palazzo Sets", "Short Kurtas"].map(tag => (
-                  <span key={tag} className="text-[10px] bg-white/10 px-2 py-0.5 rounded-full text-rose-100 backdrop-blur-xs">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div className="relative z-10">
-              <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white text-[#2E1825] text-xs font-bold uppercase tracking-wider group-hover:bg-rose-200 transition shadow-sm">
-                <span>Shop Kurtas</span>
-                <ArrowRight size={13} />
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 2c. SHOP BY OCCASION & DESIGNER COLLECTIONS */}
-      <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#4A1513] block">
-                Curated Moments
-              </span>
-              <h2 className="font-serif text-xl sm:text-2xl font-bold text-stone-900">
-                Shop by Occasion
-              </h2>
-            </div>
-            {selectedOccasion !== "all" && (
-              <button
-                type="button"
-                onClick={() => setSelectedOccasion("all")}
-                className="text-xs font-bold uppercase tracking-wider text-[#4A1513] hover:underline cursor-pointer"
-              >
-                Clear Occasion
-              </button>
-            )}
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            {WOMENS_WEAR_OCCASIONS.map((occ) => {
-              const active = selectedOccasion === occ.id;
-              return (
-                <button
-                  key={occ.id}
-                  type="button"
-                  onClick={() => {
-                    setSelectedOccasion(active ? "all" : occ.id);
-                    const el = document.getElementById("catalog-section");
-                    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                  }}
-                  className={`group relative overflow-hidden rounded-2xl text-left p-4 sm:p-5 border transition-all cursor-pointer min-h-[120px] flex flex-col justify-end ${
-                    active
-                      ? "border-[#4A1513] ring-2 ring-[#4A1513] shadow-md"
-                      : "border-stone-200 hover:border-[#4A1513]/60 hover:shadow-md"
-                  }`}
-                >
-                  <img
-                    src={occ.image}
-                    alt={occ.name}
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/15" />
-                  <div className="relative z-10 text-white">
-                    <h3 className="font-serif text-sm sm:text-base font-bold">{occ.name}</h3>
-                    <p className="text-[11px] text-stone-200 line-clamp-1 mt-0.5">{occ.subtitle}</p>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {designerCollections.length > 0 && (
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#4A1513] block">
-                  Multi-Brand Labels
-                </span>
-                <h2 className="font-serif text-xl sm:text-2xl font-bold text-stone-900">
-                  Designer Collections
-                </h2>
-              </div>
-              {selectedBoutique !== "all" && (
-                <button
-                  type="button"
-                  onClick={() => setSelectedBoutique("all")}
-                  className="text-xs font-bold uppercase tracking-wider text-[#4A1513] hover:underline cursor-pointer"
-                >
-                  All Designers
-                </button>
-              )}
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-              {designerCollections.map((col) => {
-                const isActive = selectedBoutique === col.brand;
-                return (
-                  <button
-                    key={col.brand}
-                    type="button"
-                    onClick={() => {
-                      setSelectedBoutique(isActive ? "all" : col.brand);
-                      const el = document.getElementById("catalog-section");
-                      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                    }}
-                    className={`group rounded-2xl bg-white border p-3 text-left transition cursor-pointer flex items-center gap-3 ${
-                      isActive
-                        ? "border-[#4A1513] ring-2 ring-[#4A1513] shadow-sm"
-                        : "border-stone-200 hover:border-[#4A1513]/60 hover:shadow-sm"
-                    }`}
-                  >
-                    <img
-                      src={col.image}
-                      alt={col.brand}
-                      className="w-12 h-12 rounded-xl object-cover shrink-0 bg-stone-100"
-                    />
-                    <div className="min-w-0">
-                      <p className="font-serif text-xs font-bold text-stone-900 truncate group-hover:text-[#4A1513]">
-                        {col.brand}
-                      </p>
-                      <p className="text-[10px] text-stone-500 mt-0.5">
-                        {col.count} {col.count === 1 ? "Style" : "Styles"}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </section>
-
-      {/* 3. STICKY CATEGORY PILLS STRIP */}
-      <section className="bg-white border-y border-stone-200/90 sticky top-[88px] md:top-[96px] z-30 shadow-xs">
+      {/* 2. STICKY CATEGORY PILLS STRIP */}
+      <section id="catalog-section" className="bg-white border-y border-stone-200/90 sticky top-[88px] md:top-[96px] z-30 shadow-xs">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth">
             <button

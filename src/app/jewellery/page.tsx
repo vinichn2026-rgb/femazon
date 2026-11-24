@@ -16,8 +16,12 @@ interface JewellerySearchParams {
   sort?: string;
 }
 
-export default async function JewelleryPage({ searchParams }: { searchParams: Promise<JewellerySearchParams> }) {
-  const resolvedSearchParams = await searchParams;
+export default async function JewelleryPage({
+  searchParams,
+}: {
+  searchParams?: Promise<JewellerySearchParams>;
+}) {
+  const resolvedSearchParams = (await searchParams) || {};
   const formattedProducts = await getFormattedShopProducts();
   const initialCategory = resolvedSearchParams.category || "All";
 

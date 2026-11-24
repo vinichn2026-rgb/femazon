@@ -33,17 +33,13 @@ const LUXURY_PRESET_COLORS = [
   { name: 'Obsidian Black', hex: '#1A1A1A' },
 ];
 
-const STANDARD_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
+import {
+  VENDOR_BUSINESS_TYPES,
+  VENDOR_CATEGORY_MAP,
+  VendorBusinessType
+} from '@/lib/vendorCategoryMap';
 
-const CATEGORY_MAP: Record<string, string[]> = {
-  'Kurta Sets': ['Anarkali Sets', 'Sharara & Gharara Sets', 'Straight Cut Suits', 'Angrakha Ensembles', 'Palazzo Sets'],
-  'Lehengas': ['Bridal Lehengas', 'Bridesmaid Lehengas', 'Fusion / Drape Lehengas', 'Velvet Lehengas'],
-  'Sarees': ['Banarasi Silk Sarees', 'Kanjeevaram Sarees', 'Chanderi Sarees', 'Organza Handpainted', 'Pre-Draped Sarees'],
-  'Dresses & Gowns': ['Evening Gowns', 'Cocktail Dresses', 'Maxi Dresses', 'Cape Gowns'],
-  'Indo-Western': ['Drape Skirt Sets', 'Jumpsuits', 'Cape Sets', 'Tunic Sets'],
-  'Co-ord Sets': ['Embroidered Co-ords', 'Silk Co-ords', 'Printed Co-ords'],
-  'Ready To Ship': ['Festive Express', 'Luxury Pret', 'Immediate Dispatch Exclusive']
-};
+const STANDARD_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
 
 export interface VariantImageItem {
   imageUrl: string;
@@ -74,8 +70,9 @@ export function AddProductWithVariants({
   // Section A: Core Product Information
   const [title, setTitle] = useState('');
   const [brandName, setBrandName] = useState('Femazon Luxe');
-  const [category, setCategory] = useState('Kurta Sets');
-  const [subCategory, setSubCategory] = useState('Anarkali Sets');
+  const [businessType, setBusinessType] = useState<VendorBusinessType>("Boutique / Women's Wear");
+  const [category, setCategory] = useState('Sarees');
+  const [subCategory, setSubCategory] = useState('Banarasi Silk Sarees');
   const [basePrice, setBasePrice] = useState<string>('');
   const [salePrice, setSalePrice] = useState<string>('');
   const [fabricCare, setFabricCare] = useState('Pure Georgette - Dry Clean Only');
@@ -211,26 +208,6 @@ export function AddProductWithVariants({
     }
   };
 
-  // Manual URL image addition for preview/testing
-  const handleAddImageUrl = (variantId: string) => {
-    const url = prompt(
-      'Enter Image URL for this color variant:',
-      'https://images.unsplash.com/photo-1617260517861-12c8236d812b?w=1000&q=85&auto=format&fit=crop'
-    );
-    if (!url) return;
-
-    setColorVariants(prev =>
-      prev.map(c => {
-        if (c.id !== variantId) return c;
-        const newImg: VariantImageItem = {
-          imageUrl: url.trim(),
-          isThumbnail: c.images.length === 0,
-          displayOrder: c.images.length + 1
-        };
-        return { ...c, images: [...c.images, newImg] };
-      })
-    );
-  };
 
   const handleSetThumbnail = (variantId: string, imgIdx: number) => {
     setColorVariants(prev =>
@@ -329,6 +306,16 @@ export function AddProductWithVariants({
 
     if (totalStock <= 0) {
       setErrorMessage('Please allocate at least one piece of physical stock across sizes.');
+      return;
+    }
+
+    const totalImages = colorVariants.reduce((sum, cv) => sum + cv.images.length, 0);
+    if (totalImages < 3) {
+      setErrorMessage(`Please upload at least 3 images across color varieties (currently ${totalImages} uploaded). Minimum 3 images required.`);
+      return;
+    }
+    if (totalImages > 5) {
+      setErrorMessage(`Maximum 5 images allowed across color varieties (currently ${totalImages} uploaded).`);
       return;
     }
 
@@ -495,6 +482,30 @@ export function AddProductWithVariants({
               />
             </div>
 
+            {/* Business Type */}
+            <div className="space-y-1.5 sm:col-span-2 lg:col-span-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-stone-700">
+                Business Type <span className="text-rose-600">*</span>
+              </label>
+              <select
+                value={businessType}
+                onChange={e => {
+                  const newType = e.target.value as VendorBusinessType;
+                  setBusinessType(newType);
+                  const cats = VENDOR_CATEGORY_MAP[newType] || [];
+                  const firstCat = cats[0]?.name || '';
+                  const firstSub = cats[0]?.subcategories?.[0] || '';
+                  setCategory(firstCat);
+                  setSubCategory(firstSub);
+                }}
+                className="w-full h-11 px-3 text-xs sm:text-sm bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:border-[#4A1513] focus:outline-none transition font-medium cursor-pointer"
+              >
+                {VENDOR_BUSINESS_TYPES.map(bt => (
+                  <option key={bt.id} value={bt.id}>{bt.icon} {bt.label}</option>
+                ))}
+              </select>
+            </div>
+
             {/* Category */}
             <div className="space-y-1.5">
               <label className="block text-xs font-bold uppercase tracking-wider text-stone-700">
@@ -503,14 +514,16 @@ export function AddProductWithVariants({
               <select
                 value={category}
                 onChange={e => {
-                  setCategory(e.target.value);
-                  const subOptions = CATEGORY_MAP[e.target.value] || [];
-                  setSubCategory(subOptions[0] || '');
+                  const newCat = e.target.value;
+                  setCategory(newCat);
+                  const cats = VENDOR_CATEGORY_MAP[businessType] || [];
+                  const matched = cats.find(c => c.name.toLowerCase() === newCat.toLowerCase());
+                  setSubCategory(matched?.subcategories?.[0] || '');
                 }}
                 className="w-full h-11 px-3 text-xs sm:text-sm bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:border-[#4A1513] focus:outline-none transition font-medium cursor-pointer"
               >
-                {Object.keys(CATEGORY_MAP).map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
+                {(VENDOR_CATEGORY_MAP[businessType] || []).map(cat => (
+                  <option key={cat.name} value={cat.name}>{cat.name}</option>
                 ))}
               </select>
             </div>
@@ -520,15 +533,23 @@ export function AddProductWithVariants({
               <label className="block text-xs font-bold uppercase tracking-wider text-stone-700">
                 Subcategory / Silhouette
               </label>
-              <select
-                value={subCategory}
-                onChange={e => setSubCategory(e.target.value)}
-                className="w-full h-11 px-3 text-xs sm:text-sm bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:border-[#4A1513] focus:outline-none transition font-medium cursor-pointer"
-              >
-                {(CATEGORY_MAP[category] || []).map(sub => (
-                  <option key={sub} value={sub}>{sub}</option>
-                ))}
-              </select>
+              {(() => {
+                const cats = VENDOR_CATEGORY_MAP[businessType] || [];
+                const matched = cats.find(c => c.name.toLowerCase() === category.toLowerCase()) || cats[0];
+                const subcats = matched?.subcategories || [];
+
+                return (
+                  <select
+                    value={subCategory}
+                    onChange={e => setSubCategory(e.target.value)}
+                    className="w-full h-11 px-3 text-xs sm:text-sm bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:border-[#4A1513] focus:outline-none transition font-medium cursor-pointer"
+                  >
+                    {subcats.map(sub => (
+                      <option key={sub} value={sub}>{sub}</option>
+                    ))}
+                  </select>
+                );
+              })()}
             </div>
 
             {/* Pricing Box */}
@@ -758,13 +779,9 @@ export function AddProductWithVariants({
                       <label className="block text-xs font-bold uppercase tracking-wider text-stone-700">
                         Gallery for {variant.colorName || 'This Color'} <span className="text-rose-600">*</span>
                       </label>
-                      <button
-                        type="button"
-                        onClick={() => handleAddImageUrl(variant.id)}
-                        className="text-xs font-semibold text-[#4A1513] hover:underline cursor-pointer"
-                      >
-                        + Add Image via URL
-                      </button>
+                      <span className="text-[11px] text-stone-400">
+                        Upload direct from device
+                      </span>
                     </div>
 
                     {/* Upload Dropzone */}

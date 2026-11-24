@@ -31,9 +31,10 @@ export const vendorProductSchema = z.object({
 
 export type VendorProductInput = z.infer<typeof vendorProductSchema>;
 
-export function serializeProductList(value: VendorProductInput["sizes"] | VendorProductInput["colors"] | VendorProductInput["images"]) {
-  if (value === undefined || value === null) return value;
-  return Array.isArray(value) ? JSON.stringify(value) : value;
+export function serializeProductList(value: VendorProductInput["sizes"] | VendorProductInput["colors"] | VendorProductInput["images"]): string | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+  return Array.isArray(value) ? JSON.stringify(value) : String(value);
 }
 
 export function getProductValidationMessage(error: z.ZodError) {

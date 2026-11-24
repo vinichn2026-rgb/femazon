@@ -23,7 +23,7 @@ const SHOP_MAIN_CATEGORIES = [
   },
   {
     title: "Beauty & Self-care",
-    href: "/beauty?view=products",
+    href: "/beauty",
     description: "Skincare, Haircare, Makeup, Fragrances & Botanical Rituals",
     accent: "bg-[#8B5E3C]",
   },

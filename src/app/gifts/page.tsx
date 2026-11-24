@@ -1,29 +1,42 @@
-import { GiftDiscoveryClient } from "@/components/gifts/GiftDiscoveryClient";
-import { getGiftCatalog } from "@/lib/giftCatalog";
+import { ShopClient } from '@/components/shop/ShopClient';
+import { getFormattedShopProducts } from '@/lib/catalog';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: "Gifts for All Occasions | Femazon",
-  description: "Explore curated gift hampers, flowers, chocolates, cakes, personalized gifts, jewellery, and self-care hampers across all occasions on Femazon.",
+  title: "Gifts for Every Occasion | Femazon",
+  description: "Explore curated gift hampers, celebratory boxes, flowers, chocolates & personalised surprises on Femazon.",
 };
+
+interface GiftsSearchParams {
+  category?: string | string[];
+  occasion?: string | string[];
+  dept?: string | string[];
+  department?: string | string[];
+  subcategory?: string | string[];
+  sort?: string | string[];
+}
 
 export default async function GiftsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ occasion?: string | string[]; category?: string | string[] }>;
+  searchParams?: Promise<GiftsSearchParams>;
 }) {
-  const { occasion: requestedOccasion, category: requestedCategory } = await searchParams;
-  const occasionValue = Array.isArray(requestedOccasion) ? requestedOccasion[0] : requestedOccasion;
-  const categoryValue = Array.isArray(requestedCategory) ? requestedCategory[0] : requestedCategory;
-  const { products, error } = await getGiftCatalog();
+  const resolvedSearchParams = (await searchParams) || {};
+  const formattedProducts = await getFormattedShopProducts();
+  const rawCategory =
+    resolvedSearchParams.category ||
+    resolvedSearchParams.occasion ||
+    resolvedSearchParams.subcategory;
+  const initialCategory = Array.isArray(rawCategory)
+    ? rawCategory[0]
+    : (rawCategory || "All");
 
   return (
-    <GiftDiscoveryClient
-      products={products}
-      catalogNotice={error}
-      initialOccasion={occasionValue}
-      initialCategory={categoryValue}
+    <ShopClient
+      initialProducts={formattedProducts}
+      initialCategory={initialCategory}
+      initialDepartment="gifts"
     />
   );
 }

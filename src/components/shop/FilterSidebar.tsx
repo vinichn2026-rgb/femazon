@@ -80,15 +80,17 @@ export function FilterSidebar({
     setTempBrands(filters.brands || []);
     setTempDepartment(selectedDepartment);
     setTempCategory(selectedCategory);
+    if (selectedDepartment !== "all") {
+      setExpandedDept(selectedDepartment);
+    }
   }, [filters, selectedDepartment, selectedCategory]);
 
   // Combine featured brands and catalog brands without duplicates
   const displayBrands = React.useMemo(() => {
-    const brandSet = new Set<string>(FEATURED_BRANDS);
-    availableBrands.forEach(b => {
-      if (b.name) brandSet.add(b.name);
-    });
-    return Array.from(brandSet);
+    if (availableBrands && availableBrands.length > 0) {
+      return availableBrands.map(b => b.name);
+    }
+    return FEATURED_BRANDS;
   }, [availableBrands]);
 
   const toggleBrand = (brandName: string) => {

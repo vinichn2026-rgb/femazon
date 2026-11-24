@@ -1764,7 +1764,7 @@ export function SiteLayout({
                     1. Women&apos;s Wear
                   </Link>
                   <Link 
-                    href="/beauty?view=products"
+                    href="/beauty"
                     onClick={() => setIsMobileMenuOpen(false)}
                     className="block py-1.5 text-[12.5px] text-stone-700 hover:text-[#4A1513] font-medium"
                   >

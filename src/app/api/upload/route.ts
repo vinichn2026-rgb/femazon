@@ -5,6 +5,8 @@ import { mkdir, writeFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import { join } from 'path';
 
+export const dynamic = 'force-dynamic';
+
 const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
 const IMAGE_TYPES = new Map([
   ['image/jpeg', 'jpg'],
@@ -47,6 +49,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No file received.' }, { status: 400 });
     }
 
+    const originalFilename = typeof (file as any).name === 'string' ? (file as any).name : 'upload';
     const extension = IMAGE_TYPES.get(file.type);
     if (!extension) {
       return NextResponse.json({ error: 'Upload a JPEG, PNG, or WebP image.' }, { status: 415 });
@@ -61,17 +64,37 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'The uploaded file content does not match an allowed image type.' }, { status: 415 });
     }
 
-    const uploadDir = join(process.cwd(), 'public', 'uploads');
-    const filename = `${randomUUID()}.${extension}`;
-    const path = join(uploadDir, filename);
-    await mkdir(uploadDir, { recursive: true });
-    await writeFile(path, buffer);
+    // 1. Store permanently in PostgreSQL database
+    const media = await (prisma as any).productMedia.create({
+      data: {
+        filename: originalFilename,
+        mimeType: file.type,
+        size: buffer.length,
+        data: buffer,
+      },
+    });
 
-    const fileUrl = `/uploads/${filename}`;
+    const fileUrl = `/api/media/${media.id}`;
 
-    return NextResponse.json({ success: true, url: fileUrl });
+    // 2. Best-effort local file write for local development caching (optional, ignores read-only failures)
+    try {
+      const uploadDir = join(process.cwd(), 'public', 'uploads');
+      const localFilename = `${media.id}.${extension}`;
+      const localPath = join(uploadDir, localFilename);
+      await mkdir(uploadDir, { recursive: true });
+      await writeFile(localPath, buffer);
+    } catch {
+      // Ignore filesystem errors in serverless/read-only environments
+    }
+
+    return NextResponse.json({
+      success: true,
+      url: fileUrl,
+      mediaId: media.id,
+      filename: originalFilename,
+    });
   } catch (error) {
     console.error('Upload Error:', error);
-    return NextResponse.json({ error: 'Failed to upload file.' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to upload file to database storage.' }, { status: 500 });
   }
 }

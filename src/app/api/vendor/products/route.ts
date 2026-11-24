@@ -154,6 +154,10 @@ export async function POST(request: Request) {
       primaryCoverImage = allImages[0];
     }
 
+    if (allImages.length < 3 || allImages.length > 5) {
+      return NextResponse.json({ error: 'Please upload between 3 and 5 product images in total.' }, { status: 400 });
+    }
+
     // Generate unique slug
     const baseSlug = slugify(productTitle);
     const uniqueSlug = `${baseSlug}-${Date.now().toString(36)}`;
