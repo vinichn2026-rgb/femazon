@@ -178,7 +178,7 @@ export async function setVendorPassword(params: {
           status: 'APPROVED',
           passwordSetupCompleted: true,
           passwordSetupCompletedAt: new Date(),
-        },
+        } as any,
       }),
     ]);
 

@@ -11,6 +11,7 @@ import { FilterSidebar, FilterState, FilterBrandOption } from '@/components/shop
 import { ProductCard, ProductCardSkeleton } from '@/components/shop/ProductCard';
 import { LuxuryPromoBanner } from '@/components/shop/LuxuryPromoBanner';
 import { useFemazonStore } from '@/context/FemazonStoreContext';
+import { type FormattedShopProduct } from '@/lib/catalog';
 
 export interface DepartmentOption {
   id: string;
