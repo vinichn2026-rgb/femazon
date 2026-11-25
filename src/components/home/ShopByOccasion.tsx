@@ -128,7 +128,7 @@ export function ShopByOccasion() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-[#F5ECE5] py-6 sm:py-8 select-none border-b border-[#EEDFCF]">
+    <section className="relative overflow-hidden bg-[#F5ECE5] py-6 sm:py-8 select-none border-b border-stone-200/70">
       <div className="relative mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
         
         {/* Header Section: Title and subtitle */}
