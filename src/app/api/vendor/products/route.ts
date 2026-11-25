@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/authOptions';
+import { getApiAuthEmail } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,11 +56,12 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
+    const authEmail = session?.user?.email || (await getApiAuthEmail(request));
 
     let vendorId: number | null = null;
-    if (session?.user?.email) {
+    if (authEmail) {
       const user = await prisma.user.findUnique({
-        where: { email: session.user.email }
+        where: { email: authEmail }
       });
       if (user) {
         vendorId = user.id;
@@ -185,7 +187,7 @@ export async function POST(request: Request) {
           images: JSON.stringify(allImages),
           sizes: JSON.stringify(Array.from(availableSizesSet)),
           colors: JSON.stringify(colorNames),
-          approvalStatus: 'APPROVED',
+          approvalStatus: 'SUBMITTED',
           vendorId: vendorId || null
         }
       });
