@@ -49,7 +49,9 @@ export function AdminVendorProducts({ products, categories, onAction }: AdminVen
 
       const matchesApproval =
         approvalFilter === "ALL" ||
-        (p.approvalStatus || "APPROVED") === approvalFilter;
+        (approvalFilter === "PENDING"
+          ? (p.approvalStatus === "PENDING" || p.approvalStatus === "SUBMITTED")
+          : (p.approvalStatus || "APPROVED") === approvalFilter);
 
       return matchesSearch && matchesCategory && matchesApproval;
     });
@@ -81,7 +83,7 @@ export function AdminVendorProducts({ products, categories, onAction }: AdminVen
           <div className="px-3.5 py-2 rounded-xl bg-amber-50 border border-amber-200 text-center">
             <p className="text-[10px] text-amber-800 uppercase font-semibold">Pending Review</p>
             <p className="text-base font-serif font-bold text-amber-900">
-              {products.filter(p => p.approvalStatus === 'PENDING').length}
+              {products.filter(p => p.approvalStatus === 'PENDING' || p.approvalStatus === 'SUBMITTED').length}
             </p>
           </div>
           <div className="px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-center">
@@ -175,8 +177,9 @@ export function AdminVendorProducts({ products, categories, onAction }: AdminVen
               ) : (
                 filteredProducts.map((p) => {
                   const isApproved = p.approvalStatus === "APPROVED";
-                  const isPending = p.approvalStatus === "PENDING";
+                  const isPending = p.approvalStatus === "PENDING" || p.approvalStatus === "SUBMITTED";
                   const isRejected = p.approvalStatus === "REJECTED";
+                  const isDraft = p.approvalStatus === "DRAFT";
                   const vendorName = p.vendor?.vendorProfile?.businessName || p.vendor?.name || `Vendor #${p.vendorId || "N/A"}`;
 
                   return (
@@ -239,7 +242,12 @@ export function AdminVendorProducts({ products, categories, onAction }: AdminVen
                         {isPending && (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200 animate-pulse">
                             <AlertTriangle size={12} />
-                            Pending
+                            {p.approvalStatus === "SUBMITTED" ? "Submitted" : "Pending"}
+                          </span>
+                        )}
+                        {isDraft && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-stone-100 text-stone-700 border border-stone-200">
+                            Draft
                           </span>
                         )}
                         {isRejected && (

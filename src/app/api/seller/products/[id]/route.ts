@@ -103,7 +103,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     dataToUpdate.approvalStatus = status === 'DRAFT'
       ? 'DRAFT'
       : status === 'SUBMITTED' || (listingDetailsChanged && product.approvalStatus !== 'DRAFT')
-        ? 'PENDING'
+        ? 'SUBMITTED'
         : product.approvalStatus;
 
     const updatedProduct = await prisma.product.update({

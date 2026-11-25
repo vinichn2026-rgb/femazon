@@ -6,6 +6,7 @@ import { getApiAuthPayload } from '@/lib/auth';
 import { sendVendorApprovalEmail } from '@/lib/email';
 import { generateVendorPasswordSetupToken } from '@/lib/vendorPasswordSetup';
 import { getVendorPasswordSetupUrl, getVendorLoginUrl, getVendorDashboardUrl } from '@/lib/appUrl';
+import { invalidateCatalogCache } from '@/lib/catalog';
 
 function slugify(text: string): string {
   return text
@@ -403,6 +404,7 @@ export async function POST(request: Request) {
           where: { id: Number(payload.productId) },
           data: { approvalStatus: 'APPROVED' }
         });
+        invalidateCatalogCache();
         return NextResponse.json({ success: true, message: 'Vendor product approved' });
       }
 
@@ -411,6 +413,7 @@ export async function POST(request: Request) {
           where: { id: Number(payload.productId) },
           data: { approvalStatus: 'REJECTED' }
         });
+        invalidateCatalogCache();
         return NextResponse.json({ success: true, message: 'Vendor product rejected' });
       }
 
@@ -424,6 +427,7 @@ export async function POST(request: Request) {
           where: { id: Number(payload.productId) },
           data: { approvalStatus: newStatus }
         });
+        invalidateCatalogCache();
         return NextResponse.json({ success: true, approvalStatus: updated.approvalStatus });
       }
 

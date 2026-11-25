@@ -144,8 +144,8 @@ export default function VendorDashboardClient({ vendorProfile, user }: VendorDas
   };
 
   // Handle Add/Edit Product
-  const handleSaveProduct = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveProduct = async (e?: React.FormEvent, targetStatus: "SUBMITTED" | "DRAFT" = "SUBMITTED") => {
+    if (e?.preventDefault) e.preventDefault();
     setProductFormError("");
 
     if (!formData.name.trim() || !formData.price) {
@@ -153,20 +153,22 @@ export default function VendorDashboardClient({ vendorProfile, user }: VendorDas
       return;
     }
 
-    if (productImages.length < 3) {
-      setProductFormError("Minimum 3 product images are required. Please upload at least 3 images.");
-      return;
-    }
+    if (targetStatus !== "DRAFT") {
+      if (productImages.length < 3) {
+        setProductFormError("Minimum 3 product images are required. Please upload at least 3 images.");
+        return;
+      }
 
-    if (productImages.length > 5) {
-      setProductFormError("Maximum 5 product images allowed. Please remove excess images.");
-      return;
+      if (productImages.length > 5) {
+        setProductFormError("Maximum 5 product images allowed. Please remove excess images.");
+        return;
+      }
     }
 
     setIsSubmittingProduct(true);
 
     try {
-      const mainImage = productImages[0];
+      const mainImage = productImages[0] || "";
       const method = editingProductId ? "PUT" : "POST";
       const url = editingProductId ? `/api/seller/products/${editingProductId}` : "/api/seller/products";
 
@@ -182,11 +184,11 @@ export default function VendorDashboardClient({ vendorProfile, user }: VendorDas
           subcategory: formData.subcategory,
           stock: Math.max(0, parseInt(formData.stock, 10) || 0),
           image: mainImage,
-          images: productImages,
+          images: productImages.length > 0 ? productImages : null,
           sizes: formData.sizes,
           colors: formData.colors,
           sku: formData.sku || `FMZ-V-${Date.now().toString().slice(-6)}`,
-          status: "APPROVED"
+          status: targetStatus
         })
       });
 
@@ -823,17 +825,26 @@ export default function VendorDashboardClient({ vendorProfile, user }: VendorDas
                         />
                       </div>
 
-                      <div className="flex gap-3 pt-4 border-t border-stone-100">
+                      <div className="flex flex-wrap gap-3 pt-4 border-t border-stone-100">
                         <button
-                          type="submit"
+                          type="button"
+                          onClick={(e) => handleSaveProduct(e, "SUBMITTED")}
                           disabled={isSubmittingProduct}
-                          className="flex-1 py-3.5 rounded-full bg-[#4A1513] hover:bg-[#350B0A] text-white text-xs font-bold uppercase tracking-wider transition shadow-sm cursor-pointer disabled:opacity-60"
+                          className="flex-1 py-3.5 px-6 rounded-full bg-[#4A1513] hover:bg-[#350B0A] text-white text-xs font-bold uppercase tracking-wider transition shadow-sm cursor-pointer disabled:opacity-60"
                         >
-                          {isSubmittingProduct ? "Saving Product..." : (editingProductId ? "Update Listing" : "Publish to Store")}
+                          {isSubmittingProduct ? "Saving Product..." : (editingProductId ? "Update Listing" : "Submit for Review")}
                         </button>
                         <button
                           type="button"
-                          onClick={() => setShowAddForm(false)}
+                          onClick={(e) => handleSaveProduct(e, "DRAFT")}
+                          disabled={isSubmittingProduct}
+                          className="py-3.5 px-6 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold uppercase tracking-wider transition cursor-pointer disabled:opacity-60"
+                        >
+                          Save Draft
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setShowAddForm(false); setEditingProductId(null); resetForm(); }}
                           className="py-3.5 px-6 rounded-full border border-stone-300 text-stone-700 text-xs font-bold uppercase tracking-wider hover:bg-stone-50 transition cursor-pointer"
                         >
                           Cancel
@@ -895,9 +906,31 @@ export default function VendorDashboardClient({ vendorProfile, user }: VendorDas
                               </span>
                             </td>
                             <td className="p-4">
-                              <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-semibold">
-                                <CheckCircle2 size={13} /> Active
-                              </span>
+                              {p.approvalStatus === "APPROVED" && (
+                                <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-semibold">
+                                  <CheckCircle2 size={13} /> Active
+                                </span>
+                              )}
+                              {(p.approvalStatus === "SUBMITTED" || p.approvalStatus === "PENDING") && (
+                                <span className="inline-flex items-center gap-1 text-xs text-amber-600 font-semibold">
+                                  <Clock size={13} /> Under Review
+                                </span>
+                              )}
+                              {p.approvalStatus === "DRAFT" && (
+                                <span className="inline-flex items-center gap-1 text-xs text-stone-500 font-semibold">
+                                  <AlertCircle size={13} /> Draft
+                                </span>
+                              )}
+                              {p.approvalStatus === "REJECTED" && (
+                                <span className="inline-flex items-center gap-1 text-xs text-rose-600 font-semibold">
+                                  <AlertCircle size={13} /> Rejected
+                                </span>
+                              )}
+                              {!["APPROVED", "SUBMITTED", "PENDING", "DRAFT", "REJECTED"].includes(p.approvalStatus) && (
+                                <span className="inline-flex items-center gap-1 text-xs text-stone-600 font-semibold">
+                                  {p.approvalStatus || "Pending"}
+                                </span>
+                              )}
                             </td>
                             <td className="p-4 pr-6 text-right">
                               <div className="inline-flex items-center gap-2">

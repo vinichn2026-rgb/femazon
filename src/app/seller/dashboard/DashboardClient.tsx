@@ -173,7 +173,7 @@ export default function DashboardClient({ vendorProfile }: { vendorProfile: any 
   // Compute stats
   const totalProducts = products.length;
   const activeProducts = products.filter(p => p.approvalStatus === 'APPROVED').length;
-  const pendingProducts = products.filter(p => p.approvalStatus === 'PENDING').length;
+  const pendingProducts = products.filter(p => p.approvalStatus === 'PENDING' || p.approvalStatus === 'SUBMITTED').length;
   const totalOrders = orders.length;
   const totalSales = orders.reduce((sum, o) => sum + (o.quantity * o.price), 0);
 
@@ -338,7 +338,7 @@ export default function DashboardClient({ vendorProfile }: { vendorProfile: any 
                       </div>
                       <div className="flex gap-3 pt-6 border-t mt-6">
                         <button type="button" onClick={() => handleAddProduct('DRAFT')} className="bg-zinc-100 text-zinc-600 px-6 py-3 rounded-lg font-bold text-sm hover:bg-zinc-200">Save Draft</button>
-                        <button type="button" onClick={() => handleAddProduct('PENDING')} className="bg-primary text-white px-6 py-3 rounded-lg font-bold text-sm hover:bg-primary-dark">Publish</button>
+                        <button type="button" onClick={() => handleAddProduct('SUBMITTED')} className="bg-primary text-white px-6 py-3 rounded-lg font-bold text-sm hover:bg-primary-dark">Submit for Review</button>
                         <div className="flex-1"></div>
                         <button type="button" onClick={() => setShowAddForm(false)} className="text-zinc-500 px-6 py-3 rounded-lg font-bold text-sm hover:bg-zinc-50">Cancel</button>
                       </div>

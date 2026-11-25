@@ -173,11 +173,15 @@ export async function getApprovedProducts(): Promise<CatalogProduct[]> {
 
 export async function getFormattedShopProducts(): Promise<FormattedShopProduct[]> {
   if (state.formattedCache && state.formattedCache.length > 0) {
+    if (Date.now() - (state.lastSyncTime || 0) > 30_000) {
+      revalidateCatalogInBackground();
+    }
     return state.formattedCache;
   }
 
   const raw = await getApprovedProducts();
   state.formattedCache = formatCatalog(raw);
+  revalidateCatalogInBackground();
   return state.formattedCache;
 }
 

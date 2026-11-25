@@ -47,7 +47,7 @@ export function AdminOverview({
 
   const totalCustomers = users.filter((u) => u.role === "CUSTOMER").length;
   const totalProducts = products.length;
-  const pendingProductApprovals = products.filter((p) => p.approvalStatus === "PENDING").length;
+  const pendingProductApprovals = products.filter((p) => p.approvalStatus === "PENDING" || p.approvalStatus === "SUBMITTED").length;
 
   const totalOrders = orders.length;
   const totalOrderRevenue = orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);

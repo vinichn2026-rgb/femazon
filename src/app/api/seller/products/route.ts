@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     const mainImage = image || imageList[0] || null;
 
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now();
-    const approvalStatus = status === "DRAFT" ? "DRAFT" : "PENDING";
+    const approvalStatus = status === "DRAFT" ? "DRAFT" : "SUBMITTED";
 
     const product = await prisma.product.create({
       data: {
