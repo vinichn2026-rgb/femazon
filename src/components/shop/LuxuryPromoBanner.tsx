@@ -27,9 +27,9 @@ export function LuxuryPromoBanner({
 }: LuxuryPromoBannerProps = {}) {
   return (
     <div className="w-full bg-[#F5ECE5] rounded-2xl md:rounded-3xl overflow-hidden mb-3 sm:mb-4 border border-stone-200/70 shadow-2xs">
-      <div className="grid grid-cols-1 md:grid-cols-12 items-stretch min-h-[170px] sm:min-h-[190px] md:h-[220px]">
+      <div className="grid grid-cols-1 md:grid-cols-12 items-center min-h-[180px] sm:min-h-[200px] md:h-[225px]">
         {/* Left Side: Editorial Typography & CTA */}
-        <div className="md:col-span-7 lg:col-span-8 px-6 py-5 sm:px-10 sm:py-6 lg:px-12 lg:py-6 flex flex-col justify-center items-start text-left z-10">
+        <div className="md:col-span-7 lg:col-span-8 px-6 py-5 sm:px-10 sm:py-6 lg:px-12 lg:py-6 flex flex-col justify-center items-start text-left z-10 h-full">
           <h1 className="font-serif text-2xl sm:text-3xl lg:text-[34px] text-stone-900 font-semibold leading-tight tracking-tight">
             {title} <br className="hidden sm:inline" />
             <span className="font-normal italic">{highlightText}</span>
@@ -51,7 +51,7 @@ export function LuxuryPromoBanner({
         </div>
 
         {/* Right Side: Page / Category Specific Lifestyle Banner Image */}
-        <div className="md:col-span-5 lg:col-span-4 h-[160px] md:h-full relative overflow-hidden flex justify-end">
+        <div className="md:col-span-5 lg:col-span-4 h-[160px] md:h-full relative overflow-hidden flex justify-end self-stretch">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imageSrc}
