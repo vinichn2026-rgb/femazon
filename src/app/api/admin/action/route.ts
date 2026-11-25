@@ -73,7 +73,7 @@ export async function POST(request: Request) {
         const generatedSlug = existingProfile.slug || 
           slugify(existingProfile.businessName || `vendor-${existingProfile.id}`);
 
-        // 3. Update Vendor Status to APPROVED in database & promote User role to VENDOR
+        // 3. Update Vendor Status to APPROVED in database & promote User role to VENDOR (preserving ADMIN role if applicable)
         const vp = await prisma.vendorProfile.update({
           where: { id: existingProfile.id },
           data: { 
@@ -82,10 +82,12 @@ export async function POST(request: Request) {
           }
         });
 
-        await prisma.user.update({
-          where: { id: vp.userId },
-          data: { role: 'VENDOR' }
-        });
+        if (existingProfile.user?.role !== 'ADMIN') {
+          await prisma.user.update({
+            where: { id: vp.userId },
+            data: { role: 'VENDOR' }
+          });
+        }
 
         // 4. Determine verified registered email address
         const recipientEmail = existingProfile.user?.email || existingProfile.email;
