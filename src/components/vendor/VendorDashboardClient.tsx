@@ -656,7 +656,7 @@ export default function VendorDashboardClient({ vendorProfile, user }: VendorDas
                       </div>
                     )}
 
-                    <form onSubmit={handleSaveProduct} className="space-y-4">
+                    <form onSubmit={(e) => handleSaveProduct(e, "SUBMITTED")} className="space-y-4">
                       
                       <div>
                         <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-600 mb-1.5">

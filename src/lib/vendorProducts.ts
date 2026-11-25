@@ -18,7 +18,10 @@ export const vendorProductSchema = z.object({
   sku: z.string().trim().max(100).nullable().optional(),
   images: z.union([z.array(z.string().trim().min(1).max(2048)).max(20), z.string().max(40_000)]).nullable().optional(),
   image: z.string().trim().max(2048).nullable().optional(),
-  status: z.enum(["DRAFT", "SUBMITTED"]).optional(),
+  status: z.preprocess(
+    (value) => (value === "APPROVED" ? "SUBMITTED" : value),
+    z.enum(["DRAFT", "SUBMITTED"]).optional()
+  ),
 }).superRefine((product, context) => {
   if (product.discountPrice !== null && product.discountPrice !== undefined && product.discountPrice > product.price) {
     context.addIssue({
