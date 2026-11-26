@@ -207,6 +207,38 @@ export function AdminOverview({
           </div>
         </div>
 
+        {/* Product Approvals */}
+        <div 
+          onClick={() => onNavigateTab("product-approvals")}
+          className={`p-5 rounded-2xl border transition cursor-pointer group ${
+            pendingProductApprovals > 0 
+              ? 'bg-amber-50/70 border-amber-300 shadow-2xs' 
+              : 'bg-white border-stone-200/90'
+          }`}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="w-10 h-10 rounded-xl bg-rose-100 text-[#4A1513] flex items-center justify-center group-hover:scale-105 transition">
+              <Package size={20} />
+            </div>
+            {pendingProductApprovals > 0 ? (
+              <span className="text-[11px] font-bold text-amber-950 bg-amber-200 px-2 py-0.5 rounded-full animate-pulse">
+                {pendingProductApprovals} Pending
+              </span>
+            ) : (
+              <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                All Verified
+              </span>
+            )}
+          </div>
+          <p className="text-xs uppercase tracking-wider text-stone-600 font-bold mb-1">Product Approvals</p>
+          <div className="flex items-baseline justify-between">
+            <p className="text-3xl font-serif font-bold text-stone-900">{totalProducts}</p>
+            <span className="text-xs text-[#4A1513] font-semibold flex items-center gap-0.5 group-hover:translate-x-0.5 transition">
+              Review Listings <ChevronRight size={14} />
+            </span>
+          </div>
+        </div>
+
         {/* Pending Vendor Approvals */}
         <div 
           onClick={() => onNavigateTab("product-vendors")}

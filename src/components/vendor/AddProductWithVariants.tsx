@@ -33,13 +33,17 @@ const LUXURY_PRESET_COLORS = [
   { name: 'Obsidian Black', hex: '#1A1A1A' },
 ];
 
-import {
-  VENDOR_BUSINESS_TYPES,
-  VENDOR_CATEGORY_MAP,
-  VendorBusinessType
-} from '@/lib/vendorCategoryMap';
-
 const STANDARD_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
+
+const CATEGORY_MAP: Record<string, string[]> = {
+  'Kurta Sets': ['Anarkali Sets', 'Sharara & Gharara Sets', 'Straight Cut Suits', 'Angrakha Ensembles', 'Palazzo Sets'],
+  'Lehengas': ['Bridal Lehengas', 'Bridesmaid Lehengas', 'Fusion / Drape Lehengas', 'Velvet Lehengas'],
+  'Sarees': ['Banarasi Silk Sarees', 'Kanjeevaram Sarees', 'Chanderi Sarees', 'Organza Handpainted', 'Pre-Draped Sarees'],
+  'Dresses & Gowns': ['Evening Gowns', 'Cocktail Dresses', 'Maxi Dresses', 'Cape Gowns'],
+  'Indo-Western': ['Drape Skirt Sets', 'Jumpsuits', 'Cape Sets', 'Tunic Sets'],
+  'Co-ord Sets': ['Embroidered Co-ords', 'Silk Co-ords', 'Printed Co-ords'],
+  'Ready To Ship': ['Festive Express', 'Luxury Pret', 'Immediate Dispatch Exclusive']
+};
 
 export interface VariantImageItem {
   imageUrl: string;
@@ -61,43 +65,104 @@ export interface ColorVariantItem {
 }
 
 export function AddProductWithVariants({
-  onProductCreated
+  onProductCreated,
+  onCancel,
+  editingProduct
 }: {
   onProductCreated?: (product: any) => void;
+  onCancel?: () => void;
+  editingProduct?: any;
 }) {
   const router = useRouter();
 
   // Section A: Core Product Information
-  const [title, setTitle] = useState('');
-  const [brandName, setBrandName] = useState('Femazon Luxe');
-  const [businessType, setBusinessType] = useState<VendorBusinessType>("Boutique / Women's Wear");
-  const [category, setCategory] = useState('Sarees');
-  const [subCategory, setSubCategory] = useState('Banarasi Silk Sarees');
-  const [basePrice, setBasePrice] = useState<string>('');
-  const [salePrice, setSalePrice] = useState<string>('');
-  const [fabricCare, setFabricCare] = useState('Pure Georgette - Dry Clean Only');
-  const [packageContains, setPackageContains] = useState('1 Anarkali Kurta, 1 Churidar, 1 Dupatta');
-  const [description, setDescription] = useState('');
+  const [title, setTitle] = useState(editingProduct?.name || '');
+  const [brandName, setBrandName] = useState(editingProduct?.brandName || 'Femazon Luxe');
+  const [category, setCategory] = useState(editingProduct?.category || 'Kurta Sets');
+  const [subCategory, setSubCategory] = useState(
+    editingProduct?.subcategory || editingProduct?.dressType || 'Anarkali Sets'
+  );
+  const [basePrice, setBasePrice] = useState<string>(
+    editingProduct?.price ? String(editingProduct.price) : ''
+  );
+  const [salePrice, setSalePrice] = useState<string>(
+    editingProduct?.discountPrice ? String(editingProduct.discountPrice) : ''
+  );
+  const [fabricCare, setFabricCare] = useState(
+    editingProduct?.fabricCare || 'Pure Georgette - Dry Clean Only'
+  );
+  const [packageContains, setPackageContains] = useState(
+    editingProduct?.packageContains || '1 Anarkali Kurta, 1 Churidar, 1 Dupatta'
+  );
+  const [description, setDescription] = useState(editingProduct?.description || '');
 
   // Section B: Dynamic Color Variants
-  const [colorVariants, setColorVariants] = useState<ColorVariantItem[]>([
-    {
-      id: 'color-1',
-      colorName: 'Emerald Green',
-      colorHexCode: '#046307',
-      images: [
-        {
-          imageUrl: 'https://images.unsplash.com/photo-1583391733958-d15f00e992ac?w=1000&q=85&auto=format&fit=crop',
-          isThumbnail: true,
-          displayOrder: 1
-        }
-      ],
-      sizes: STANDARD_SIZES.map(s => ({
-        size: s,
-        stockQty: s === 'M' ? 4 : s === 'S' ? 2 : 0
-      }))
+  const [colorVariants, setColorVariants] = useState<ColorVariantItem[]>(() => {
+    if (editingProduct?.colorVariants && editingProduct.colorVariants.length > 0) {
+      return editingProduct.colorVariants.map((cv: any, idx: number) => ({
+        id: `color-${idx}-${Date.now()}`,
+        colorName: cv.colorName || `Variety #${idx + 1}`,
+        colorHexCode: cv.colorHexCode || '#722F37',
+        images: Array.isArray(cv.images)
+          ? cv.images.map((img: any, i: number) => ({
+              imageUrl: typeof img === 'string' ? img : img.imageUrl,
+              isThumbnail: typeof img === 'object' ? Boolean(img.isThumbnail) : i === 0,
+              displayOrder: typeof img === 'object' && img.displayOrder ? img.displayOrder : i + 1
+            }))
+          : [],
+        sizes: Array.isArray(cv.sizes) && cv.sizes.length > 0
+          ? cv.sizes.map((s: any) => ({ size: s.size, stockQty: s.stockQty || 0 }))
+          : STANDARD_SIZES.map(s => ({ size: s, stockQty: 0 }))
+      }));
     }
-  ]);
+
+    // Fallback if editing simple product
+    if (editingProduct) {
+      let imgs: string[] = [];
+      try {
+        if (typeof editingProduct.images === 'string') {
+          imgs = JSON.parse(editingProduct.images);
+        } else if (Array.isArray(editingProduct.images)) {
+          imgs = editingProduct.images;
+        }
+      } catch {}
+      if (imgs.length === 0 && editingProduct.image) {
+        imgs = [editingProduct.image];
+      }
+
+      return [
+        {
+          id: 'color-1',
+          colorName: 'Primary Palette',
+          colorHexCode: '#722F37',
+          images: imgs.map((u, i) => ({ imageUrl: u, isThumbnail: i === 0, displayOrder: i + 1 })),
+          sizes: STANDARD_SIZES.map(s => ({
+            size: s,
+            stockQty: s === 'M' ? Math.max(0, editingProduct.stock || 5) : 0
+          }))
+        }
+      ];
+    }
+
+    return [
+      {
+        id: 'color-1',
+        colorName: 'Emerald Green',
+        colorHexCode: '#046307',
+        images: [
+          {
+            imageUrl: 'https://images.unsplash.com/photo-1583391733958-d15f00e992ac?w=1000&q=85&auto=format&fit=crop',
+            isThumbnail: true,
+            displayOrder: 1
+          }
+        ],
+        sizes: STANDARD_SIZES.map(s => ({
+          size: s,
+          stockQty: s === 'M' ? 4 : s === 'S' ? 2 : 0
+        }))
+      }
+    ];
+  });
 
   // Form State
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -208,6 +273,26 @@ export function AddProductWithVariants({
     }
   };
 
+  // Manual URL image addition for preview/testing
+  const handleAddImageUrl = (variantId: string) => {
+    const url = prompt(
+      'Enter Image URL for this color variant:',
+      'https://images.unsplash.com/photo-1617260517861-12c8236d812b?w=1000&q=85&auto=format&fit=crop'
+    );
+    if (!url) return;
+
+    setColorVariants(prev =>
+      prev.map(c => {
+        if (c.id !== variantId) return c;
+        const newImg: VariantImageItem = {
+          imageUrl: url.trim(),
+          isThumbnail: c.images.length === 0,
+          displayOrder: c.images.length + 1
+        };
+        return { ...c, images: [...c.images, newImg] };
+      })
+    );
+  };
 
   const handleSetThumbnail = (variantId: string, imgIdx: number) => {
     setColorVariants(prev =>
@@ -309,20 +394,11 @@ export function AddProductWithVariants({
       return;
     }
 
-    const totalImages = colorVariants.reduce((sum, cv) => sum + cv.images.length, 0);
-    if (totalImages < 3) {
-      setErrorMessage(`Please upload at least 3 images across color varieties (currently ${totalImages} uploaded). Minimum 3 images required.`);
-      return;
-    }
-    if (totalImages > 5) {
-      setErrorMessage(`Maximum 5 images allowed across color varieties (currently ${totalImages} uploaded).`);
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
       const payload = {
+        ...(editingProduct?.id ? { id: editingProduct.id } : {}),
         title: title.trim(),
         brandName: brandName.trim(),
         category,
@@ -357,18 +433,22 @@ export function AddProductWithVariants({
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || data.details || 'Failed to publish product');
+        throw new Error(data.error || data.details || 'Failed to submit product');
       }
 
-      setSuccessMessage('Ready-to-Ship product and color variants published successfully!');
+      setSuccessMessage(
+        editingProduct
+          ? 'Product resubmitted for approval successfully! It is now under review.'
+          : 'Product submitted for review successfully! It will be reviewed by admin before appearing on the website.'
+      );
 
       if (onProductCreated) {
         onProductCreated(data.product);
       }
 
       setTimeout(() => {
-        if (data.product?.slug) {
-          router.push(`/products/${data.product.slug}`);
+        if (onCancel) {
+          onCancel();
         } else {
           router.refresh();
         }
@@ -391,13 +471,19 @@ export function AddProductWithVariants({
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white text-xs font-bold uppercase tracking-wider mb-3">
               <Truck size={14} className="text-white" />
-              <span>Ready-To-Ship Collection</span>
+              <span>{editingProduct ? 'Edit Listing & Approval' : 'Ready-To-Ship Collection'}</span>
             </div>
             <h1 className="font-serif text-2xl sm:text-3xl text-white font-normal tracking-tight">
-              Create Ready-to-Ship Luxury Product
+              {editingProduct
+                ? editingProduct.approvalStatus === 'REJECTED'
+                  ? 'Edit & Resubmit Rejected Product'
+                  : 'Edit Product Details'
+                : 'Create Ready-to-Ship Luxury Product'}
             </h1>
             <p className="text-xs sm:text-sm text-stone-300 mt-1 max-w-xl leading-relaxed">
-              Upload color-wise dedicated photography and assign physical stock per size. Instant 24-48hr dispatch on storefront.
+              {editingProduct
+                ? 'Update your product details, colors, images or inventory and resubmit for administrator review.'
+                : 'Upload color-wise dedicated photography and assign physical stock per size. Submitted products are reviewed by admin before going live.'}
             </p>
           </div>
 
@@ -406,9 +492,34 @@ export function AddProductWithVariants({
               <span className="block text-[10px] uppercase font-bold tracking-widest text-stone-300">Total Stock</span>
               <span className="text-xl font-serif font-bold text-white">{totalStock} <span className="text-xs font-sans font-normal text-stone-300">pcs</span></span>
             </div>
+            {onCancel && (
+              <button
+                type="button"
+                onClick={onCancel}
+                className="px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold uppercase tracking-wider transition cursor-pointer border border-white/20"
+              >
+                Back to Catalog
+              </button>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Admin Rejection Callout (if editing a rejected product) */}
+      {editingProduct?.approvalStatus === 'REJECTED' && (
+        <div className="p-5 rounded-2xl bg-rose-50 border border-rose-200 text-stone-800 space-y-2 animate-in fade-in">
+          <div className="flex items-center gap-2 text-rose-900 font-bold text-xs uppercase tracking-wider">
+            <AlertCircle size={16} className="text-rose-600 shrink-0" />
+            <span>Admin Rejection Reason &amp; Required Changes</span>
+          </div>
+          <div className="bg-white p-3.5 rounded-xl border border-rose-200/70 text-xs text-rose-950 font-medium leading-relaxed">
+            &ldquo;{editingProduct.rejectionReason || 'Please review your product details, photography, or pricing to comply with luxury catalog standards.'}&rdquo;
+          </div>
+          <p className="text-[11px] text-stone-500">
+            Address the administrator feedback above, then click <strong>Resubmit for Approval</strong> below. The product will be marked as <strong>Pending Approval</strong> and reviewed again.
+          </p>
+        </div>
+      )}
 
       {/* Status Notifications */}
       {errorMessage && (
@@ -482,30 +593,6 @@ export function AddProductWithVariants({
               />
             </div>
 
-            {/* Business Type */}
-            <div className="space-y-1.5 sm:col-span-2 lg:col-span-1">
-              <label className="block text-xs font-bold uppercase tracking-wider text-stone-700">
-                Business Type <span className="text-rose-600">*</span>
-              </label>
-              <select
-                value={businessType}
-                onChange={e => {
-                  const newType = e.target.value as VendorBusinessType;
-                  setBusinessType(newType);
-                  const cats = VENDOR_CATEGORY_MAP[newType] || [];
-                  const firstCat = cats[0]?.name || '';
-                  const firstSub = cats[0]?.subcategories?.[0] || '';
-                  setCategory(firstCat);
-                  setSubCategory(firstSub);
-                }}
-                className="w-full h-11 px-3 text-xs sm:text-sm bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:border-[#4A1513] focus:outline-none transition font-medium cursor-pointer"
-              >
-                {VENDOR_BUSINESS_TYPES.map(bt => (
-                  <option key={bt.id} value={bt.id}>{bt.icon} {bt.label}</option>
-                ))}
-              </select>
-            </div>
-
             {/* Category */}
             <div className="space-y-1.5">
               <label className="block text-xs font-bold uppercase tracking-wider text-stone-700">
@@ -514,16 +601,14 @@ export function AddProductWithVariants({
               <select
                 value={category}
                 onChange={e => {
-                  const newCat = e.target.value;
-                  setCategory(newCat);
-                  const cats = VENDOR_CATEGORY_MAP[businessType] || [];
-                  const matched = cats.find(c => c.name.toLowerCase() === newCat.toLowerCase());
-                  setSubCategory(matched?.subcategories?.[0] || '');
+                  setCategory(e.target.value);
+                  const subOptions = CATEGORY_MAP[e.target.value] || [];
+                  setSubCategory(subOptions[0] || '');
                 }}
                 className="w-full h-11 px-3 text-xs sm:text-sm bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:border-[#4A1513] focus:outline-none transition font-medium cursor-pointer"
               >
-                {(VENDOR_CATEGORY_MAP[businessType] || []).map(cat => (
-                  <option key={cat.name} value={cat.name}>{cat.name}</option>
+                {Object.keys(CATEGORY_MAP).map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
             </div>
@@ -533,23 +618,15 @@ export function AddProductWithVariants({
               <label className="block text-xs font-bold uppercase tracking-wider text-stone-700">
                 Subcategory / Silhouette
               </label>
-              {(() => {
-                const cats = VENDOR_CATEGORY_MAP[businessType] || [];
-                const matched = cats.find(c => c.name.toLowerCase() === category.toLowerCase()) || cats[0];
-                const subcats = matched?.subcategories || [];
-
-                return (
-                  <select
-                    value={subCategory}
-                    onChange={e => setSubCategory(e.target.value)}
-                    className="w-full h-11 px-3 text-xs sm:text-sm bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:border-[#4A1513] focus:outline-none transition font-medium cursor-pointer"
-                  >
-                    {subcats.map(sub => (
-                      <option key={sub} value={sub}>{sub}</option>
-                    ))}
-                  </select>
-                );
-              })()}
+              <select
+                value={subCategory}
+                onChange={e => setSubCategory(e.target.value)}
+                className="w-full h-11 px-3 text-xs sm:text-sm bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:border-[#4A1513] focus:outline-none transition font-medium cursor-pointer"
+              >
+                {(CATEGORY_MAP[category] || []).map(sub => (
+                  <option key={sub} value={sub}>{sub}</option>
+                ))}
+              </select>
             </div>
 
             {/* Pricing Box */}
@@ -779,9 +856,13 @@ export function AddProductWithVariants({
                       <label className="block text-xs font-bold uppercase tracking-wider text-stone-700">
                         Gallery for {variant.colorName || 'This Color'} <span className="text-rose-600">*</span>
                       </label>
-                      <span className="text-[11px] text-stone-400">
-                        Upload direct from device
-                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleAddImageUrl(variant.id)}
+                        className="text-xs font-semibold text-[#4A1513] hover:underline cursor-pointer"
+                      >
+                        + Add Image via URL
+                      </button>
                     </div>
 
                     {/* Upload Dropzone */}
@@ -929,10 +1010,10 @@ export function AddProductWithVariants({
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-bold text-stone-900 font-sans">
-                Section C: Review &amp; Instant Publish
+                {editingProduct ? 'Section C: Review & Resubmit' : 'Section C: Review & Submit for Approval'}
               </h2>
               <p className="text-xs text-stone-500">
-                Confirm your color offerings and ready-to-ship inventory
+                Confirm your color offerings and physical inventory before submitting for administrator approval
               </p>
             </div>
           </div>
@@ -1003,11 +1084,11 @@ export function AddProductWithVariants({
               {isSubmitting ? (
                 <>
                   <Loader2 size={18} className="animate-spin text-white" />
-                  <span>Publishing Product &amp; Variants...</span>
+                  <span>Submitting Product...</span>
                 </>
               ) : (
                 <>
-                  <span>Save &amp; Publish Ready-to-Ship Product</span>
+                  <span>{editingProduct ? 'Resubmit for Approval' : 'Submit for Administrator Approval'}</span>
                   <ArrowRight size={16} />
                 </>
               )}

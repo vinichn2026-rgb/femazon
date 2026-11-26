@@ -60,6 +60,7 @@ model Product {
   sizes         String?     // Store as JSON or comma-separated string for SQLite compatibility
   colors        String?     // Store as JSON or comma-separated string for SQLite compatibility
   approvalStatus String     @default("APPROVED") // Auto-approved for backward compatibility
+  rejectionReason String?   // Admin rejection reason / feedback
   readyToShip    Boolean    @default(true)
   deliveryDays   Int?
   brandName      String?    @default("Femazon Luxe")

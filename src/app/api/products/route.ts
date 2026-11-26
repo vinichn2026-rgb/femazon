@@ -68,6 +68,8 @@ export async function POST(request: Request) {
         stock: stock ? Number(stock) : 0,
         sizes,
         colors,
+        approvalStatus: session.user.role === 'ADMIN' ? 'APPROVED' : 'PENDING',
+        rejectionReason: null,
         vendorId: vendorId ? Number(vendorId) : null,
       },
     });

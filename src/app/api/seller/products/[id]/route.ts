@@ -106,6 +106,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         ? 'SUBMITTED'
         : product.approvalStatus;
 
+    if (dataToUpdate.approvalStatus === 'PENDING') {
+      dataToUpdate.rejectionReason = null;
+    }
+
     const updatedProduct = await prisma.product.update({
       where: { id: productId },
       data: dataToUpdate

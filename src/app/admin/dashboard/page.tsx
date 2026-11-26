@@ -13,7 +13,14 @@ export const metadata = {
   description: "Platform-level governance for Women's Gallery Product Marketplace and Personal Styling Services.",
 };
 
-export default async function AdminDashboardPage() {
+export default async function AdminDashboardPage({
+  searchParams
+}: {
+  searchParams?: Promise<{ tab?: string }>;
+}) {
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const initialTab = resolvedSearchParams?.tab || "overview";
+
   // 1. Check server-side session from NextAuth or femazon_session cookie
   let userEmail: string | undefined;
 
@@ -145,6 +152,7 @@ export default async function AdminDashboardPage() {
       categories={categories} 
       orders={orders} 
       bookings={stylistBookings}
+      initialTab={initialTab}
     />
   );
 }

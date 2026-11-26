@@ -5,7 +5,6 @@ import { authOptions } from '@/lib/authOptions';
 import { getApiAuthPayload } from '@/lib/auth';
 import { sendVendorApprovalEmail } from '@/lib/email';
 import { generateVendorPasswordSetupToken } from '@/lib/vendorPasswordSetup';
-import { getVendorPasswordSetupUrl, getVendorLoginUrl, getVendorDashboardUrl } from '@/lib/appUrl';
 import { invalidateCatalogCache } from '@/lib/catalog';
 
 function slugify(text: string): string {
@@ -73,7 +72,7 @@ export async function POST(request: Request) {
         const generatedSlug = existingProfile.slug || 
           slugify(existingProfile.businessName || `vendor-${existingProfile.id}`);
 
-        // 3. Update Vendor Status to APPROVED in database & promote User role to VENDOR (preserving ADMIN role if applicable)
+        // 3. Update Vendor Status to APPROVED in database & promote User role to VENDOR
         const vp = await prisma.vendorProfile.update({
           where: { id: existingProfile.id },
           data: { 
@@ -82,12 +81,10 @@ export async function POST(request: Request) {
           }
         });
 
-        if (existingProfile.user?.role !== 'ADMIN') {
-          await prisma.user.update({
-            where: { id: vp.userId },
-            data: { role: 'VENDOR' }
-          });
-        }
+        await prisma.user.update({
+          where: { id: vp.userId },
+          data: { role: 'VENDOR' }
+        });
 
         // 4. Determine verified registered email address
         const recipientEmail = existingProfile.user?.email || existingProfile.email;
@@ -100,6 +97,8 @@ export async function POST(request: Request) {
 
         if (shouldSendEmail && recipientEmail && existingProfile.user) {
           try {
+            const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+            
             // Generate unique, time-limited, single-use password setup token
             const setupToken = generateVendorPasswordSetupToken({
               userId: existingProfile.user.id,
@@ -108,9 +107,7 @@ export async function POST(request: Request) {
               currentPasswordHash: existingProfile.user.password,
               vendorStatus: 'APPROVED',
             });
-            passwordSetupUrl = getVendorPasswordSetupUrl(setupToken, request);
-            const loginUrl = getVendorLoginUrl(request);
-            const dashboardUrl = getVendorDashboardUrl(request);
+            passwordSetupUrl = `${baseUrl}/vendor/set-password?token=${encodeURIComponent(setupToken)}`;
 
             const emailResult = await sendVendorApprovalEmail({
               to: recipientEmail,
@@ -118,8 +115,8 @@ export async function POST(request: Request) {
               shopName: existingProfile.businessName || 'Femazon Partner Boutique',
               vendorId: existingProfile.id,
               passwordSetupUrl,
-              loginUrl,
-              dashboardUrl,
+              loginUrl: `${baseUrl}/vendor/login`,
+              dashboardUrl: `${baseUrl}/vendor/dashboard`,
               supportEmail: process.env.SUPPORT_EMAIL || 'support@femazon.com'
             });
 
@@ -198,6 +195,8 @@ export async function POST(request: Request) {
           return NextResponse.json({ error: 'Vendor has no registered user/email address' }, { status: 400 });
         }
 
+        const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+        
         // Generate a fresh setup token
         const setupToken = generateVendorPasswordSetupToken({
           userId: vendor.user.id,
@@ -206,9 +205,7 @@ export async function POST(request: Request) {
           currentPasswordHash: vendor.user.password,
           vendorStatus: vendor.status || 'APPROVED',
         });
-        const passwordSetupUrl = getVendorPasswordSetupUrl(setupToken, request);
-        const loginUrl = getVendorLoginUrl(request);
-        const dashboardUrl = getVendorDashboardUrl(request);
+        const passwordSetupUrl = `${baseUrl}/vendor/set-password?token=${encodeURIComponent(setupToken)}`;
 
         const result = await sendVendorApprovalEmail({
           to: recipientEmail,
@@ -216,8 +213,8 @@ export async function POST(request: Request) {
           shopName: vendor.businessName || 'Femazon Partner Boutique',
           vendorId: vendor.id,
           passwordSetupUrl,
-          loginUrl,
-          dashboardUrl,
+          loginUrl: `${baseUrl}/vendor/login`,
+          dashboardUrl: `${baseUrl}/vendor/dashboard`,
           supportEmail: process.env.SUPPORT_EMAIL || 'support@femazon.com'
         });
 
@@ -259,6 +256,7 @@ export async function POST(request: Request) {
           return NextResponse.json({ error: 'Vendor profile or user account not found' }, { status: 404 });
         }
 
+        const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
         const setupToken = generateVendorPasswordSetupToken({
           userId: vendor.user.id,
           vendorId: vendor.id,
@@ -266,7 +264,7 @@ export async function POST(request: Request) {
           currentPasswordHash: vendor.user.password,
           vendorStatus: vendor.status,
         });
-        const setupUrl = getVendorPasswordSetupUrl(setupToken, request);
+        const setupUrl = `${baseUrl}/vendor/set-password?token=${encodeURIComponent(setupToken)}`;
 
         return NextResponse.json({
           success: true,
@@ -402,31 +400,97 @@ export async function POST(request: Request) {
       // 3. VENDOR PRODUCTS (MONITORING & APPROVAL)
       // ==========================================
       case 'APPROVE_PRODUCT': {
-        await prisma.product.update({
-          where: { id: Number(payload.productId) },
-          data: { approvalStatus: 'APPROVED' }
+        const prodId = Number(payload.productId || body.productId);
+        if (!prodId || isNaN(prodId)) {
+          return NextResponse.json({ error: 'Valid productId is required' }, { status: 400 });
+        }
+
+        const product = await prisma.product.findUnique({
+          where: { id: prodId },
+          select: { id: true, name: true, vendorId: true }
         });
+        if (!product) {
+          return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+        }
+
+        await prisma.product.update({
+          where: { id: product.id },
+          data: {
+            approvalStatus: 'APPROVED',
+            rejectionReason: null
+          }
+        });
+
         invalidateCatalogCache();
-        return NextResponse.json({ success: true, message: 'Vendor product approved' });
+
+        if (product.vendorId) {
+          await prisma.notification.create({
+            data: {
+              userId: product.vendorId,
+              title: `Product Approved: ${product.name}`,
+              message: `Congratulations! Your product "${product.name}" has been approved by admin and is now live on the Femazon storefront.`,
+              type: 'VENDOR',
+              link: '/vendor/products'
+            }
+          }).catch((err) => console.warn('[Notification Error]:', err));
+        }
+
+        return NextResponse.json({ success: true, message: 'Vendor product approved and published to website' });
       }
 
       case 'REJECT_PRODUCT': {
-        await prisma.product.update({
-          where: { id: Number(payload.productId) },
-          data: { approvalStatus: 'REJECTED' }
+        const prodId = Number(payload.productId || body.productId);
+        if (!prodId || isNaN(prodId)) {
+          return NextResponse.json({ error: 'Valid productId is required' }, { status: 400 });
+        }
+
+        const rejectionReason = (payload.rejectionReason || payload.reason || body.rejectionReason || body.reason || '').trim();
+        if (!rejectionReason) {
+          return NextResponse.json({ error: 'Rejection reason is mandatory when rejecting a product.' }, { status: 400 });
+        }
+
+        const product = await prisma.product.findUnique({
+          where: { id: prodId },
+          select: { id: true, name: true, vendorId: true }
         });
+        if (!product) {
+          return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+        }
+
+        await prisma.product.update({
+          where: { id: product.id },
+          data: {
+            approvalStatus: 'REJECTED',
+            rejectionReason: rejectionReason
+          }
+        });
+
         invalidateCatalogCache();
-        return NextResponse.json({ success: true, message: 'Vendor product rejected' });
+
+        if (product.vendorId) {
+          await prisma.notification.create({
+            data: {
+              userId: product.vendorId,
+              title: `Product Rejected: ${product.name}`,
+              message: `Your product "${product.name}" was rejected by admin. Reason: ${rejectionReason}. You can edit and resubmit it from your dashboard.`,
+              type: 'VENDOR',
+              link: '/vendor/products'
+            }
+          }).catch((err) => console.warn('[Notification Error]:', err));
+        }
+
+        return NextResponse.json({ success: true, message: 'Vendor product rejected with feedback' });
       }
 
       case 'TOGGLE_PRODUCT_ACTIVE': {
+        const prodId = Number(payload.productId || body.productId);
         const current = await prisma.product.findUnique({
-          where: { id: Number(payload.productId) },
+          where: { id: prodId },
           select: { approvalStatus: true }
         });
         const newStatus = current?.approvalStatus === 'APPROVED' ? 'SUSPENDED' : 'APPROVED';
         const updated = await prisma.product.update({
-          where: { id: Number(payload.productId) },
+          where: { id: prodId },
           data: { approvalStatus: newStatus }
         });
         invalidateCatalogCache();
@@ -492,6 +556,7 @@ export async function POST(request: Request) {
         await prisma.product.delete({
           where: { id: Number(payload.productId || payload.id) }
         });
+        invalidateCatalogCache();
         return NextResponse.json({ success: true, message: 'Product removed' });
       }
 

@@ -18,6 +18,7 @@ import {
   Clock, 
   Truck, 
   AlertCircle,
+  XCircle,
   Sparkles,
   Search,
   ExternalLink,
@@ -30,14 +31,6 @@ import {
 } from "lucide-react";
 import { BrandLogo } from "@/components/common/BrandLogo";
 import { VendorPortalHeader } from "./VendorPortalHeader";
-import { 
-  VENDOR_BUSINESS_TYPES, 
-  VENDOR_CATEGORY_MAP, 
-  detectBusinessType, 
-  isServiceVendor, 
-  VendorBusinessType 
-} from "@/lib/vendorCategoryMap";
-import { ProductImageUploader } from "./ProductImageUploader";
 
 interface VendorDashboardClientProps {
   vendorProfile: any;
@@ -66,23 +59,16 @@ export default function VendorDashboardClient({ vendorProfile, user }: VendorDas
   const [productFormError, setProductFormError] = useState("");
   const [productSearch, setProductSearch] = useState("");
 
-  // Business Type & Dynamic Category Engine
-  const isServiceEligible = isServiceVendor(vendorProfile?.businessCategory, vendorProfile?.businessType);
-  const initialBusinessType = detectBusinessType(vendorProfile?.businessCategory, vendorProfile?.businessType);
-  const [selectedBusinessType, setSelectedBusinessType] = useState<VendorBusinessType>(initialBusinessType);
-  const [productImages, setProductImages] = useState<string[]>([]);
-
-  const defaultCategory = VENDOR_CATEGORY_MAP[initialBusinessType]?.[0]?.name || "Sarees";
-  const defaultSubcategory = VENDOR_CATEGORY_MAP[initialBusinessType]?.[0]?.subcategories?.[0] || "";
-
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     price: "",
     discountPrice: "",
-    category: defaultCategory,
-    subcategory: defaultSubcategory,
+    category: "Chudithar & Suits",
+    subcategory: "Anarkali Chudithar",
     stock: "10",
+    image: "",
+    images: "",
     sizes: "XS, S, M, L, XL",
     colors: "Maroon, Gold",
     sku: ""
@@ -144,8 +130,8 @@ export default function VendorDashboardClient({ vendorProfile, user }: VendorDas
   };
 
   // Handle Add/Edit Product
-  const handleSaveProduct = async (e?: React.FormEvent, targetStatus: "SUBMITTED" | "DRAFT" = "SUBMITTED") => {
-    if (e?.preventDefault) e.preventDefault();
+  const handleSaveProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
     setProductFormError("");
 
     if (!formData.name.trim() || !formData.price) {
@@ -153,22 +139,16 @@ export default function VendorDashboardClient({ vendorProfile, user }: VendorDas
       return;
     }
 
-    if (targetStatus !== "DRAFT") {
-      if (productImages.length < 3) {
-        setProductFormError("Minimum 3 product images are required. Please upload at least 3 images.");
-        return;
-      }
-
-      if (productImages.length > 5) {
-        setProductFormError("Maximum 5 product images allowed. Please remove excess images.");
-        return;
-      }
-    }
-
     setIsSubmittingProduct(true);
 
     try {
-      const mainImage = productImages[0] || "";
+      const imageArray = formData.images
+        .split("\n")
+        .map(u => u.trim())
+        .filter(Boolean);
+      
+      const mainImage = formData.image || imageArray[0] || "https://images.unsplash.com/photo-1583391733958-65e2be10c3fb?auto=format&fit=crop&q=85&w=600";
+
       const method = editingProductId ? "PUT" : "POST";
       const url = editingProductId ? `/api/seller/products/${editingProductId}` : "/api/seller/products";
 
@@ -184,11 +164,11 @@ export default function VendorDashboardClient({ vendorProfile, user }: VendorDas
           subcategory: formData.subcategory,
           stock: Math.max(0, parseInt(formData.stock, 10) || 0),
           image: mainImage,
-          images: productImages.length > 0 ? productImages : null,
+          images: imageArray.length > 0 ? imageArray : null,
           sizes: formData.sizes,
           colors: formData.colors,
           sku: formData.sku || `FMZ-V-${Date.now().toString().slice(-6)}`,
-          status: targetStatus
+          status: "APPROVED"
         })
       });
 
@@ -212,46 +192,16 @@ export default function VendorDashboardClient({ vendorProfile, user }: VendorDas
 
   const handleEditProduct = (prod: any) => {
     setEditingProductId(prod.id);
-
-    // Parse image list
-    let imgList: string[] = [];
-    if (Array.isArray(prod.images)) {
-      imgList = prod.images.filter(Boolean);
-    } else if (typeof prod.images === "string") {
-      try {
-        const parsed = JSON.parse(prod.images);
-        if (Array.isArray(parsed)) {
-          imgList = parsed.filter(Boolean);
-        } else {
-          imgList = prod.images.split(/\r?\n/).map((s: string) => s.trim()).filter(Boolean);
-        }
-      } catch {
-        imgList = prod.images.split(/\r?\n/).map((s: string) => s.trim()).filter(Boolean);
-      }
-    }
-    if (prod.image && !imgList.includes(prod.image)) {
-      imgList = [prod.image, ...imgList];
-    }
-    setProductImages(imgList);
-
-    // Auto-detect business type from product category
-    let matchedType = selectedBusinessType;
-    for (const [bType, cats] of Object.entries(VENDOR_CATEGORY_MAP)) {
-      if (cats.some(c => c.name.toLowerCase() === (prod.category || "").toLowerCase())) {
-        matchedType = bType as VendorBusinessType;
-        break;
-      }
-    }
-    setSelectedBusinessType(matchedType);
-
     setFormData({
       name: prod.name || "",
       description: prod.description || "",
       price: String(prod.price || ""),
       discountPrice: prod.discountPrice ? String(prod.discountPrice) : "",
-      category: prod.category || VENDOR_CATEGORY_MAP[matchedType]?.[0]?.name || "Sarees",
+      category: prod.category || "Chudithar & Suits",
       subcategory: prod.subcategory || "",
-      stock: String(prod.stock ?? "10"),
+      stock: String(prod.stock || "10"),
+      image: prod.image || "",
+      images: Array.isArray(prod.images) ? prod.images.join("\n") : (prod.images || ""),
       sizes: prod.sizes || "S, M, L, XL",
       colors: prod.colors || "Maroon",
       sku: prod.sku || ""
@@ -272,22 +222,20 @@ export default function VendorDashboardClient({ vendorProfile, user }: VendorDas
   };
 
   const resetForm = () => {
-    const cats = VENDOR_CATEGORY_MAP[selectedBusinessType] || VENDOR_CATEGORY_MAP["Boutique / Women's Wear"];
     setFormData({
       name: "",
       description: "",
       price: "",
       discountPrice: "",
-      category: cats[0]?.name || "Sarees",
-      subcategory: cats[0]?.subcategories?.[0] || "",
+      category: "Chudithar & Suits",
+      subcategory: "Anarkali Chudithar",
       stock: "10",
+      image: "",
+      images: "",
       sizes: "XS, S, M, L, XL",
       colors: "Maroon, Gold",
       sku: ""
     });
-    setProductImages([]);
-    setEditingProductId(null);
-    setProductFormError("");
   };
 
   // Metrics
@@ -391,20 +339,18 @@ export default function VendorDashboardClient({ vendorProfile, user }: VendorDas
               <span>Store Profile</span>
             </button>
 
-            {isServiceEligible && (
-              <Link
-                href="/vendor/services"
-                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-[#4A1513] bg-[#4A1513]/5 hover:bg-[#4A1513]/10 transition border border-[#4A1513]/20"
-              >
-                <div className="flex items-center gap-2.5">
-                  <Sparkles size={16} className="text-[#4A1513]" />
-                  <span>Beauty &amp; Styling Services</span>
-                </div>
-                <span className="text-[9px] px-1.5 py-0.2 bg-[#4A1513] text-white rounded font-mono">
-                  PRO
-                </span>
-              </Link>
-            )}
+            <Link
+              href="/vendor/services"
+              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider text-[#4A1513] bg-[#4A1513]/5 hover:bg-[#4A1513]/10 transition border border-[#4A1513]/20"
+            >
+              <div className="flex items-center gap-2.5">
+                <Sparkles size={16} className="text-[#4A1513]" />
+                <span>Beauty &amp; Styling Services</span>
+              </div>
+              <span className="text-[9px] px-1.5 py-0.2 bg-[#4A1513] text-white rounded font-mono">
+                PRO
+              </span>
+            </Link>
 
             <div className="pt-4 border-t border-stone-100 mt-3">
               <button
@@ -656,7 +602,7 @@ export default function VendorDashboardClient({ vendorProfile, user }: VendorDas
                       </div>
                     )}
 
-                    <form onSubmit={(e) => handleSaveProduct(e, "SUBMITTED")} className="space-y-4">
+                    <form onSubmit={handleSaveProduct} className="space-y-4">
                       
                       <div>
                         <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-600 mb-1.5">
@@ -672,38 +618,6 @@ export default function VendorDashboardClient({ vendorProfile, user }: VendorDas
                         />
                       </div>
 
-                      {/* Dynamic Business Type Selector */}
-                      <div>
-                        <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-600 mb-1.5">
-                          Vendor Business Type *
-                        </label>
-                        <select
-                          value={selectedBusinessType}
-                          onChange={(e) => {
-                            const newType = e.target.value as VendorBusinessType;
-                            setSelectedBusinessType(newType);
-                            const newCats = VENDOR_CATEGORY_MAP[newType] || [];
-                            const firstCat = newCats[0]?.name || "";
-                            const firstSubcat = newCats[0]?.subcategories?.[0] || "";
-                            setFormData(prev => ({
-                              ...prev,
-                              category: firstCat,
-                              subcategory: firstSubcat,
-                            }));
-                          }}
-                          className="w-full bg-[#FAF7F5] rounded-xl border border-stone-200 px-4 py-3 text-sm focus:outline-none focus:border-[#4A1513]"
-                        >
-                          {VENDOR_BUSINESS_TYPES.map((bt) => (
-                            <option key={bt.id} value={bt.id}>
-                              {bt.icon} {bt.label}
-                            </option>
-                          ))}
-                        </select>
-                        <p className="text-[11px] text-stone-400 mt-1">
-                          Showing categories specifically curated for {selectedBusinessType}.
-                        </p>
-                      </div>
-
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-600 mb-1.5">
@@ -711,50 +625,29 @@ export default function VendorDashboardClient({ vendorProfile, user }: VendorDas
                           </label>
                           <select
                             value={formData.category}
-                            onChange={(e) => {
-                              const newCat = e.target.value;
-                              const cats = VENDOR_CATEGORY_MAP[selectedBusinessType] || [];
-                              const matched = cats.find(c => c.name.toLowerCase() === newCat.toLowerCase());
-                              setFormData(prev => ({
-                                ...prev,
-                                category: newCat,
-                                subcategory: matched?.subcategories?.[0] || "",
-                              }));
-                            }}
+                            onChange={e => setFormData({ ...formData, category: e.target.value })}
                             className="w-full bg-[#FAF7F5] rounded-xl border border-stone-200 px-4 py-3 text-sm focus:outline-none focus:border-[#4A1513]"
                           >
-                            {(VENDOR_CATEGORY_MAP[selectedBusinessType] || []).map((cat) => (
-                              <option key={cat.name} value={cat.name}>
-                                {cat.name}
-                              </option>
-                            ))}
+                            <option value="Chudithar & Suits">Chudithar &amp; Suits</option>
+                            <option value="Dresses">Dresses</option>
+                            <option value="Ethnic">Ethnic &amp; Sarees</option>
+                            <option value="Wedding & Party">Wedding &amp; Party</option>
+                            <option value="Western Wear">Western Wear</option>
+                            <option value="Footwear">Footwear</option>
                           </select>
                         </div>
 
                         <div>
                           <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-600 mb-1.5">
-                            Subcategory *
+                            Subcategory
                           </label>
-                          {(() => {
-                            const cats = VENDOR_CATEGORY_MAP[selectedBusinessType] || [];
-                            const matched = cats.find(c => c.name.toLowerCase() === formData.category.toLowerCase()) || cats[0];
-                            const subcats = matched?.subcategories || [];
-
-                            return (
-                              <select
-                                value={formData.subcategory}
-                                onChange={(e) => setFormData(prev => ({ ...prev, subcategory: e.target.value }))}
-                                className="w-full bg-[#FAF7F5] rounded-xl border border-stone-200 px-4 py-3 text-sm focus:outline-none focus:border-[#4A1513]"
-                              >
-                                <option value="">-- Select Subcategory --</option>
-                                {subcats.map((sub) => (
-                                  <option key={sub} value={sub}>
-                                    {sub}
-                                  </option>
-                                ))}
-                              </select>
-                            );
-                          })()}
+                          <input
+                            type="text"
+                            value={formData.subcategory}
+                            onChange={e => setFormData({ ...formData, subcategory: e.target.value })}
+                            placeholder="e.g. Anarkali, Lehenga, Gown"
+                            className="w-full bg-[#FAF7F5] rounded-xl border border-stone-200 px-4 py-3 text-sm focus:outline-none focus:border-[#4A1513]"
+                          />
                         </div>
                       </div>
 
@@ -801,14 +694,16 @@ export default function VendorDashboardClient({ vendorProfile, user }: VendorDas
                         </div>
                       </div>
 
-                      {/* Product Images Direct Upload (3-5 images required, PostgreSQL-stored) */}
-                      <div className="py-2">
-                        <ProductImageUploader
-                          images={productImages}
-                          onChange={setProductImages}
-                          minImages={3}
-                          maxImages={5}
-                          disabled={isSubmittingProduct}
+                      <div>
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-600 mb-1.5">
+                          Image URL
+                        </label>
+                        <input
+                          type="url"
+                          value={formData.image}
+                          onChange={e => setFormData({ ...formData, image: e.target.value })}
+                          placeholder="https://images.unsplash.com/..."
+                          className="w-full bg-[#FAF7F5] rounded-xl border border-stone-200 px-4 py-3 text-sm focus:outline-none focus:border-[#4A1513]"
                         />
                       </div>
 
@@ -825,26 +720,17 @@ export default function VendorDashboardClient({ vendorProfile, user }: VendorDas
                         />
                       </div>
 
-                      <div className="flex flex-wrap gap-3 pt-4 border-t border-stone-100">
+                      <div className="flex gap-3 pt-4 border-t border-stone-100">
                         <button
-                          type="button"
-                          onClick={(e) => handleSaveProduct(e, "SUBMITTED")}
+                          type="submit"
                           disabled={isSubmittingProduct}
-                          className="flex-1 py-3.5 px-6 rounded-full bg-[#4A1513] hover:bg-[#350B0A] text-white text-xs font-bold uppercase tracking-wider transition shadow-sm cursor-pointer disabled:opacity-60"
+                          className="flex-1 py-3.5 rounded-full bg-[#4A1513] hover:bg-[#350B0A] text-white text-xs font-bold uppercase tracking-wider transition shadow-sm cursor-pointer disabled:opacity-60"
                         >
-                          {isSubmittingProduct ? "Saving Product..." : (editingProductId ? "Update Listing" : "Submit for Review")}
+                          {isSubmittingProduct ? "Saving Product..." : (editingProductId ? "Update Listing" : "Publish to Store")}
                         </button>
                         <button
                           type="button"
-                          onClick={(e) => handleSaveProduct(e, "DRAFT")}
-                          disabled={isSubmittingProduct}
-                          className="py-3.5 px-6 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold uppercase tracking-wider transition cursor-pointer disabled:opacity-60"
-                        >
-                          Save Draft
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => { setShowAddForm(false); setEditingProductId(null); resetForm(); }}
+                          onClick={() => setShowAddForm(false)}
                           className="py-3.5 px-6 rounded-full border border-stone-300 text-stone-700 text-xs font-bold uppercase tracking-wider hover:bg-stone-50 transition cursor-pointer"
                         >
                           Cancel
@@ -906,29 +792,31 @@ export default function VendorDashboardClient({ vendorProfile, user }: VendorDas
                               </span>
                             </td>
                             <td className="p-4">
-                              {p.approvalStatus === "APPROVED" && (
-                                <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-semibold">
-                                  <CheckCircle2 size={13} /> Active
+                              {p.approvalStatus === 'APPROVED' && (
+                                <span className="inline-flex items-center gap-1 text-xs text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                                  <CheckCircle2 size={12} /> Approved
                                 </span>
                               )}
-                              {(p.approvalStatus === "SUBMITTED" || p.approvalStatus === "PENDING") && (
-                                <span className="inline-flex items-center gap-1 text-xs text-amber-600 font-semibold">
-                                  <Clock size={13} /> Under Review
+                              {p.approvalStatus === 'PENDING' && (
+                                <span className="inline-flex items-center gap-1 text-xs text-amber-800 font-semibold bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                                  <Clock size={12} /> Pending Review
                                 </span>
                               )}
-                              {p.approvalStatus === "DRAFT" && (
-                                <span className="inline-flex items-center gap-1 text-xs text-stone-500 font-semibold">
-                                  <AlertCircle size={13} /> Draft
-                                </span>
+                              {p.approvalStatus === 'REJECTED' && (
+                                <div className="space-y-1">
+                                  <span className="inline-flex items-center gap-1 text-xs text-rose-700 font-semibold bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
+                                    <XCircle size={12} /> Rejected
+                                  </span>
+                                  {p.rejectionReason && (
+                                    <p className="text-[10.5px] text-rose-600 italic max-w-[150px] line-clamp-1" title={p.rejectionReason}>
+                                      {p.rejectionReason}
+                                    </p>
+                                  )}
+                                </div>
                               )}
-                              {p.approvalStatus === "REJECTED" && (
-                                <span className="inline-flex items-center gap-1 text-xs text-rose-600 font-semibold">
-                                  <AlertCircle size={13} /> Rejected
-                                </span>
-                              )}
-                              {!["APPROVED", "SUBMITTED", "PENDING", "DRAFT", "REJECTED"].includes(p.approvalStatus) && (
-                                <span className="inline-flex items-center gap-1 text-xs text-stone-600 font-semibold">
-                                  {p.approvalStatus || "Pending"}
+                              {!['APPROVED', 'PENDING', 'REJECTED'].includes(p.approvalStatus) && (
+                                <span className="inline-flex items-center gap-1 text-xs text-stone-600 font-semibold bg-stone-100 px-2 py-0.5 rounded-full">
+                                  {p.approvalStatus || 'Draft'}
                                 </span>
                               )}
                             </td>
