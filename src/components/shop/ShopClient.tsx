@@ -132,6 +132,7 @@ interface ShopClientProps {
   initialWishlistIds?: number[];
   bannerImage?: string;
   initialDepartment?: string;
+  categories?: any[];
 }
 
 const CATEGORY_BANNERS: Record<string, {
@@ -215,11 +216,36 @@ export function ShopClient({
   initialOccasion,
   initialWishlistIds = [], 
   bannerImage,
-  initialDepartment
+  initialDepartment,
+  categories = []
 }: ShopClientProps) {
   const router = useRouter();
   const { isInWishlist, toggleWishlist, addToCart } = useFemazonStore();
   const [isMounted, setIsMounted] = useState(false);
+
+  // Compute dynamic departments from database categories, falling back to SHOP_DEPARTMENTS
+  const departments: DepartmentOption[] = useMemo(() => {
+    if (!categories || categories.length === 0) return SHOP_DEPARTMENTS;
+
+    const allSubnames = new Set<string>();
+    const customDepts: DepartmentOption[] = categories.map((cat: any) => {
+      const subs = (cat.subcategories || []).map((s: any) => s.name);
+      subs.forEach((sName: string) => allSubnames.add(sName));
+      return {
+        id: cat.slug || String(cat.id),
+        name: cat.name,
+        categories: subs
+      };
+    });
+
+    const allDept: DepartmentOption = {
+      id: "all",
+      name: "All Categories",
+      categories: ["All", ...Array.from(allSubnames)]
+    };
+
+    return [allDept, ...customDepts];
+  }, [categories]);
   
   // Resolve initial department based on initialDepartment prop or initialCategory
   const resolvedInitialDept = useMemo(() => {
@@ -279,9 +305,9 @@ export function ShopClient({
 
   // Categories to display in sidebar based on current department
   const activeCategories = useMemo(() => {
-    const dept = SHOP_DEPARTMENTS.find(d => d.id === selectedDepartment);
-    return dept ? dept.categories : SHOP_DEPARTMENTS[0].categories;
-  }, [selectedDepartment]);
+    const dept = departments.find(d => d.id === selectedDepartment);
+    return dept ? dept.categories : departments[0]?.categories || [];
+  }, [departments, selectedDepartment]);
 
   // Dynamically compute available sellers & brands with live counts
   const availableBrands: FilterBrandOption[] = useMemo(() => {
@@ -337,7 +363,7 @@ export function ShopClient({
 
   // Derived Active Filters Array for Chips
   const activeFilterChips = [
-    ...(selectedDepartment !== "all" ? [`Dept: ${SHOP_DEPARTMENTS.find(d => d.id === selectedDepartment)?.name}`] : []),
+    ...(selectedDepartment !== "all" ? [`Dept: ${departments.find(d => d.id === selectedDepartment)?.name}`] : []),
     ...(selectedCategory !== "All" ? [`Category: ${selectedCategory}`] : []),
     ...(selectedSilhouette !== "All" ? [`Silhouette: ${selectedSilhouette}`] : []),
     ...(filters.silhouettes || []).map(s => `Silhouette: ${s}`),
@@ -628,7 +654,7 @@ export function ShopClient({
           <div className="w-full mb-3 sm:mb-4 bg-white/70 backdrop-blur-xs rounded-2xl border border-stone-200/80 p-3 sm:p-4 shadow-2xs">
             <div className="flex items-center justify-between gap-2 mb-2.5">
               <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C5A059]">
-                {SHOP_DEPARTMENTS.find(d => d.id === selectedDepartment)?.name || "Shop"} Subcategories
+                {departments.find(d => d.id === selectedDepartment)?.name || "Shop"} Subcategories
               </span>
               {selectedCategory !== "All" && (
                 <button
@@ -650,7 +676,7 @@ export function ShopClient({
                     : 'bg-[#FAF7F5] text-stone-700 hover:text-[#4A1513] hover:border-[#C5A059]/60 border-stone-200'
                 }`}
               >
-                All {SHOP_DEPARTMENTS.find(d => d.id === selectedDepartment)?.name || "Categories"}
+                All {departments.find(d => d.id === selectedDepartment)?.name || "Categories"}
               </button>
               {activeCategories.filter(c => c !== "All").map((subCat) => {
                 const isSelected = selectedCategory.toLowerCase() === subCat.toLowerCase();
@@ -679,7 +705,7 @@ export function ShopClient({
             totalItems={totalItems}
             selectedCategory={selectedCategory}
             selectedDepartment={selectedDepartment}
-            departments={SHOP_DEPARTMENTS}
+            departments={departments}
             onSelectDepartment={handleSelectDepartment}
             searchQuery={searchQuery}
             onSearchChange={(q) => setSearchQuery(q)}

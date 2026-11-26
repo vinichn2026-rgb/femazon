@@ -162,6 +162,30 @@ async function revalidateCatalogInBackground() {
 }
 
 export async function getApprovedProducts(): Promise<CatalogProduct[]> {
+  // If cache is fresh (< 30s), use cache
+  if (state.rawCache && state.rawCache.length > 0 && state.lastSyncTime && (Date.now() - state.lastSyncTime < 30000)) {
+    return state.rawCache;
+  }
+
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        approvalStatus: 'APPROVED',
+        flaggedForReview: false,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (products && products.length > 0) {
+      state.rawCache = products as CatalogProduct[];
+      state.formattedCache = formatCatalog(state.rawCache);
+      state.lastSyncTime = Date.now();
+      return state.rawCache;
+    }
+  } catch (err) {
+    console.warn('[Catalog DB Fetch Warning]:', err);
+  }
+
   if (!state.rawCache || state.rawCache.length === 0) {
     state.rawCache = loadLocalSnapshot();
     state.formattedCache = formatCatalog(state.rawCache);

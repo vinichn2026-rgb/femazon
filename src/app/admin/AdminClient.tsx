@@ -12,7 +12,8 @@ import {
   Users, 
   TrendingUp, 
   ShieldCheck, 
-  Loader2 
+  Loader2,
+  Layers
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -20,6 +21,7 @@ import { AdminNavbar } from "@/components/admin/AdminNavbar";
 import { AdminOverview } from "@/components/admin/AdminOverview";
 import { AdminProductVendors } from "@/components/admin/AdminProductVendors";
 import { AdminVendorProducts } from "@/components/admin/AdminVendorProducts";
+import { AdminCategoryManagement } from "@/components/admin/AdminCategoryManagement";
 import { AdminOrdersManagement } from "@/components/admin/AdminOrdersManagement";
 import { AdminPersonalStylists } from "@/components/admin/AdminPersonalStylists";
 import { AdminStylistBookings } from "@/components/admin/AdminStylistBookings";
@@ -75,6 +77,7 @@ export default function AdminClient({
     
     // Division A: Product Marketplace
     { id: 'product-approvals', icon: <Package size={18}/>, label: 'Product Approvals', group: "PRODUCT MARKETPLACE" },
+    { id: 'categories', icon: <Layers size={18}/>, label: 'Categories & Taxonomy', group: "PRODUCT MARKETPLACE" },
     { id: 'product-vendors', icon: <Store size={18}/>, label: 'Product Vendors', group: "PRODUCT MARKETPLACE" },
     { id: 'orders', icon: <ShoppingCart size={18}/>, label: 'Orders Management', group: "PRODUCT MARKETPLACE" },
     
@@ -176,6 +179,24 @@ export default function AdminClient({
                       {products.length}
                     </span>
                   )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('categories')}
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer text-left ${
+                    activeTab === 'categories'
+                      ? 'bg-[#4A1513] text-white shadow-xs font-bold'
+                      : 'text-stone-700 hover:bg-[#FAF7F5] hover:text-[#4A1513]'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Layers size={17} />
+                    <span>Categories & Taxonomy</span>
+                  </div>
+                  <span className="text-[10px] text-stone-400 font-mono">
+                    {categories.length}
+                  </span>
                 </button>
 
                 <button
@@ -315,6 +336,14 @@ export default function AdminClient({
           {activeTab === 'product-approvals' && (
             <AdminVendorProducts
               products={products}
+              categories={categories}
+              onAction={handleAction}
+            />
+          )}
+
+          {/* TAB: CATEGORIES & TAXONOMY MANAGEMENT */}
+          {activeTab === 'categories' && (
+            <AdminCategoryManagement
               categories={categories}
               onAction={handleAction}
             />

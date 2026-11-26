@@ -69,6 +69,10 @@ model Product {
   dispatchTimeline String   @default("Dispatched within 24-48 Hours")
   vendorId      Int?
   vendor        User?       @relation(fields: [vendorId], references: [id])
+  categoryId    Int?
+  categoryRel   Category?   @relation(fields: [categoryId], references: [id])
+  subcategoryId Int?
+  subcategoryRel Subcategory? @relation(fields: [subcategoryId], references: [id])
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   orderItems    OrderItem[]
@@ -264,13 +268,34 @@ model VendorProfile {
 }
 
 model Category {
-  id          Int      @id @default(autoincrement())
-  name        String
-  slug        String   @unique
-  image       String?
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            Int           @id @default(autoincrement())
+  name          String        @unique
+  slug          String        @unique
+  image         String?
+  description   String?
+  displayOrder  Int           @default(0)
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  subcategories Subcategory[]
+  products      Product[]
+}
+
+model Subcategory {
+  id           Int       @id @default(autoincrement())
+  name         String
+  slug         String    @unique
+  categoryId   Int
+  category     Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  image        String?
+  description  String?
+  displayOrder Int       @default(0)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  products     Product[]
+
+  @@unique([categoryId, name])
 }
 
 model WardrobeItem {
