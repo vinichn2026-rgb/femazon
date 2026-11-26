@@ -354,12 +354,12 @@ export function AdminOverview({
           </div>
 
           <div className="pt-4 mt-6 border-t border-stone-100 flex justify-between items-center text-xs">
-            <span className="text-stone-500">Categories: Women&apos;s Wear, Beauty Care, Jewellery, Gifts</span>
+            <span className="text-stone-500">Taxonomy: {categories.length} Departments in PostgreSQL</span>
             <button 
-              onClick={() => onNavigateTab("product-vendors")}
-              className="text-[#4A1513] font-bold hover:underline"
+              onClick={() => onNavigateTab("categories")}
+              className="text-[#4A1513] font-bold hover:underline flex items-center gap-1 cursor-pointer"
             >
-              Inspect Vendors &rarr;
+              Manage Categories &rarr;
             </button>
           </div>
         </div>

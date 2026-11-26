@@ -11,7 +11,6 @@ import { FilterSidebar, FilterState, FilterBrandOption } from '@/components/shop
 import { ProductCard, ProductCardSkeleton } from '@/components/shop/ProductCard';
 import { LuxuryPromoBanner } from '@/components/shop/LuxuryPromoBanner';
 import { useFemazonStore } from '@/context/FemazonStoreContext';
-import { type FormattedShopProduct } from '@/lib/catalog';
 
 export interface DepartmentOption {
   id: string;
@@ -133,6 +132,7 @@ interface ShopClientProps {
   initialWishlistIds?: number[];
   bannerImage?: string;
   initialDepartment?: string;
+  categories?: any[];
 }
 
 const CATEGORY_BANNERS: Record<string, {
@@ -141,7 +141,6 @@ const CATEGORY_BANNERS: Record<string, {
   description: string;
   imageSrc: string;
   imageAlt: string;
-  objectPosition?: string;
 }> = {
   "womens-wear": {
     title: "Women's Wear",
@@ -149,7 +148,6 @@ const CATEGORY_BANNERS: Record<string, {
     description: "Handcrafted sarees, designer kurtis, regal lehengas & modern western silhouettes from authentic boutiques.",
     imageSrc: "/banners/hero_saree.jpg",
     imageAlt: "Women's Wear Collection",
-    objectPosition: "object-[center_10%]",
   },
   "beauty": {
     title: "Beauty & Self-care",
@@ -157,7 +155,6 @@ const CATEGORY_BANNERS: Record<string, {
     description: "Shop pure botanicals, ritual skincare, radiant makeup, bath & body, and hair essentials from trusted formulators.",
     imageSrc: "/banners/hero_beauty_jewels.jpg",
     imageAlt: "Beauty & Self-care Collection",
-    objectPosition: "object-[center_25%]",
   },
   "jewellery": {
     title: "Jewellery & Accessories",
@@ -165,7 +162,6 @@ const CATEGORY_BANNERS: Record<string, {
     description: "Regal Kundan chokers, temple jhumkas, artisanal potlis, luxury handbags & embroidered footwear.",
     imageSrc: "/categories/luxury_jewelry.png",
     imageAlt: "Jewellery & Accessories Collection",
-    objectPosition: "object-center",
   },
   "gifts": {
     title: "Gifts for Every Occasion",
@@ -173,7 +169,6 @@ const CATEGORY_BANNERS: Record<string, {
     description: "Curated gift hampers, celebratory boxes, flowers, chocolates & personalised surprises.",
     imageSrc: "/banners/hero_gifts.jpg",
     imageAlt: "Gifts for Every Occasion",
-    objectPosition: "object-center",
   },
   "all": {
     title: "Shop Our",
@@ -181,7 +176,6 @@ const CATEGORY_BANNERS: Record<string, {
     description: "Discover elegance in every detail across our four curated departments.",
     imageSrc: "/banners/shop_banner_woman.jpg",
     imageAlt: "Shop Our Latest Collection",
-    objectPosition: "object-right md:object-center",
   },
 };
 
@@ -214,54 +208,6 @@ function matchesPriceRange(price: number, rangeStr: string): boolean {
   return true;
 }
 
-function matchesDepartment(p: FormattedShopProduct, department: string): boolean {
-  if (department === "all") return true;
-  if (p.flaggedForReview) return false;
-  const prodCat = (p.category || "").toLowerCase().trim();
-  const prodName = (p.name || "").toLowerCase().trim();
-
-  if (department === "womens-wear") {
-    const isWomen = [
-      "saree", "kurta", "kurti", "chudithar", "lehenga", "dress", "gown", 
-      "co-ord", "western", "top", "kaftan", "indo-western", "anarkali", "suit"
-    ].some(w => prodCat.includes(w) || prodName.includes(w));
-    const isOtherDept = [
-      "bag", "handbag", "potli", "jewel", "earring", "necklace", "bangle", 
-      "hair accessory", "shawl", "stole", "scarf", "belt", "footwear", "accessories",
-      "beauty", "skincare", "hair care", "makeup", "fragrance", "bath & body", "gift", "hamper"
-    ].some(j => prodCat.includes(j)) || /\b(ring|earring|necklace|bangle|potli|jhumka|choker|clutch|shawl|stole|footwear|sandal|jutti)\b/i.test(prodName);
-    return isWomen && !isOtherDept;
-  } else if (department === "beauty") {
-    const isBeauty = [
-      "beauty", "skincare", "hair care", "face care", "body care", "makeup", "fragrance", 
-      "serum", "lotion", "oil", "bath & body", "facial", "glow set", "elixir", "cosmetic", "beauty gift sets"
-    ].some(b => prodCat.includes(b) || prodName.includes(b));
-    const isApparelOrJewel = [
-      "saree", "lehenga", "kurta", "kurti", "dress", "gown", "bag", "belt", "jewel", "shawl", "stole", "scarf", "footwear", "crossbody"
-    ].some(w => prodCat.includes(w) || prodName.includes(w));
-    return isBeauty && !isApparelOrJewel;
-  } else if (department === "jewellery") {
-    const isJewelleryOrAccessory = [
-      "bag", "handbag", "potli", "jewel", "earring", "necklace", "bangle", 
-      "hair accessory", "shawl", "stole", "scarf", "belt", "footwear", "accessories"
-    ].some(j => prodCat.includes(j)) || /\b(ring|earring|necklace|bangle|potli|jhumka|choker|clutch|shawl|stole|footwear|sandal|jutti|accessories)\b/i.test(prodName);
-    const isApparelOrBeauty = [
-      "saree", "lehenga", "kurta", "dress", "gown", "skincare", "makeup", "serum", "fragrance", "hair care", "bath & body", "elixir"
-    ].some(w => prodCat.includes(w) || prodName.includes(w));
-    return isJewelleryOrAccessory && !isApparelOrBeauty;
-  } else if (department === "gifts") {
-    const isBeauty = [
-      "skincare", "hair care", "makeup", "fragrance", "bath & body", "beauty gift sets", "facial"
-    ].some(b => prodCat.includes(b));
-    const isGift = [
-      "gift", "hamper", "birthday", "anniversary", "wedding gift", "personalised", "festival gift", "celebration box", "keepsake"
-    ].some(g => prodCat.includes(g) || prodName.includes(g));
-    const isApparelOrJewel = ["saree", "lehenga", "kurta", "dress", "gown", "potli", "belt", "shawl", "footwear"].some(w => prodCat.includes(w));
-    return isGift && !isApparelOrJewel && !isBeauty;
-  }
-  return true;
-}
-
 export function ShopClient({ 
   initialProducts, 
   initialCategory, 
@@ -270,11 +216,36 @@ export function ShopClient({
   initialOccasion,
   initialWishlistIds = [], 
   bannerImage,
-  initialDepartment
+  initialDepartment,
+  categories = []
 }: ShopClientProps) {
   const router = useRouter();
   const { isInWishlist, toggleWishlist, addToCart } = useFemazonStore();
   const [isMounted, setIsMounted] = useState(false);
+
+  // Compute dynamic departments from database categories, falling back to SHOP_DEPARTMENTS
+  const departments: DepartmentOption[] = useMemo(() => {
+    if (!categories || categories.length === 0) return SHOP_DEPARTMENTS;
+
+    const allSubnames = new Set<string>();
+    const customDepts: DepartmentOption[] = categories.map((cat: any) => {
+      const subs = (cat.subcategories || []).map((s: any) => s.name);
+      subs.forEach((sName: string) => allSubnames.add(sName));
+      return {
+        id: cat.slug || String(cat.id),
+        name: cat.name,
+        categories: subs
+      };
+    });
+
+    const allDept: DepartmentOption = {
+      id: "all",
+      name: "All Categories",
+      categories: ["All", ...Array.from(allSubnames)]
+    };
+
+    return [allDept, ...customDepts];
+  }, [categories]);
   
   // Resolve initial department based on initialDepartment prop or initialCategory
   const resolvedInitialDept = useMemo(() => {
@@ -334,42 +305,27 @@ export function ShopClient({
 
   // Categories to display in sidebar based on current department
   const activeCategories = useMemo(() => {
-    const dept = SHOP_DEPARTMENTS.find(d => d.id === selectedDepartment);
-    return dept ? dept.categories : SHOP_DEPARTMENTS[0].categories;
-  }, [selectedDepartment]);
+    const dept = departments.find(d => d.id === selectedDepartment);
+    return dept ? dept.categories : departments[0]?.categories || [];
+  }, [departments, selectedDepartment]);
 
   // Dynamically compute available sellers & brands with live counts
   const availableBrands: FilterBrandOption[] = useMemo(() => {
     const counts: Record<string, number> = {};
-    const deptProducts = initialProducts.filter(p => matchesDepartment(p, selectedDepartment));
-
-    deptProducts.forEach(p => {
+    initialProducts.forEach(p => {
       const b = p.vendorName || p.brand || "Femazon Luxe";
       counts[b] = (counts[b] || 0) + 1;
     });
 
-    const partnerBrands: Record<string, { name: string; city: string; verified: boolean; baseCount: number }[]> = {
-      "womens-wear": [
-        { name: "Kovai Handlooms & Silks", city: "Coimbatore", verified: true, baseCount: 18 },
-        { name: "Nagla Atelier", city: "Chennai", verified: true, baseCount: 24 },
-        { name: "Mylapore Heritage Silks", city: "Chennai", verified: true, baseCount: 16 },
-        { name: "Priya Sundaram Couture", city: "Chennai", verified: true, baseCount: 9 },
-        { name: "Bengaluru Silk Haven", city: "Bangalore", verified: true, baseCount: 15 },
-      ],
-      "beauty": [
-        { name: "Siruvani Botanical Care", city: "Coimbatore", verified: true, baseCount: 14 },
-        { name: "AyurGlow Organic Skincare", city: "Bangalore", verified: true, baseCount: 12 },
-        { name: "Kavita Reddy Makeup Studio", city: "Chennai", verified: true, baseCount: 8 },
-      ],
-      "jewellery": [
-        { name: "Nagla Atelier", city: "Chennai", verified: true, baseCount: 14 },
-        { name: "Femazon Heritage", city: "Coimbatore", verified: true, baseCount: 16 },
-      ],
-      "gifts": [
-        { name: "Kongu Artisanal Treats", city: "Coimbatore", verified: true, baseCount: 12 },
-        { name: "Femazon Heritage", city: "Coimbatore", verified: true, baseCount: 10 },
-      ]
-    };
+    const partnerBrands: { name: string; city: string; verified: boolean; baseCount: number }[] = [
+      { name: "Kovai Handlooms & Silks", city: "Coimbatore", verified: true, baseCount: 18 },
+      { name: "Nagla Atelier", city: "Chennai", verified: true, baseCount: 24 },
+      { name: "Siruvani Botanical Care", city: "Coimbatore", verified: true, baseCount: 14 },
+      { name: "Kongu Artisanal Treats", city: "Coimbatore", verified: true, baseCount: 12 },
+      { name: "Mylapore Heritage Silks", city: "Chennai", verified: true, baseCount: 16 },
+      { name: "Priya Sundaram Couture", city: "Chennai", verified: true, baseCount: 9 },
+      { name: "Bengaluru Silk Haven", city: "Bangalore", verified: true, baseCount: 15 },
+    ];
 
     const list: FilterBrandOption[] = [];
 
@@ -379,20 +335,12 @@ export function ShopClient({
         name,
         count,
         verified: true,
-        city: name.includes("Heritage") || name.includes("Kovai") || name.includes("Kongu") || name.includes("Siruvani") ? "Coimbatore" : "Chennai",
+        city: name.includes("Heritage") ? "Coimbatore" : "Chennai",
       });
     });
 
-    // Add partner brands if applicable
-    const activePartnerBrands = partnerBrands[selectedDepartment] || [
-      { name: "Kovai Handlooms & Silks", city: "Coimbatore", verified: true, baseCount: 18 },
-      { name: "Nagla Atelier", city: "Chennai", verified: true, baseCount: 24 },
-      { name: "Siruvani Botanical Care", city: "Coimbatore", verified: true, baseCount: 14 },
-      { name: "Kongu Artisanal Treats", city: "Coimbatore", verified: true, baseCount: 12 },
-      { name: "Mylapore Heritage Silks", city: "Chennai", verified: true, baseCount: 16 },
-    ];
-
-    activePartnerBrands.forEach(pb => {
+    // Add partner brands if not present
+    partnerBrands.forEach(pb => {
       if (!counts[pb.name]) {
         list.push({
           name: pb.name,
@@ -404,7 +352,7 @@ export function ShopClient({
     });
 
     return list.sort((a, b) => b.count - a.count);
-  }, [initialProducts, selectedDepartment]);
+  }, [initialProducts]);
 
   // Handle department change
   const handleSelectDepartment = (deptId: string) => {
@@ -415,7 +363,7 @@ export function ShopClient({
 
   // Derived Active Filters Array for Chips
   const activeFilterChips = [
-    ...(selectedDepartment !== "all" ? [`Dept: ${SHOP_DEPARTMENTS.find(d => d.id === selectedDepartment)?.name}`] : []),
+    ...(selectedDepartment !== "all" ? [`Dept: ${departments.find(d => d.id === selectedDepartment)?.name}`] : []),
     ...(selectedCategory !== "All" ? [`Category: ${selectedCategory}`] : []),
     ...(selectedSilhouette !== "All" ? [`Silhouette: ${selectedSilhouette}`] : []),
     ...(filters.silhouettes || []).map(s => `Silhouette: ${s}`),
@@ -504,7 +452,34 @@ export function ShopClient({
       if (p.flaggedForReview) return false;
 
       // 1. Department Filter
-      if (!matchesDepartment(p, selectedDepartment)) return false;
+      if (selectedDepartment !== "all") {
+        const prodCat = (p.category || "").toLowerCase().trim();
+        const prodName = (p.name || "").toLowerCase().trim();
+
+        if (selectedDepartment === "womens-wear") {
+          const isWomen = [
+            "saree", "kurta", "kurti", "chudithar", "lehenga", "dress", "gown", 
+            "co-ord", "western", "top", "kaftan", "indo-western"
+          ].some(w => prodCat.includes(w) || prodName.includes(w));
+          if (!isWomen && (prodCat.includes("bag") || prodCat.includes("belt") || prodCat.includes("footwear"))) return false;
+        } else if (selectedDepartment === "beauty") {
+          const isBeauty = [
+            "beauty", "skincare", "hair", "face", "body", "makeup", "fragrance", "serum", "lotion", "oil"
+          ].some(b => prodCat.includes(b) || prodName.includes(b));
+          if (!isBeauty) return false;
+        } else if (selectedDepartment === "jewellery") {
+          const isJewelleryOrAccessory = [
+            "bag", "handbag", "potli", "jewel", "earring", "necklace", "bangle", "ring", 
+            "hair accessory", "shawl", "stole", "scarf", "belt", "footwear", "accessories"
+          ].some(j => prodCat.includes(j) || prodName.includes(j));
+          if (!isJewelleryOrAccessory) return false;
+        } else if (selectedDepartment === "gifts") {
+          const isGift = [
+            "gift", "hamper", "birthday", "anniversary", "wedding", "personalised", "festive", "box"
+          ].some(g => prodCat.includes(g) || prodName.includes(g));
+          if (!isGift) return false;
+        }
+      }
 
       // 2. Search Query
       if (searchQuery.trim()) {
@@ -670,10 +645,59 @@ export function ShopClient({
           description={currentBanner.description}
           imageSrc={currentBanner.imageSrc}
           imageAlt={currentBanner.imageAlt}
-          objectPosition={currentBanner.objectPosition}
           ctaText="Explore Collection"
           ctaLink="#shop-catalog"
         />
+
+        {/* Relevant Subcategories for Selected Category */}
+        {activeCategories && activeCategories.length > 1 && (
+          <div className="w-full mb-3 sm:mb-4 bg-white/70 backdrop-blur-xs rounded-2xl border border-stone-200/80 p-3 sm:p-4 shadow-2xs">
+            <div className="flex items-center justify-between gap-2 mb-2.5">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C5A059]">
+                {departments.find(d => d.id === selectedDepartment)?.name || "Shop"} Subcategories
+              </span>
+              {selectedCategory !== "All" && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategory("All")}
+                  className="text-xs font-bold text-[#4A1513] hover:underline cursor-pointer"
+                >
+                  View All ({totalItems})
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar py-0.5">
+              <button
+                type="button"
+                onClick={() => setSelectedCategory("All")}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer shrink-0 border ${
+                  selectedCategory === "All"
+                    ? 'bg-[#4A1513] text-white border-[#4A1513] shadow-xs'
+                    : 'bg-[#FAF7F5] text-stone-700 hover:text-[#4A1513] hover:border-[#C5A059]/60 border-stone-200'
+                }`}
+              >
+                All {departments.find(d => d.id === selectedDepartment)?.name || "Categories"}
+              </button>
+              {activeCategories.filter(c => c !== "All").map((subCat) => {
+                const isSelected = selectedCategory.toLowerCase() === subCat.toLowerCase();
+                return (
+                  <button
+                    key={subCat}
+                    type="button"
+                    onClick={() => setSelectedCategory(isSelected ? "All" : subCat)}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer shrink-0 border ${
+                      isSelected
+                        ? 'bg-[#4A1513] text-white border-[#4A1513] shadow-xs'
+                        : 'bg-white text-stone-700 hover:text-[#4A1513] hover:border-[#C5A059]/60 border-stone-200'
+                    }`}
+                  >
+                    {subCat}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
         
         {/* Top Control Bar spanning equally above Filter Sidebar & Product section */}
         <div id="shop-catalog">
@@ -681,7 +705,7 @@ export function ShopClient({
             totalItems={totalItems}
             selectedCategory={selectedCategory}
             selectedDepartment={selectedDepartment}
-            departments={SHOP_DEPARTMENTS}
+            departments={departments}
             onSelectDepartment={handleSelectDepartment}
             searchQuery={searchQuery}
             onSearchChange={(q) => setSearchQuery(q)}

@@ -69,6 +69,8 @@ export async function GET(request: Request) {
       prisma.product.findMany({
         where,
         include: {
+          categoryRel: true,
+          subcategoryRel: true,
           colorVariants: {
             include: {
               images: { orderBy: { displayOrder: 'asc' } },
@@ -167,6 +169,8 @@ export async function POST(request: Request) {
       title,
       name,
       brandName = 'Femazon Luxe',
+      categoryId,
+      subcategoryId,
       category,
       subCategory,
       subcategory,
@@ -182,14 +186,74 @@ export async function POST(request: Request) {
     } = body;
 
     const productTitle = (title || name || '').trim();
-    const productCategory = (category || 'Kurta Sets').trim();
-    const productSubCategory = (subCategory || subcategory || '').trim();
+    const rawCategory = (category || '').trim();
+    const rawSubCategory = (subCategory || subcategory || '').trim();
     const mrp = Math.round(Number(basePrice ?? price ?? 0));
     const finalPrice = salePrice || discountPrice ? Math.round(Number(salePrice ?? discountPrice)) : null;
 
     if (!productTitle) {
       return NextResponse.json({ error: 'Product Title is required.' }, { status: 400 });
     }
+
+    // Resolve & Validate Category
+    let resolvedCategoryId: number | null = categoryId ? Number(categoryId) : null;
+    let resolvedCategoryName = rawCategory;
+
+    if (resolvedCategoryId) {
+      const dbCat = await prisma.category.findUnique({ where: { id: resolvedCategoryId } });
+      if (!dbCat) {
+        return NextResponse.json({ error: 'Selected Category does not exist.' }, { status: 400 });
+      }
+      if (!dbCat.isActive && user.role !== 'ADMIN') {
+        return NextResponse.json({ error: 'Selected Category is currently inactive.' }, { status: 400 });
+      }
+      resolvedCategoryName = dbCat.name;
+    } else if (rawCategory) {
+      const dbCat = await prisma.category.findFirst({
+        where: { name: { equals: rawCategory, mode: 'insensitive' } }
+      });
+      if (dbCat) {
+        resolvedCategoryId = dbCat.id;
+        resolvedCategoryName = dbCat.name;
+      }
+    }
+
+    if (!resolvedCategoryId && !resolvedCategoryName) {
+      return NextResponse.json({ error: 'Main Category selection is mandatory.' }, { status: 400 });
+    }
+
+    // Resolve & Validate Subcategory
+    let resolvedSubcategoryId: number | null = subcategoryId ? Number(subcategoryId) : null;
+    let resolvedSubcategoryName = rawSubCategory;
+
+    if (resolvedSubcategoryId) {
+      const dbSub = await prisma.subcategory.findUnique({ where: { id: resolvedSubcategoryId } });
+      if (!dbSub) {
+        return NextResponse.json({ error: 'Selected Subcategory does not exist.' }, { status: 400 });
+      }
+      if (resolvedCategoryId && dbSub.categoryId !== resolvedCategoryId) {
+        return NextResponse.json({ error: 'Selected Subcategory does not belong to the selected Category.' }, { status: 400 });
+      }
+      if (!dbSub.isActive && user.role !== 'ADMIN') {
+        return NextResponse.json({ error: 'Selected Subcategory is currently inactive.' }, { status: 400 });
+      }
+      resolvedSubcategoryName = dbSub.name;
+      if (!resolvedCategoryId) {
+        resolvedCategoryId = dbSub.categoryId;
+      }
+    } else if (rawSubCategory && resolvedCategoryId) {
+      const dbSub = await prisma.subcategory.findFirst({
+        where: {
+          categoryId: resolvedCategoryId,
+          name: { equals: rawSubCategory, mode: 'insensitive' }
+        }
+      });
+      if (dbSub) {
+        resolvedSubcategoryId = dbSub.id;
+        resolvedSubcategoryName = dbSub.name;
+      }
+    }
+
     if (mrp <= 0) {
       return NextResponse.json({ error: 'Base Price (MRP) must be a positive number.' }, { status: 400 });
     }
@@ -238,9 +302,11 @@ export async function POST(request: Request) {
           data: {
             name: productTitle,
             brandName: brandName.trim() || 'Femazon Luxe',
-            category: productCategory,
-            subcategory: productSubCategory || null,
-            dressType: productSubCategory || null,
+            category: resolvedCategoryName,
+            subcategory: resolvedSubcategoryName || null,
+            dressType: resolvedSubcategoryName || null,
+            categoryId: resolvedCategoryId,
+            subcategoryId: resolvedSubcategoryId,
             price: mrp,
             discountPrice: finalPrice,
             description: description.trim(),
@@ -298,6 +364,8 @@ export async function POST(request: Request) {
       const completeProduct = await prisma.product.findUnique({
         where: { id: updatedProduct.id },
         include: {
+          categoryRel: true,
+          subcategoryRel: true,
           colorVariants: {
             include: {
               images: { orderBy: { displayOrder: 'asc' } },
@@ -327,9 +395,11 @@ export async function POST(request: Request) {
           name: productTitle,
           slug: uniqueSlug,
           brandName: brandName.trim() || 'Femazon Luxe',
-          category: productCategory,
-          subcategory: productSubCategory || null,
-          dressType: productSubCategory || null,
+          category: resolvedCategoryName,
+          subcategory: resolvedSubcategoryName || null,
+          dressType: resolvedSubcategoryName || null,
+          categoryId: resolvedCategoryId,
+          subcategoryId: resolvedSubcategoryId,
           price: mrp,
           discountPrice: finalPrice,
           description: description.trim(),
@@ -384,6 +454,8 @@ export async function POST(request: Request) {
     const completeProduct = await prisma.product.findUnique({
       where: { id: createdProduct.id },
       include: {
+        categoryRel: true,
+        subcategoryRel: true,
         colorVariants: {
           include: {
             images: { orderBy: { displayOrder: 'asc' } },

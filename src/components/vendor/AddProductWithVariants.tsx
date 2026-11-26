@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
@@ -35,15 +35,89 @@ const LUXURY_PRESET_COLORS = [
 
 const STANDARD_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'Free Size'];
 
-const CATEGORY_MAP: Record<string, string[]> = {
-  'Kurta Sets': ['Anarkali Sets', 'Sharara & Gharara Sets', 'Straight Cut Suits', 'Angrakha Ensembles', 'Palazzo Sets'],
-  'Lehengas': ['Bridal Lehengas', 'Bridesmaid Lehengas', 'Fusion / Drape Lehengas', 'Velvet Lehengas'],
-  'Sarees': ['Banarasi Silk Sarees', 'Kanjeevaram Sarees', 'Chanderi Sarees', 'Organza Handpainted', 'Pre-Draped Sarees'],
-  'Dresses & Gowns': ['Evening Gowns', 'Cocktail Dresses', 'Maxi Dresses', 'Cape Gowns'],
-  'Indo-Western': ['Drape Skirt Sets', 'Jumpsuits', 'Cape Sets', 'Tunic Sets'],
-  'Co-ord Sets': ['Embroidered Co-ords', 'Silk Co-ords', 'Printed Co-ords'],
-  'Ready To Ship': ['Festive Express', 'Luxury Pret', 'Immediate Dispatch Exclusive']
-};
+export interface SubcategoryOption {
+  id: number;
+  name: string;
+  slug: string;
+  categoryId: number;
+}
+
+export interface CategoryOption {
+  id: number;
+  name: string;
+  slug: string;
+  subcategories: SubcategoryOption[];
+}
+
+export const DEFAULT_SHOP_CATEGORIES: CategoryOption[] = [
+  {
+    id: 1,
+    name: "Women's Wear",
+    slug: "womens-wear",
+    subcategories: [
+      { id: 1, name: "Sarees", slug: "womens-wear-sarees", categoryId: 1 },
+      { id: 2, name: "Kurta Sets", slug: "womens-wear-kurta-sets", categoryId: 1 },
+      { id: 3, name: "Kurtis", slug: "womens-wear-kurtis", categoryId: 1 },
+      { id: 4, name: "Chudithar", slug: "womens-wear-chudithar", categoryId: 1 },
+      { id: 5, name: "Lehengas", slug: "womens-wear-lehengas", categoryId: 1 },
+      { id: 6, name: "Dresses", slug: "womens-wear-dresses", categoryId: 1 },
+      { id: 7, name: "Gowns", slug: "womens-wear-gowns", categoryId: 1 },
+      { id: 8, name: "Co-ord Sets", slug: "womens-wear-co-ord-sets", categoryId: 1 },
+      { id: 9, name: "Western Wear", slug: "womens-wear-western-wear", categoryId: 1 },
+      { id: 10, name: "Tops", slug: "womens-wear-tops", categoryId: 1 },
+      { id: 11, name: "Kaftans", slug: "womens-wear-kaftans", categoryId: 1 },
+      { id: 12, name: "Indo-Western", slug: "womens-wear-indo-western", categoryId: 1 },
+    ]
+  },
+  {
+    id: 2,
+    name: "Beauty & Self-care",
+    slug: "beauty",
+    subcategories: [
+      { id: 13, name: "Skincare", slug: "beauty-skincare", categoryId: 2 },
+      { id: 14, name: "Hair Care", slug: "beauty-hair-care", categoryId: 2 },
+      { id: 15, name: "Face Care", slug: "beauty-face-care", categoryId: 2 },
+      { id: 16, name: "Body Care", slug: "beauty-body-care", categoryId: 2 },
+      { id: 17, name: "Makeup", slug: "beauty-makeup", categoryId: 2 },
+      { id: 18, name: "Fragrances", slug: "beauty-fragrances", categoryId: 2 },
+      { id: 19, name: "Bath & Body", slug: "beauty-bath-body", categoryId: 2 },
+      { id: 20, name: "Beauty Gift Sets", slug: "beauty-beauty-gift-sets", categoryId: 2 },
+    ]
+  },
+  {
+    id: 3,
+    name: "Jewellery & Accessories",
+    slug: "jewellery",
+    subcategories: [
+      { id: 21, name: "Handbags", slug: "jewellery-handbags", categoryId: 3 },
+      { id: 22, name: "Potlis", slug: "jewellery-potlis", categoryId: 3 },
+      { id: 23, name: "Earrings", slug: "jewellery-earrings", categoryId: 3 },
+      { id: 24, name: "Necklaces", slug: "jewellery-necklaces", categoryId: 3 },
+      { id: 25, name: "Bangles", slug: "jewellery-bangles", categoryId: 3 },
+      { id: 26, name: "Rings", slug: "jewellery-rings", categoryId: 3 },
+      { id: 27, name: "Hair Accessories", slug: "jewellery-hair-accessories", categoryId: 3 },
+      { id: 28, name: "Shawls", slug: "jewellery-shawls", categoryId: 3 },
+      { id: 29, name: "Stoles & Scarves", slug: "jewellery-stoles-scarves", categoryId: 3 },
+      { id: 30, name: "Belts", slug: "jewellery-belts", categoryId: 3 },
+      { id: 31, name: "Footwear", slug: "jewellery-footwear", categoryId: 3 },
+    ]
+  },
+  {
+    id: 4,
+    name: "Gifts for Every Occasion",
+    slug: "gifts",
+    subcategories: [
+      { id: 32, name: "Birthday Gifts", slug: "gifts-birthday-gifts", categoryId: 4 },
+      { id: 33, name: "Anniversary Gifts", slug: "gifts-anniversary-gifts", categoryId: 4 },
+      { id: 34, name: "Wedding Gifts", slug: "gifts-wedding-gifts", categoryId: 4 },
+      { id: 35, name: "Personalised Gifts", slug: "gifts-personalised-gifts", categoryId: 4 },
+      { id: 36, name: "Gift Hampers", slug: "gifts-gift-hampers", categoryId: 4 },
+      { id: 37, name: "Gifts for Her", slug: "gifts-gifts-for-her", categoryId: 4 },
+      { id: 38, name: "Gifts for Him", slug: "gifts-gifts-for-him", categoryId: 4 },
+      { id: 39, name: "Festival Gifts", slug: "gifts-festival-gifts", categoryId: 4 },
+    ]
+  }
+];
 
 export interface VariantImageItem {
   imageUrl: string;
@@ -76,12 +150,94 @@ export function AddProductWithVariants({
   const router = useRouter();
 
   // Section A: Core Product Information
+  const [categoriesList, setCategoriesList] = useState<CategoryOption[]>(DEFAULT_SHOP_CATEGORIES);
+  
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | ''>(() => {
+    if (editingProduct?.categoryId) return Number(editingProduct.categoryId);
+    const found = DEFAULT_SHOP_CATEGORIES.find(
+      c => c.name.toLowerCase() === editingProduct?.category?.toLowerCase()
+    );
+    return found ? found.id : 1; // Default to Women's Wear (id: 1)
+  });
+
+  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<number | ''>(() => {
+    if (editingProduct?.subcategoryId) return Number(editingProduct.subcategoryId);
+    const cat = DEFAULT_SHOP_CATEGORIES.find(c => c.id === (editingProduct?.categoryId || 1));
+    const targetSubName = (editingProduct?.subcategory || editingProduct?.dressType || '')
+      .trim()
+      .toLowerCase();
+    const foundSub = cat?.subcategories.find(s => s.name.toLowerCase() === targetSubName);
+    return foundSub ? foundSub.id : (cat?.subcategories[0]?.id || '');
+  });
+
   const [title, setTitle] = useState(editingProduct?.name || '');
   const [brandName, setBrandName] = useState(editingProduct?.brandName || 'Femazon Luxe');
-  const [category, setCategory] = useState(editingProduct?.category || 'Kurta Sets');
-  const [subCategory, setSubCategory] = useState(
-    editingProduct?.subcategory || editingProduct?.dressType || 'Anarkali Sets'
-  );
+  const [category, setCategory] = useState(() => {
+    if (editingProduct?.category) return editingProduct.category;
+    return DEFAULT_SHOP_CATEGORIES[0]?.name || "Women's Wear";
+  });
+  const [subCategory, setSubCategory] = useState(() => {
+    if (editingProduct?.subcategory || editingProduct?.dressType) {
+      return editingProduct.subcategory || editingProduct.dressType;
+    }
+    return DEFAULT_SHOP_CATEGORIES[0]?.subcategories[0]?.name || 'Sarees';
+  });
+
+  // Fetch dynamic categories from API
+  useEffect(() => {
+    let isMounted = true;
+    async function loadCategories() {
+      try {
+        const res = await fetch('/api/categories');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data.categories) && data.categories.length > 0 && isMounted) {
+            setCategoriesList(data.categories);
+            
+            // Check if current selectedCategoryId still exists in fetched list
+            const currentCatExists = data.categories.some((c: CategoryOption) => c.id === Number(selectedCategoryId));
+            if (!currentCatExists) {
+              const firstCat = data.categories[0];
+              setSelectedCategoryId(firstCat.id);
+              setCategory(firstCat.name);
+              if (firstCat.subcategories && firstCat.subcategories.length > 0) {
+                setSelectedSubcategoryId(firstCat.subcategories[0].id);
+                setSubCategory(firstCat.subcategories[0].name);
+              } else {
+                setSelectedSubcategoryId('');
+                setSubCategory('');
+              }
+            } else {
+              // Ensure category name and subcategory are properly aligned
+              const currentCat = data.categories.find((c: CategoryOption) => c.id === Number(selectedCategoryId));
+              if (currentCat) {
+                setCategory(currentCat.name);
+                const subExists = currentCat.subcategories.some((s: SubcategoryOption) => s.id === Number(selectedSubcategoryId));
+                if (!subExists && currentCat.subcategories.length > 0) {
+                  setSelectedSubcategoryId(currentCat.subcategories[0].id);
+                  setSubCategory(currentCat.subcategories[0].name);
+                }
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load categories:', err);
+      }
+    }
+    loadCategories();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const currentCategory = useMemo(() => {
+    return categoriesList.find(c => c.id === Number(selectedCategoryId)) || categoriesList[0];
+  }, [categoriesList, selectedCategoryId]);
+
+  const availableSubcategories = useMemo(() => {
+    return currentCategory?.subcategories || [];
+  }, [currentCategory]);
   const [basePrice, setBasePrice] = useState<string>(
     editingProduct?.price ? String(editingProduct.price) : ''
   );
@@ -373,6 +529,16 @@ export function AddProductWithVariants({
       return;
     }
 
+    if (!selectedCategoryId || !category) {
+      setErrorMessage('Please select a Category.');
+      return;
+    }
+
+    if (availableSubcategories.length > 0 && (!selectedSubcategoryId || !subCategory)) {
+      setErrorMessage('Please select a Subcategory.');
+      return;
+    }
+
     if (colorVariants.length === 0) {
       setErrorMessage('At least one color variety is required.');
       return;
@@ -401,8 +567,10 @@ export function AddProductWithVariants({
         ...(editingProduct?.id ? { id: editingProduct.id } : {}),
         title: title.trim(),
         brandName: brandName.trim(),
-        category,
-        subCategory,
+        categoryId: Number(selectedCategoryId),
+        subcategoryId: selectedSubcategoryId ? Number(selectedSubcategoryId) : null,
+        category: category.trim(),
+        subCategory: subCategory.trim(),
         basePrice: mrp,
         salePrice: sale,
         fabricCare,
@@ -593,22 +761,34 @@ export function AddProductWithVariants({
               />
             </div>
 
-            {/* Category */}
+            {/* Main Category */}
             <div className="space-y-1.5">
               <label className="block text-xs font-bold uppercase tracking-wider text-stone-700">
                 Category <span className="text-rose-600">*</span>
               </label>
               <select
-                value={category}
+                value={selectedCategoryId || ''}
                 onChange={e => {
-                  setCategory(e.target.value);
-                  const subOptions = CATEGORY_MAP[e.target.value] || [];
-                  setSubCategory(subOptions[0] || '');
+                  const newCatId = Number(e.target.value);
+                  setSelectedCategoryId(newCatId);
+                  const catObj = categoriesList.find(c => c.id === newCatId);
+                  setCategory(catObj?.name || '');
+                  // Reset subcategory selection to the first valid subcategory
+                  if (catObj && catObj.subcategories && catObj.subcategories.length > 0) {
+                    setSelectedSubcategoryId(catObj.subcategories[0].id);
+                    setSubCategory(catObj.subcategories[0].name);
+                  } else {
+                    setSelectedSubcategoryId('');
+                    setSubCategory('');
+                  }
                 }}
                 className="w-full h-11 px-3 text-xs sm:text-sm bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:border-[#4A1513] focus:outline-none transition font-medium cursor-pointer"
+                required
               >
-                {Object.keys(CATEGORY_MAP).map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
+                {categoriesList.map(cat => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -616,16 +796,29 @@ export function AddProductWithVariants({
             {/* Sub-Category */}
             <div className="space-y-1.5">
               <label className="block text-xs font-bold uppercase tracking-wider text-stone-700">
-                Subcategory / Silhouette
+                Subcategory <span className="text-rose-600">*</span>
               </label>
               <select
-                value={subCategory}
-                onChange={e => setSubCategory(e.target.value)}
-                className="w-full h-11 px-3 text-xs sm:text-sm bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:border-[#4A1513] focus:outline-none transition font-medium cursor-pointer"
+                value={selectedSubcategoryId || ''}
+                onChange={e => {
+                  const newSubId = Number(e.target.value);
+                  setSelectedSubcategoryId(newSubId);
+                  const subObj = availableSubcategories.find(s => s.id === newSubId);
+                  setSubCategory(subObj?.name || '');
+                }}
+                disabled={availableSubcategories.length === 0}
+                className="w-full h-11 px-3 text-xs sm:text-sm bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:border-[#4A1513] focus:outline-none transition font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                required
               >
-                {(CATEGORY_MAP[category] || []).map(sub => (
-                  <option key={sub} value={sub}>{sub}</option>
-                ))}
+                {availableSubcategories.length === 0 ? (
+                  <option value="">No subcategories available</option>
+                ) : (
+                  availableSubcategories.map(sub => (
+                    <option key={sub.id} value={sub.id}>
+                      {sub.name}
+                    </option>
+                  ))
+                )}
               </select>
             </div>
 

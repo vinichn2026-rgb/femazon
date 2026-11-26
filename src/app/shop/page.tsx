@@ -1,5 +1,6 @@
 import { ShopClient } from '@/components/shop/ShopClient';
 import { getFormattedShopProducts } from '@/lib/catalog';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,8 +19,20 @@ interface ShopSearchParams {
 export default async function ShopPage({ searchParams }: { searchParams: Promise<ShopSearchParams> }) {
   const resolvedSearchParams = await searchParams;
 
-  // Instant pre-formatted catalog from memory cache (0ms)
-  const formattedProducts = await getFormattedShopProducts();
+  // Instant pre-formatted catalog from cache & dynamic categories from DB
+  const [formattedProducts, dbCategories] = await Promise.all([
+    getFormattedShopProducts(),
+    prisma.category.findMany({
+      where: { isActive: true },
+      include: {
+        subcategories: {
+          where: { isActive: true },
+          orderBy: { displayOrder: 'asc' }
+        }
+      },
+      orderBy: { displayOrder: 'asc' }
+    }).catch(() => [])
+  ]);
 
   const initialDept = resolvedSearchParams.dept || resolvedSearchParams.department;
   let initialCategory = resolvedSearchParams.category || "All";
@@ -70,7 +83,8 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
       initialDepartment={initialDept}
       initialSilhouette={initialSilhouette}
       initialWishlistIds={[]} 
-      bannerImage={bannerImage} 
+      bannerImage={bannerImage}
+      categories={dbCategories}
     />
   );
 }

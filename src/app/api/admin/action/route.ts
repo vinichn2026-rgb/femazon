@@ -613,23 +613,202 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: true, message: 'User deleted' });
       }
 
+      // ==========================================
+      // 5. CATEGORY & SUBCATEGORY MANAGEMENT
+      // ==========================================
       case 'CREATE_CATEGORY': {
-        const slug = (payload.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const name = (payload.name || '').trim();
+        if (!name) return NextResponse.json({ error: 'Category name is required' }, { status: 400 });
+
+        const baseSlug = slugify(name);
+        const existing = await prisma.category.findUnique({ where: { slug: baseSlug } });
+        const finalSlug = existing ? `${baseSlug}-${Date.now().toString(36)}` : baseSlug;
+
         const cat = await prisma.category.create({
           data: {
-            name: payload.name,
-            slug,
-            description: payload.description
+            name,
+            slug: finalSlug,
+            description: payload.description?.trim() || null,
+            image: payload.image?.trim() || null,
+            displayOrder: Number(payload.displayOrder) || 0,
+            isActive: payload.isActive !== undefined ? Boolean(payload.isActive) : true
           }
         });
-        return NextResponse.json({ success: true, category: cat });
+        return NextResponse.json({ success: true, message: `Category "${name}" created`, category: cat });
+      }
+
+      case 'UPDATE_CATEGORY': {
+        const id = Number(payload.categoryId || payload.id);
+        if (!id) return NextResponse.json({ error: 'Valid categoryId is required' }, { status: 400 });
+
+        const existing = await prisma.category.findUnique({ where: { id } });
+        if (!existing) return NextResponse.json({ error: 'Category not found' }, { status: 404 });
+
+        const newName = payload.name !== undefined ? payload.name.trim() : existing.name;
+        const updateData: any = {
+          name: newName,
+          description: payload.description !== undefined ? payload.description?.trim() || null : existing.description,
+          image: payload.image !== undefined ? payload.image?.trim() || null : existing.image,
+          displayOrder: payload.displayOrder !== undefined ? Number(payload.displayOrder) : existing.displayOrder,
+          isActive: payload.isActive !== undefined ? Boolean(payload.isActive) : existing.isActive
+        };
+
+        const updated = await prisma.category.update({
+          where: { id },
+          data: updateData
+        });
+
+        // Sync product category string name if name was updated
+        if (newName !== existing.name) {
+          await prisma.product.updateMany({
+            where: { categoryId: id },
+            data: { category: newName }
+          });
+        }
+
+        return NextResponse.json({ success: true, message: 'Category updated successfully', category: updated });
+      }
+
+      case 'TOGGLE_CATEGORY_ACTIVE': {
+        const id = Number(payload.categoryId || payload.id);
+        const existing = await prisma.category.findUnique({ where: { id } });
+        if (!existing) return NextResponse.json({ error: 'Category not found' }, { status: 404 });
+
+        const updated = await prisma.category.update({
+          where: { id },
+          data: { isActive: !existing.isActive }
+        });
+        return NextResponse.json({ success: true, isActive: updated.isActive });
       }
 
       case 'DELETE_CATEGORY': {
-        await prisma.category.delete({
-          where: { id: Number(payload.categoryId) }
+        const id = Number(payload.categoryId || payload.id);
+        if (!id) return NextResponse.json({ error: 'Valid categoryId is required' }, { status: 400 });
+
+        const productsCount = await prisma.product.count({
+          where: { categoryId: id }
         });
-        return NextResponse.json({ success: true });
+
+        if (productsCount > 0) {
+          return NextResponse.json({
+            error: `Cannot permanently delete category containing ${productsCount} associated products. Please deactivate the category instead to preserve catalog stability.`
+          }, { status: 400 });
+        }
+
+        await prisma.category.delete({ where: { id } });
+        return NextResponse.json({ success: true, message: 'Category removed successfully' });
+      }
+
+      case 'CREATE_SUBCATEGORY': {
+        const name = (payload.name || '').trim();
+        const catId = Number(payload.categoryId);
+        if (!name) return NextResponse.json({ error: 'Subcategory name is required' }, { status: 400 });
+        if (!catId) return NextResponse.json({ error: 'Parent categoryId is required' }, { status: 400 });
+
+        const parent = await prisma.category.findUnique({ where: { id: catId } });
+        if (!parent) return NextResponse.json({ error: 'Parent Category not found' }, { status: 404 });
+
+        const slug = slugify(`${parent.slug}-${name}`);
+        const sub = await prisma.subcategory.create({
+          data: {
+            name,
+            slug,
+            categoryId: catId,
+            description: payload.description?.trim() || null,
+            image: payload.image?.trim() || null,
+            displayOrder: Number(payload.displayOrder) || 0,
+            isActive: payload.isActive !== undefined ? Boolean(payload.isActive) : true
+          }
+        });
+        return NextResponse.json({ success: true, message: `Subcategory "${name}" created`, subcategory: sub });
+      }
+
+      case 'UPDATE_SUBCATEGORY': {
+        const id = Number(payload.subcategoryId || payload.id);
+        if (!id) return NextResponse.json({ error: 'Valid subcategoryId is required' }, { status: 400 });
+
+        const existing = await prisma.subcategory.findUnique({ where: { id } });
+        if (!existing) return NextResponse.json({ error: 'Subcategory not found' }, { status: 404 });
+
+        const newName = payload.name !== undefined ? payload.name.trim() : existing.name;
+        const updateData: any = {
+          name: newName,
+          description: payload.description !== undefined ? payload.description?.trim() || null : existing.description,
+          image: payload.image !== undefined ? payload.image?.trim() || null : existing.image,
+          displayOrder: payload.displayOrder !== undefined ? Number(payload.displayOrder) : existing.displayOrder,
+          isActive: payload.isActive !== undefined ? Boolean(payload.isActive) : existing.isActive
+        };
+
+        if (payload.categoryId && Number(payload.categoryId) !== existing.categoryId) {
+          updateData.categoryId = Number(payload.categoryId);
+        }
+
+        const updated = await prisma.subcategory.update({
+          where: { id },
+          data: updateData
+        });
+
+        // Sync product subcategory string name if name was updated
+        if (newName !== existing.name) {
+          await prisma.product.updateMany({
+            where: { subcategoryId: id },
+            data: { subcategory: newName }
+          });
+        }
+
+        return NextResponse.json({ success: true, message: 'Subcategory updated successfully', subcategory: updated });
+      }
+
+      case 'TOGGLE_SUBCATEGORY_ACTIVE': {
+        const id = Number(payload.subcategoryId || payload.id);
+        const existing = await prisma.subcategory.findUnique({ where: { id } });
+        if (!existing) return NextResponse.json({ error: 'Subcategory not found' }, { status: 404 });
+
+        const updated = await prisma.subcategory.update({
+          where: { id },
+          data: { isActive: !existing.isActive }
+        });
+        return NextResponse.json({ success: true, isActive: updated.isActive });
+      }
+
+      case 'DELETE_SUBCATEGORY': {
+        const id = Number(payload.subcategoryId || payload.id);
+        if (!id) return NextResponse.json({ error: 'Valid subcategoryId is required' }, { status: 400 });
+
+        const productsCount = await prisma.product.count({
+          where: { subcategoryId: id }
+        });
+
+        if (productsCount > 0) {
+          return NextResponse.json({
+            error: `Cannot permanently delete subcategory containing ${productsCount} products. Please deactivate it instead.`
+          }, { status: 400 });
+        }
+
+        await prisma.subcategory.delete({ where: { id } });
+        return NextResponse.json({ success: true, message: 'Subcategory removed successfully' });
+      }
+
+      case 'REORDER_CATEGORIES': {
+        const orderedIds: number[] = Array.isArray(payload.orderedIds) ? payload.orderedIds : [];
+        for (let i = 0; i < orderedIds.length; i++) {
+          await prisma.category.update({
+            where: { id: Number(orderedIds[i]) },
+            data: { displayOrder: i + 1 }
+          });
+        }
+        return NextResponse.json({ success: true, message: 'Categories reordered' });
+      }
+
+      case 'REORDER_SUBCATEGORIES': {
+        const orderedIds: number[] = Array.isArray(payload.orderedIds) ? payload.orderedIds : [];
+        for (let i = 0; i < orderedIds.length; i++) {
+          await prisma.subcategory.update({
+            where: { id: Number(orderedIds[i]) },
+            data: { displayOrder: i + 1 }
+          });
+        }
+        return NextResponse.json({ success: true, message: 'Subcategories reordered' });
       }
 
       case 'CREATE_SERVICE': {

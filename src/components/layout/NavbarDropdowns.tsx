@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, Sparkles } from "lucide-react";
 
@@ -42,6 +42,48 @@ const SHOP_MAIN_CATEGORIES = [
 ];
 
 export function ShopDropdown({ isOpen, onClose, onMouseEnter, onMouseLeave }: DropdownProps) {
+  const [categories, setCategories] = useState(SHOP_MAIN_CATEGORIES);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadCategories() {
+      try {
+        const res = await fetch("/api/categories");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data.categories) && data.categories.length > 0 && isMounted) {
+            const mapped = data.categories.map((c: any) => {
+              let href = `/shop?dept=${encodeURIComponent(c.slug)}`;
+              if (c.slug === "womens-wear") href = "/womens-wear";
+              else if (c.slug === "beauty") href = "/beauty?view=products";
+              else if (c.slug === "jewellery") href = "/jewellery";
+              else if (c.slug === "gifts") href = "/gifts";
+
+              const subSummary = (c.subcategories || [])
+                .slice(0, 5)
+                .map((s: any) => s.name)
+                .join(", ");
+
+              return {
+                title: c.name,
+                href,
+                description: c.description || (subSummary ? `${subSummary}...` : "Curated collections"),
+                accent: "bg-[#4A1513]",
+              };
+            });
+            setCategories(mapped);
+          }
+        }
+      } catch {
+        // Fallback to static SHOP_MAIN_CATEGORIES on error
+      }
+    }
+    loadCategories();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <div
       onMouseEnter={onMouseEnter}
@@ -60,12 +102,12 @@ export function ShopDropdown({ isOpen, onClose, onMouseEnter, onMouseLeave }: Dr
         <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C5A059]">
           Shop by Category
         </span>
-        <span className="text-[10px] text-stone-400 font-medium">4 Main Categories</span>
+        <span className="text-[10px] text-stone-400 font-medium">{categories.length} Categories</span>
       </div>
 
-      {/* Four Main Categories List - Clean, Minimal & Single-Layer */}
+      {/* Main Categories List - Dynamically synced from database */}
       <div className="py-2 space-y-1">
-        {SHOP_MAIN_CATEGORIES.map((cat, idx) => (
+        {categories.map((cat, idx) => (
           <Link
             key={cat.title}
             href={cat.href}

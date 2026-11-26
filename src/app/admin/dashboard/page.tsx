@@ -105,9 +105,22 @@ export default async function AdminDashboardPage({
       orderBy: { createdAt: 'desc' } 
     }).catch(() => []),
 
-    // Product Marketplace categories
+    // Product Marketplace categories with subcategories and product counts
     prisma.category.findMany({ 
-      orderBy: { createdAt: 'asc' } 
+      include: {
+        subcategories: {
+          include: {
+            _count: {
+              select: { products: true }
+            }
+          },
+          orderBy: { displayOrder: 'asc' }
+        },
+        _count: {
+          select: { products: true }
+        }
+      },
+      orderBy: { displayOrder: 'asc' } 
     }).catch(() => []),
 
     // Customer product orders (with line items & vendor linking)
