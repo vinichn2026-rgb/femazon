@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { AdminNavbar } from "@/components/admin/AdminNavbar";
 import { AdminOverview } from "@/components/admin/AdminOverview";
 import { AdminProductVendors } from "@/components/admin/AdminProductVendors";
+import { AdminVendorProducts } from "@/components/admin/AdminVendorProducts";
 import { AdminOrdersManagement } from "@/components/admin/AdminOrdersManagement";
 import { AdminPersonalStylists } from "@/components/admin/AdminPersonalStylists";
 import { AdminStylistBookings } from "@/components/admin/AdminStylistBookings";
@@ -33,9 +34,10 @@ export default function AdminClient({
   products = [], 
   categories = [], 
   orders = [], 
-  bookings = [] 
+  bookings = [],
+  initialTab = "overview"
 }: any) {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const router = useRouter();
 
@@ -66,10 +68,13 @@ export default function AdminClient({
     }
   };
 
+  const pendingProductsCount = products.filter((p: any) => p.approvalStatus === 'PENDING').length;
+
   const navMenuItems = [
     { id: 'overview', icon: <Grid size={18}/>, label: 'Overview', group: 'DASHBOARD' },
     
     // Division A: Product Marketplace
+    { id: 'product-approvals', icon: <Package size={18}/>, label: 'Product Approvals', group: "PRODUCT MARKETPLACE" },
     { id: 'product-vendors', icon: <Store size={18}/>, label: 'Product Vendors', group: "PRODUCT MARKETPLACE" },
     { id: 'orders', icon: <ShoppingCart size={18}/>, label: 'Orders Management', group: "PRODUCT MARKETPLACE" },
     
@@ -151,6 +156,30 @@ export default function AdminClient({
 
                 <button
                   type="button"
+                  onClick={() => setActiveTab('product-approvals')}
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer text-left ${
+                    activeTab === 'product-approvals'
+                      ? 'bg-[#4A1513] text-white shadow-xs font-bold'
+                      : 'text-stone-700 hover:bg-[#FAF7F5] hover:text-[#4A1513]'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Package size={17} />
+                    <span>Product Approvals</span>
+                  </div>
+                  {pendingProductsCount > 0 ? (
+                    <span className="px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-amber-500 text-white animate-pulse">
+                      {pendingProductsCount}
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-stone-400 font-mono">
+                      {products.length}
+                    </span>
+                  )}
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => setActiveTab('product-vendors')}
                   className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer text-left ${
                     activeTab === 'product-vendors'
@@ -166,26 +195,6 @@ export default function AdminClient({
                     <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                   )}
                 </button>
-
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('service-vendors')}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition cursor-pointer text-left ${
-                    activeTab === 'service-vendors' || activeTab === 'personal-stylists'
-                      ? 'bg-[#4A1513] text-white shadow-xs font-bold'
-                      : 'text-stone-700 hover:bg-[#FAF7F5] hover:text-[#4A1513]'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Sparkles size={17} />
-                    <span>Service Vendors</span>
-                  </div>
-                  {stylists.filter((s: any) => s.status === 'PENDING').length > 0 && (
-                    <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
-                  )}
-                </button>
-
-
 
                 <button
                   type="button"
@@ -299,6 +308,15 @@ export default function AdminClient({
               bookings={bookings}
               categories={categories}
               onNavigateTab={(tabId) => setActiveTab(tabId)}
+            />
+          )}
+
+          {/* TAB: PRODUCT APPROVALS */}
+          {activeTab === 'product-approvals' && (
+            <AdminVendorProducts
+              products={products}
+              categories={categories}
+              onAction={handleAction}
             />
           )}
 

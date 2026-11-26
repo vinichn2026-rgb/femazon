@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function AdminProductsPage() {
-  redirect("/admin/dashboard");
+  redirect("/admin/dashboard?tab=product-approvals");
 }

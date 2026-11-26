@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/authOptions';
+import { getApiAuthEmail } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,57 +18,152 @@ function slugify(text: string): string {
     .replace(/-+$/, '');
 }
 
+async function getAuthenticatedUser(request: Request) {
+  let email = await getApiAuthEmail(request).catch(() => null);
+  if (!email) {
+    const session = await getServerSession(authOptions).catch(() => null);
+    if (session?.user?.email) {
+      email = session.user.email;
+    }
+  }
+  if (!email) return null;
+
+  return prisma.user.findFirst({
+    where: { email },
+    include: { vendorProfile: true }
+  });
+}
+
+// GET /api/vendor/products
+// Returns products for the authenticated vendor, with status filter and counts
 export async function GET(request: Request) {
   try {
+    const user = await getAuthenticatedUser(request);
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized: Vendor login required' }, { status: 401 });
+    }
+
+    if (user.role !== 'VENDOR' && user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden: Vendor access required' }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
+    const status = searchParams.get('status');
 
-    const where: any = {};
+    // Vendors only see their own products; admins can see all or filter by vendorId
+    const vendorFilter = user.role === 'ADMIN' ? {} : { vendorId: user.id };
+
+    const where: any = { ...vendorFilter };
+
     if (category && category !== 'All') {
       where.category = category;
     }
 
-    const products = await prisma.product.findMany({
-      where,
-      include: {
-        colorVariants: {
-          include: {
-            images: {
-              orderBy: { displayOrder: 'asc' }
-            },
-            sizes: {
-              orderBy: { size: 'asc' }
+    if (status && status.toUpperCase() !== 'ALL') {
+      where.approvalStatus = status.toUpperCase();
+    }
+
+    // Parallel fetch: filtered products + tab counts
+    const [products, allCount, pendingCount, approvedCount, rejectedCount] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        include: {
+          colorVariants: {
+            include: {
+              images: { orderBy: { displayOrder: 'asc' } },
+              sizes: { orderBy: { size: 'asc' } }
             }
           }
-        }
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 50
-    });
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 100
+      }),
+      prisma.product.count({ where: { ...vendorFilter } }),
+      prisma.product.count({ where: { ...vendorFilter, approvalStatus: 'PENDING' } }),
+      prisma.product.count({ where: { ...vendorFilter, approvalStatus: 'APPROVED' } }),
+      prisma.product.count({ where: { ...vendorFilter, approvalStatus: 'REJECTED' } })
+    ]);
 
-    return NextResponse.json({ success: true, products });
+    return NextResponse.json({
+      success: true,
+      products,
+      counts: {
+        all: allCount,
+        pending: pendingCount,
+        approved: approvedCount,
+        rejected: rejectedCount
+      }
+    });
   } catch (error: any) {
     console.error('GET /api/vendor/products Error:', error);
     return NextResponse.json({ error: 'Failed to fetch vendor products' }, { status: 500 });
   }
 }
 
+// Helper to process and validate color variants
+function processColorVariants(colorVariants: any[]) {
+  let totalStock = 0;
+  const allImages: string[] = [];
+  let primaryCoverImage = '';
+  const colorNames: string[] = [];
+  const availableSizesSet = new Set<string>();
+
+  for (const cv of colorVariants) {
+    colorNames.push(cv.colorName.trim());
+
+    if (Array.isArray(cv.images)) {
+      for (const img of cv.images) {
+        const url = typeof img === 'string' ? img : img.imageUrl;
+        if (url) {
+          allImages.push(url);
+          if (!primaryCoverImage || (typeof img === 'object' && img.isThumbnail)) {
+            primaryCoverImage = url;
+          }
+        }
+      }
+    }
+
+    if (Array.isArray(cv.sizes)) {
+      for (const sz of cv.sizes) {
+        const qty = Math.max(0, parseInt(sz.stockQty, 10) || 0);
+        totalStock += qty;
+        if (qty > 0) {
+          availableSizesSet.add(sz.size);
+        }
+      }
+    }
+  }
+
+  if (!primaryCoverImage && allImages.length > 0) {
+    primaryCoverImage = allImages[0];
+  }
+
+  return {
+    totalStock,
+    allImages,
+    primaryCoverImage,
+    colorNames,
+    availableSizes: Array.from(availableSizesSet)
+  };
+}
+
+// POST /api/vendor/products
+// Handles creating a new product or resubmitting an existing rejected product
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const user = await getAuthenticatedUser(request);
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized: Vendor login required' }, { status: 401 });
+    }
 
-    let vendorId: number | null = null;
-    if (session?.user?.email) {
-      const user = await prisma.user.findUnique({
-        where: { email: session.user.email }
-      });
-      if (user) {
-        vendorId = user.id;
-      }
+    if (user.role !== 'VENDOR' && user.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden: Vendor access required' }, { status: 403 });
     }
 
     const body = await request.json();
     const {
+      id: productId,
       title,
       name,
       brandName = 'Femazon Luxe',
@@ -104,7 +200,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'At least one color variety is required.' }, { status: 400 });
     }
 
-    // Validate each color variant
     for (let i = 0; i < colorVariants.length; i++) {
       const cv = colorVariants[i];
       if (!cv.colorName || !cv.colorName.trim()) {
@@ -115,52 +210,118 @@ export async function POST(request: Request) {
       }
     }
 
-    // Calculate total stock across all color variants and sizes
-    let totalStock = 0;
-    const allImages: string[] = [];
-    let primaryCoverImage = '';
-    const colorNames: string[] = [];
-    const availableSizesSet = new Set<string>();
+    const processed = processColorVariants(colorVariants);
 
-    for (const cv of colorVariants) {
-      colorNames.push(cv.colorName.trim());
+    // ==========================================
+    // CASE A: Resubmission / Edit of existing product
+    // ==========================================
+    if (productId) {
+      const existingProduct = await prisma.product.findUnique({
+        where: { id: Number(productId) },
+        select: { id: true, vendorId: true, approvalStatus: true }
+      });
 
-      // Images
-      if (Array.isArray(cv.images)) {
-        for (const img of cv.images) {
-          const url = typeof img === 'string' ? img : img.imageUrl;
-          if (url) {
-            allImages.push(url);
-            if (!primaryCoverImage || (typeof img === 'object' && img.isThumbnail)) {
-              primaryCoverImage = url;
+      if (!existingProduct) {
+        return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+      }
+
+      // Enforce ownership: vendor can only update their own product
+      if (user.role !== 'ADMIN' && existingProduct.vendorId !== user.id) {
+        return NextResponse.json({ error: 'Forbidden: You do not own this product' }, { status: 403 });
+      }
+
+      // Execute update in transaction
+      const updatedProduct = await prisma.$transaction(async (tx) => {
+        // 1. Update main product details & reset approval status to PENDING
+        const prod = await tx.product.update({
+          where: { id: Number(productId) },
+          data: {
+            name: productTitle,
+            brandName: brandName.trim() || 'Femazon Luxe',
+            category: productCategory,
+            subcategory: productSubCategory || null,
+            dressType: productSubCategory || null,
+            price: mrp,
+            discountPrice: finalPrice,
+            description: description.trim(),
+            fabricCare: fabricCare.trim(),
+            packageContains: packageContains.trim(),
+            dispatchTimeline: dispatchTimeline.trim() || 'Dispatched within 24-48 Hours',
+            readyToShip: true,
+            stock: processed.totalStock,
+            image: processed.primaryCoverImage || null,
+            images: JSON.stringify(processed.allImages),
+            sizes: JSON.stringify(processed.availableSizes),
+            colors: JSON.stringify(processed.colorNames),
+            approvalStatus: 'PENDING',
+            rejectionReason: null // Cleared upon resubmission
+          }
+        });
+
+        // 2. Remove old color variants & replace with updated ones
+        await tx.colorVariant.deleteMany({
+          where: { productId: prod.id }
+        });
+
+        for (const cv of colorVariants) {
+          const createdVariant = await tx.colorVariant.create({
+            data: {
+              productId: prod.id,
+              colorName: cv.colorName.trim(),
+              colorHexCode: cv.colorHexCode?.trim() || null
+            }
+          });
+
+          if (Array.isArray(cv.images) && cv.images.length > 0) {
+            const imageRecords = cv.images.map((img: any, idx: number) => ({
+              colorVariantId: createdVariant.id,
+              imageUrl: typeof img === 'string' ? img : img.imageUrl,
+              isThumbnail: typeof img === 'object' ? Boolean(img.isThumbnail) : idx === 0,
+              displayOrder: typeof img === 'object' && img.displayOrder ? img.displayOrder : idx + 1
+            }));
+            await tx.variantImage.createMany({ data: imageRecords });
+          }
+
+          if (Array.isArray(cv.sizes) && cv.sizes.length > 0) {
+            const sizeRecords = cv.sizes.map((sz: any) => ({
+              colorVariantId: createdVariant.id,
+              size: sz.size.trim(),
+              stockQty: Math.max(0, parseInt(sz.stockQty, 10) || 0)
+            }));
+            await tx.sizeInventory.createMany({ data: sizeRecords });
+          }
+        }
+
+        return prod;
+      });
+
+      const completeProduct = await prisma.product.findUnique({
+        where: { id: updatedProduct.id },
+        include: {
+          colorVariants: {
+            include: {
+              images: { orderBy: { displayOrder: 'asc' } },
+              sizes: { orderBy: { size: 'asc' } }
             }
           }
         }
-      }
+      });
 
-      // Sizes & stock
-      if (Array.isArray(cv.sizes)) {
-        for (const sz of cv.sizes) {
-          const qty = Math.max(0, parseInt(sz.stockQty, 10) || 0);
-          totalStock += qty;
-          if (qty > 0) {
-            availableSizesSet.add(sz.size);
-          }
-        }
-      }
+      return NextResponse.json({
+        success: true,
+        message: 'Product resubmitted for approval successfully! It is now under review.',
+        product: completeProduct
+      });
     }
 
-    if (!primaryCoverImage && allImages.length > 0) {
-      primaryCoverImage = allImages[0];
-    }
-
-    // Generate unique slug
+    // ==========================================
+    // CASE B: New Product Submission
+    // ==========================================
     const baseSlug = slugify(productTitle);
     const uniqueSlug = `${baseSlug}-${Date.now().toString(36)}`;
 
-    // Database transaction: Create Product + ColorVariants + VariantImages + SizeInventories
     const createdProduct = await prisma.$transaction(async (tx) => {
-      // 1. Create main Product
+      // 1. Create main Product with PENDING approval status
       const product = await tx.product.create({
         data: {
           name: productTitle,
@@ -176,13 +337,14 @@ export async function POST(request: Request) {
           packageContains: packageContains.trim(),
           dispatchTimeline: dispatchTimeline.trim() || 'Dispatched within 24-48 Hours',
           readyToShip: true,
-          stock: totalStock,
-          image: primaryCoverImage || null,
-          images: JSON.stringify(allImages),
-          sizes: JSON.stringify(Array.from(availableSizesSet)),
-          colors: JSON.stringify(colorNames),
-          approvalStatus: 'APPROVED',
-          vendorId: vendorId || null
+          stock: processed.totalStock,
+          image: processed.primaryCoverImage || null,
+          images: JSON.stringify(processed.allImages),
+          sizes: JSON.stringify(processed.availableSizes),
+          colors: JSON.stringify(processed.colorNames),
+          approvalStatus: 'PENDING', // Always PENDING on vendor submission
+          rejectionReason: null,
+          vendorId: user.id
         }
       });
 
@@ -196,43 +358,29 @@ export async function POST(request: Request) {
           }
         });
 
-        // Insert Images
         if (Array.isArray(cv.images) && cv.images.length > 0) {
-          const imageRecords = cv.images.map((img: any, idx: number) => {
-            const url = typeof img === 'string' ? img : img.imageUrl;
-            const isThumb = typeof img === 'object' ? Boolean(img.isThumbnail) : idx === 0;
-            const order = typeof img === 'object' && img.displayOrder ? img.displayOrder : idx + 1;
-            return {
-              colorVariantId: createdVariant.id,
-              imageUrl: url,
-              isThumbnail: isThumb,
-              displayOrder: order
-            };
-          });
-
-          await tx.variantImage.createMany({
-            data: imageRecords
-          });
+          const imageRecords = cv.images.map((img: any, idx: number) => ({
+            colorVariantId: createdVariant.id,
+            imageUrl: typeof img === 'string' ? img : img.imageUrl,
+            isThumbnail: typeof img === 'object' ? Boolean(img.isThumbnail) : idx === 0,
+            displayOrder: typeof img === 'object' && img.displayOrder ? img.displayOrder : idx + 1
+          }));
+          await tx.variantImage.createMany({ data: imageRecords });
         }
 
-        // Insert Sizes & Stock
         if (Array.isArray(cv.sizes) && cv.sizes.length > 0) {
           const sizeRecords = cv.sizes.map((sz: any) => ({
             colorVariantId: createdVariant.id,
             size: sz.size.trim(),
             stockQty: Math.max(0, parseInt(sz.stockQty, 10) || 0)
           }));
-
-          await tx.sizeInventory.createMany({
-            data: sizeRecords
-          });
+          await tx.sizeInventory.createMany({ data: sizeRecords });
         }
       }
 
       return product;
     });
 
-    // Re-fetch complete created product with nested relations
     const completeProduct = await prisma.product.findUnique({
       where: { id: createdProduct.id },
       include: {
@@ -247,14 +395,14 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: 'Ready-to-Ship product and color variants published successfully!',
+      message: 'Product submitted for review successfully! It will be reviewed by admin before appearing on the website.',
       product: completeProduct
     }, { status: 201 });
 
   } catch (error: any) {
     console.error('POST /api/vendor/products Error:', error);
     return NextResponse.json({
-      error: 'Failed to create product with color variants',
+      error: 'Failed to submit product for approval',
       details: error?.message || 'Server error'
     }, { status: 500 });
   }

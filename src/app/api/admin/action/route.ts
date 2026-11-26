@@ -5,6 +5,7 @@ import { authOptions } from '@/lib/authOptions';
 import { getApiAuthPayload } from '@/lib/auth';
 import { sendVendorApprovalEmail } from '@/lib/email';
 import { generateVendorPasswordSetupToken } from '@/lib/vendorPasswordSetup';
+import { invalidateCatalogCache } from '@/lib/catalog';
 
 function slugify(text: string): string {
   return text
@@ -399,31 +400,100 @@ export async function POST(request: Request) {
       // 3. VENDOR PRODUCTS (MONITORING & APPROVAL)
       // ==========================================
       case 'APPROVE_PRODUCT': {
-        await prisma.product.update({
-          where: { id: Number(payload.productId) },
-          data: { approvalStatus: 'APPROVED' }
+        const prodId = Number(payload.productId || body.productId);
+        if (!prodId || isNaN(prodId)) {
+          return NextResponse.json({ error: 'Valid productId is required' }, { status: 400 });
+        }
+
+        const product = await prisma.product.findUnique({
+          where: { id: prodId },
+          select: { id: true, name: true, vendorId: true }
         });
-        return NextResponse.json({ success: true, message: 'Vendor product approved' });
+        if (!product) {
+          return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+        }
+
+        await prisma.product.update({
+          where: { id: product.id },
+          data: {
+            approvalStatus: 'APPROVED',
+            rejectionReason: null
+          }
+        });
+
+        invalidateCatalogCache();
+
+        if (product.vendorId) {
+          await prisma.notification.create({
+            data: {
+              userId: product.vendorId,
+              title: `Product Approved: ${product.name}`,
+              message: `Congratulations! Your product "${product.name}" has been approved by admin and is now live on the Femazon storefront.`,
+              type: 'VENDOR',
+              link: '/vendor/products'
+            }
+          }).catch((err) => console.warn('[Notification Error]:', err));
+        }
+
+        return NextResponse.json({ success: true, message: 'Vendor product approved and published to website' });
       }
 
       case 'REJECT_PRODUCT': {
-        await prisma.product.update({
-          where: { id: Number(payload.productId) },
-          data: { approvalStatus: 'REJECTED' }
+        const prodId = Number(payload.productId || body.productId);
+        if (!prodId || isNaN(prodId)) {
+          return NextResponse.json({ error: 'Valid productId is required' }, { status: 400 });
+        }
+
+        const rejectionReason = (payload.rejectionReason || payload.reason || body.rejectionReason || body.reason || '').trim();
+        if (!rejectionReason) {
+          return NextResponse.json({ error: 'Rejection reason is mandatory when rejecting a product.' }, { status: 400 });
+        }
+
+        const product = await prisma.product.findUnique({
+          where: { id: prodId },
+          select: { id: true, name: true, vendorId: true }
         });
-        return NextResponse.json({ success: true, message: 'Vendor product rejected' });
+        if (!product) {
+          return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+        }
+
+        await prisma.product.update({
+          where: { id: product.id },
+          data: {
+            approvalStatus: 'REJECTED',
+            rejectionReason: rejectionReason
+          }
+        });
+
+        invalidateCatalogCache();
+
+        if (product.vendorId) {
+          await prisma.notification.create({
+            data: {
+              userId: product.vendorId,
+              title: `Product Rejected: ${product.name}`,
+              message: `Your product "${product.name}" was rejected by admin. Reason: ${rejectionReason}. You can edit and resubmit it from your dashboard.`,
+              type: 'VENDOR',
+              link: '/vendor/products'
+            }
+          }).catch((err) => console.warn('[Notification Error]:', err));
+        }
+
+        return NextResponse.json({ success: true, message: 'Vendor product rejected with feedback' });
       }
 
       case 'TOGGLE_PRODUCT_ACTIVE': {
+        const prodId = Number(payload.productId || body.productId);
         const current = await prisma.product.findUnique({
-          where: { id: Number(payload.productId) },
+          where: { id: prodId },
           select: { approvalStatus: true }
         });
         const newStatus = current?.approvalStatus === 'APPROVED' ? 'SUSPENDED' : 'APPROVED';
         const updated = await prisma.product.update({
-          where: { id: Number(payload.productId) },
+          where: { id: prodId },
           data: { approvalStatus: newStatus }
         });
+        invalidateCatalogCache();
         return NextResponse.json({ success: true, approvalStatus: updated.approvalStatus });
       }
 
@@ -486,6 +556,7 @@ export async function POST(request: Request) {
         await prisma.product.delete({
           where: { id: Number(payload.productId || payload.id) }
         });
+        invalidateCatalogCache();
         return NextResponse.json({ success: true, message: 'Product removed' });
       }
 

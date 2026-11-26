@@ -18,6 +18,7 @@ import {
   Clock, 
   Truck, 
   AlertCircle,
+  XCircle,
   Sparkles,
   Search,
   ExternalLink,
@@ -791,9 +792,33 @@ export default function VendorDashboardClient({ vendorProfile, user }: VendorDas
                               </span>
                             </td>
                             <td className="p-4">
-                              <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-semibold">
-                                <CheckCircle2 size={13} /> Active
-                              </span>
+                              {p.approvalStatus === 'APPROVED' && (
+                                <span className="inline-flex items-center gap-1 text-xs text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                                  <CheckCircle2 size={12} /> Approved
+                                </span>
+                              )}
+                              {p.approvalStatus === 'PENDING' && (
+                                <span className="inline-flex items-center gap-1 text-xs text-amber-800 font-semibold bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                                  <Clock size={12} /> Pending Review
+                                </span>
+                              )}
+                              {p.approvalStatus === 'REJECTED' && (
+                                <div className="space-y-1">
+                                  <span className="inline-flex items-center gap-1 text-xs text-rose-700 font-semibold bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
+                                    <XCircle size={12} /> Rejected
+                                  </span>
+                                  {p.rejectionReason && (
+                                    <p className="text-[10.5px] text-rose-600 italic max-w-[150px] line-clamp-1" title={p.rejectionReason}>
+                                      {p.rejectionReason}
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+                              {!['APPROVED', 'PENDING', 'REJECTED'].includes(p.approvalStatus) && (
+                                <span className="inline-flex items-center gap-1 text-xs text-stone-600 font-semibold bg-stone-100 px-2 py-0.5 rounded-full">
+                                  {p.approvalStatus || 'Draft'}
+                                </span>
+                              )}
                             </td>
                             <td className="p-4 pr-6 text-right">
                               <div className="inline-flex items-center gap-2">
